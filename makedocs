@@ -1,0 +1,26 @@
+#!/bin/sh
+
+
+EPI=$(which epydoc)
+
+if [ ! $EPI ] 
+then
+	echo 'You do not have epydoc installed.'
+	echo 'Please go to http://www.epydoc.org and follow the install instructions or run'
+	echo '	 sudo apt-get install python-epydoc'
+	echo 'from the command line if you are using Ubuntu Linux.'
+	exit
+fi
+
+svn del docs
+svn commit -m "Automatic documentation update (old docs deleted)"
+
+epydoc --config cspdocs.config
+
+svn add docs
+
+svn propset svn:mime-type 'text/html' docs/*.html 
+svn propset svn:mime-type 'text/css' docs/*.css
+svn propset svn:mime-type 'application/x-javascript' docs/*.js
+
+svn commit -m "Automatic documentation update (new docs added)"

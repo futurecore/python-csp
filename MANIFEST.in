@@ -1,0 +1,6 @@
+include README ChangeLog LICENSE
+include scripts/python-csp
+
+recursive-include applications/
+
+recursive-include csp/
