@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 
 """Interactive interpreter for CSP Python, with online help.
 
@@ -33,7 +33,10 @@ else:
     import rlcompleter
     readline.parse_and_bind("tab: complete")
 
-import atexit, code, os, sys
+import atexit
+import code
+import os
+import sys
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
@@ -132,17 +135,26 @@ def _createBuiltinDocs():
     foot = "\n\n*** For more info, type 'info csp' at the prompt. ***\n"
     docs = """ """
     docstrings = {}
-    import csp.builtins
-    cspnames = [klass.__name__ for klass in csp.csp._csptypes]
-    # Names imported by csp.builtins
-    imports = ['operator', 'process', 'sys']
-    for name in dir(csp.builtins):
-        if name in cspnames or name.startswith('_') or name in imports:
+    import csp.cspprocess
+    cspnames = [klass.__name__ for klass in csp.cspprocess._csptypes]
+    # Names imported by builtins
+    imports = ['operator', 'os', 'process', 'random', 'socket', 'sys',
+               'tempfile', 'threading', 'time', 'hmac', 'wraps', 'hashlib',
+               'psyco', 'pickle']
+    exceptions = ['CorruptedData', 'NoGuardInALT', 'ChannelPoison',
+                  'ChannelAbort', 'ProcessSuspend']
+    baseclasses = ['CSPOpMixin', 'CSPProcess', 'Guard',
+                   'TimedGuard', 'ConditionGuard', 'Channel',
+                   'FileChannel', 'process']
+    for name in dir(csp.cspprocess):
+        if (name in cspnames or name.startswith('_') or name in imports
+            or name in exceptions or name in baseclasses or name == 'DEBUG'
+            or name == 'SECURITY_ON'):
             continue
-        qualname = 'csp.builtins' + '.' + name 
+        qualname = 'csp.cspprocess' + '.' + name 
         if eval(qualname+'.__doc__'):
             docstrings[name] = eval(qualname+'.__doc__')
-    del csp.builtins
+    del csp.cspprocess
     names = docstrings.keys()
     names.sort()
     for name in names:
@@ -387,6 +399,6 @@ _cspinfo += _commands
 
 if __name__ == '__main__':
     c = CSPConsole(locals=locals())
-    # Don't expect the csp.csp namespace to be available in locals()
-    c.push('from csp.csp import *')
+    # Don't expect the csp.cspprocess namespace to be available in locals()
+    c.push('from csp.cspprocess import *')
     c.interact(banner=_ban)
