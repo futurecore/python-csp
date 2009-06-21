@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from csp.cspthread import *
+
 """
 Simple tests for basic python-csp functionality.
 
@@ -24,139 +25,157 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 @process
 def foo(n, _process=None):
     time.sleep(random.random()*5)
-    print ('%s in thread %s has arg %g' %
-           (_process.getName(), _process.getPid(), n))
+    print '%s in PID %g has arg %g' % (_process.getName(), _process.getPid(), n)
     return
+
 
 @process
 def send(cout, _process=None):
     for i in xrange(5):
-        print '%s thread: %s sending %g' % (_process.getName(),
-                                            _process.getPid(), 
-                                            i)
+        print '%s PID: %s sending %g' % (_process.getName(),
+                                         _process.getPid(), 
+                                         i)
         cout.write(i)
     return
+
 
 @process
 def recv(cin, _process=None):
     for i in xrange(5):
         data = cin.read()
-        print '%s thread: %s received %s' % (_process.getName(),
-                                             _process.getPid(),
-                                             data)
+        print '%s PID: %s received %s' % (_process.getName(),
+                                          _process.getPid(),
+                                          data)
     return
+
 
 @process
 def send100(cout, _process=None):
     for i in xrange(100):
-        print '%s thread: %s sending %g' % (_process.getName(),
-                                            _process.getPid(), 
-                                            i)
+        print '%s PID: %s sending %g' % (_process.getName(),
+                                         _process.getPid(), 
+                                         i)
         cout.write(i)
     return
+
 
 @process
 def recv100(cin, _process=None):
     for i in xrange(100):
         data = cin.read()
-        print '%s thread: %s received %s' % (_process.getName(),
-                                             _process.getPid(),
-                                             data)
+        print '%s PID: %s received %s' % (_process.getName(),
+                                          _process.getPid(),
+                                          data)
     return
 
+
 class TestOOP(object):
+    
     def __init__(self):
-        self.ch = Channel()
+        self.chan = Channel()
+
     @process
     def send(self, msg, _process=None):
-        self.ch.write(msg)
+        self.chan.write(msg)
+
     @process
     def recv(self, _process=None):
-        print self.ch.read()
+        print self.chan.read()
+
 
 def testoop():
     f = TestOOP()
-    PAR(f.send('hello world'), f.recv()).start()
+    Par(f.send('hello world'), f.recv()).start()
+
 
 @process
 def testpoison(chan, _process=None):
     print 'Sending termination event...'
     chan.poison()    
 
+
 @process
 def sendAlt(cout, num, _process=None):
     cout.write(num)
     return
 
+
 @process
 def testAlt0(_process=None):
-    alt = ALT(SKIP(), SKIP(), SKIP())
+    alt = Alt(Skip(), Skip(), Skip())
     for i in range(3):
         print '*** TestAlt0 selecting...'
-        recv = alt.select()
-        print '* Got this from Alt:', recv
+        val = alt.select()
+        print '* Got this from Alt:', val
+
 
 @process
 def testAlt1(cin, _process=None):
-    alt = ALT(SKIP(), cin)
+    alt = Alt(Skip(), cin)
     numeric = 0 
     while numeric < 1:
         print '*** TestAlt1 selecting...'
-        recv = alt.select()
+        val = alt.select()
         if isinstance(recv, int): numeric +=1 
-        print '* Got this from Alt:', recv
+        print '* Got this from Alt:', val
+
 
 @process
 def testAlt2(cin1, cin2, cin3, _process=None):
-    alt = ALT(SKIP(), cin1, cin2, cin3)
+    alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0 
     while numeric < 3:
         print '*** TestAlt2 selecting...'
-        recv = alt.select()
-        if isinstance(recv, int): numeric +=1
-        print '* Got this from Alt:', recv
-        
+        val = alt.select()
+        if isinstance(val, int): numeric +=1
+        print '* Got this from Alt:', val
+
+
 @process
 def testAlt3(cin1, cin2, cin3, _process=None):
     # For obvious reasons, SKIP cannot go first 
-    alt = ALT(cin1, cin2, cin3, SKIP())
+    alt = Alt(cin1, cin2, cin3, Skip())
     numeric = 0
     while numeric < 3:
         print '*** TestAlt3 selecting...'        
-        recv = alt.priSelect()
-        if isinstance(recv, int): numeric +=1
-        print '* Got this from Alt:', recv
-        
+        val = alt.pri_select()
+        if isinstance(val, int): numeric +=1
+        print '* Got this from Alt:', val
+
+
 @process
 def testAlt4(cin1, cin2, cin3, _process=None):
-    alt = ALT(SKIP(), cin1, cin2, cin3)
+    alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0
     while numeric < 3:
         print '*** TestAlt4 selecting...'        
-        recv = alt.fairSelect()
-        if isinstance(recv, int): numeric +=1
-        print '* Got this from Alt:', recv
+        val = alt.fair_select()
+        if isinstance(val, int): numeric +=1
+        print '* Got this from Alt:', val
+
 
 @process
 def chMobSend(cout, klass=Channel, _process=None):
     ch = klass()
     print 'Sending channel about to write channel to cout.'
-    if isinstance(ch, FileChannel):
-        print 'Using filename:', ch._fname
-    cout.write(ch)
+    if isinstance(chan, FileChannel):
+        print 'Using filename:', chan._fname
+    cout.write(chan)
     time.sleep(1)
-    ch.write('Yeah, baby, yeah!')
+    chan.write('Yeah, baby, yeah!')
     return
+
 
 @process
 def chMobRecv(cin, _process=None):
     print 'Receiving channel about to read channel.'
-    ch = cin.read()
-    print 'Receiving channel got channel:', type(ch)
-    if isinstance(ch, FileChannel):
-        print 'Using filename:', ch._fname
-    print ch.read()
+    chan = cin.read()
+    print 'Receiving channel got channel:', type(chan)
+    if isinstance(chan, FileChannel):
+        print 'Using filename:', chan._fname
+    print chan.read()
     return
+
 
 @process
 def recvEv(_process=None):
@@ -180,16 +199,16 @@ def _printHeader(name):
     return
 
 def testSeq():
-    _printHeader('SEQ')
+    _printHeader('Seq')
     print 'With operator overloading...'
     foo(1) > foo(2) > foo(3)
     print
     print 'With process objects...'
-    SEQ(foo(1), foo(2), foo(3)).start()
+    Seq(foo(1), foo(2), foo(3)).start()
     return
 
 def testPar():
-    _printHeader('PAR')
+    _printHeader('Par')
     print '5 processes with operator overloading...'
     p = foo(1) & foo(2) & foo(3) & foo(4) & foo(5)
     time.sleep(5)
@@ -199,7 +218,7 @@ def testPar():
     time.sleep(5)
     print
     print '5 processes with process objects...'
-    PAR(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
+    Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
     time.sleep(5)
     return
 
@@ -207,19 +226,19 @@ def testChan():
     _printHeader('Channels')
     print '1 producer, 1 consumer, 1 channel...'
     c1 = Channel()
-    p = PAR(recv(c1), send(c1))
+    p = Par(recv(c1), send(c1))
     p.start()
     print
     print '5 producers, 5 consumers, 5 channels...'
     chans = [Channel() for i in range(5)]
-    p = [send(ch) for ch in chans] + [recv(ch) for ch in chans]
-    pp = PAR(*p)
+    p = [send(chan) for chan in chans] + [recv(chan) for chan in chans]
+    pp = Par(*p)
     pp.start()
     print
     print '5 producers, 5 consumers, 1 channel...'
     chan = Channel()
     p = [send(chan) for i in range(5)] + [recv(chan) for i in range(5)]
-    pp = PAR(*p)
+    pp = Par(*p)
     pp.start()
     return
 
@@ -229,14 +248,14 @@ def testOOP():
 
 def testPoison():
     _printHeader('process termination (by poisoning)')
-    cp = Channel()
-    tp = PAR(send100(cp), recv100(cp), testpoison(cp))
-    tp.start()
+    chanp = Channel()
+    tpar = Par(send100(chanp), recv100(chanp), testpoison(chanp))
+    tpar.start()
     time.sleep(5)
     return
 
 def testAlt():
-    _printHeader('ALT')
+    _printHeader('Alt')
     print 'Alt with 3 SKIPs:'
     ta0 = testAlt0()
     ta0.start()
@@ -244,13 +263,13 @@ def testAlt():
     print
     print 'Alt with 1 SKIP, 1 channel read:'
     ch1 = Channel()
-    ta1 = PAR(testAlt1(ch1), sendAlt(ch1, 100))
+    ta1 = Par(testAlt1(ch1), sendAlt(ch1, 100))
     ta1.start()
     ta1._join()
     print
     print 'Alt with 1 SKIP, 3 channel reads:'
     ch2, ch3, ch4 = Channel(), Channel(), Channel()
-    ta2 = PAR(testAlt2(ch2, ch3, ch4),
+    ta2 = Par(testAlt2(ch2, ch3, ch4),
               sendAlt(ch2, 100),
               sendAlt(ch3, 200),
               sendAlt(ch4, 300))
@@ -259,7 +278,7 @@ def testAlt():
     print
     print 'Alt with priSelect on 1 SKIP, 3 channel reads:'
     ch5, ch6, ch7 = Channel(), Channel(), Channel()
-    ta3 = PAR(testAlt3(ch5, ch6, ch7),
+    ta3 = Par(testAlt3(ch5, ch6, ch7),
               sendAlt(ch5, 100),
               sendAlt(ch6, 200),
               sendAlt(ch7, 300))
@@ -268,7 +287,7 @@ def testAlt():
     print
     print 'Alt with fairSelect on 1 SKIP, 3 channel reads:'
     ch8, ch9, ch10 = Channel(), Channel(), Channel()
-    ta4 = PAR(testAlt4(ch8, ch9, ch10),
+    ta4 = Par(testAlt4(ch8, ch9, ch10),
               sendAlt(ch8, 100),
               sendAlt(ch9, 200),
               sendAlt(ch10, 300))
@@ -291,16 +310,16 @@ def testDynamicChannel():
 def testMobility():
     _printHeader('mobility')
     print 'Testing mobility of file channel objects.'
-    ch = FileChannel()
-    p = PAR(chMobSend(ch, klass=FileChannel), chMobRecv(ch))
-    p.start()
-    p._join()
+    ch1 = FileChannel()
+    par = Par(chMobSend(ch1, klass=FileChannel), chMobRecv(ch1))
+    par.start()
+    par._join()
     print 
     print 'Testing mobility of channel objects.'
     ch2 = Channel()
-    p2 = PAR(chMobSend(ch2, klass=Channel), chMobRecv(ch2))
-    p2.start()
-    p2._join()
+    par2 = Par(chMobSend(ch2, klass=Channel), chMobRecv(ch2))
+    par2.start()
+    par2._join()
     return
 
 if __name__ == '__main__':
@@ -312,10 +331,10 @@ if __name__ == '__main__':
                       help='Test all CSP features')    
     parser.add_option('-s', '--seq', dest='seq', 
                       action='store_true',
-                      help='Test SEQ')
+                      help='Test Seq')
     parser.add_option('-p', '--par', dest='par', 
                       action='store_true',
-                      help='Test PAR')
+                      help='Test Par')
     parser.add_option('-c', '--chan', dest='chan', 
                       action='store_true',
                       help='Test Channels')
@@ -327,7 +346,7 @@ if __name__ == '__main__':
                       help='Test process termination')
     parser.add_option('-l', '--alt', dest='alt', 
                       action='store_true',
-                      help='Test ALTernatives')
+                      help='Test Alternatives')
     parser.add_option('-e', '--event', dest='event', 
                       action='store_true',
                       help='Test syntactic sugar for guarded events')

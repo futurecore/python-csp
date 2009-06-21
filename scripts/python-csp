@@ -144,8 +144,7 @@ def _createBuiltinDocs():
     exceptions = ['CorruptedData', 'NoGuardInALT', 'ChannelPoison',
                   'ChannelAbort', 'ProcessSuspend']
     baseclasses = ['CSPOpMixin', 'CSPProcess', 'Guard',
-                   'TimedGuard', 'ConditionGuard', 'Channel',
-                   'FileChannel', 'process']
+                   'Channel', 'FileChannel', 'process']
     for name in dir(csp.cspprocess):
         if (name in cspnames or name.startswith('_') or name in imports
             or name in exceptions or name in baseclasses or name == 'DEBUG'

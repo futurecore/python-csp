@@ -16,7 +16,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A ParTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have rceeived a copy of the GNU General Public License
@@ -34,6 +34,10 @@ DEBUG = False
 
 
 def _debug(*args):
+    """Customised debug logging.
+
+    FIXME: Replace this with the builtin logging module.
+    """
     smap = map(str, args)
     if DEBUG:
         print 'DEBUG:', ' '.join(smap)
@@ -65,10 +69,10 @@ except ImportError:
 
 import threading
 
-#try:
-#    import cPickle as pickle # Faster pickle
-#except ImportError:
-import pickle
+try:
+    import cPickle as pickle # Faster pickle
+except ImportError:
+    import pickle
 
 ### CONSTANTS
 
@@ -81,11 +85,11 @@ _VIS_PORT = 8889
 
 ### Seeded random number generator (16 bytes)
 
-_rangen = random.Random(os.urandom(16))
+_RANGEN = random.Random(os.urandom(16))
 
 ### Authentication
 
-def _makeDigest(message):
+def _make_digest(message):
     """Return a digest for a given message."""
     return hmac.new('these/are/the/droids', message, hashlib.sha1).hexdigest()
 
@@ -102,16 +106,16 @@ class CorruptedData(Exception):
         return 'Data sent with incorrect authentication key.'
 
 
-class NoGuardInALT(Exception):
-    """Raised when an ALT has no guards to select.
+class NoGuardInAlt(Exception):
+    """Raised when an Alt has no guards to select.
     """
 
     def __init__(self):
-        super(NoGuardInALT, self).__init__()
+        super(NoGuardInAlt, self).__init__()
         return
 
     def __str__(self):
-        return 'Every ALT must have at least one guard.'
+        return 'Every Alt must have at least one guard.'
 
 
 ### Special constants / exceptions for termination and mobility
@@ -169,6 +173,9 @@ class CSPOpMixin(object):
     """Mixin class used for operator overloading in CSP process types.
     """
 
+    def __init__(self):
+        return
+    
     def _start(self):
         """Start only if self is not running."""
         if not self._Thread__started.is_set():
@@ -189,24 +196,24 @@ class CSPOpMixin(object):
             self._Thread__stop()
 
     def __and__(self, other):
-        """Implementation of CSP PAR.
+        """Implementation of CSP Par.
 
         Requires timeout with a small value to ensure
         parallelism. Otherwise a long sequence of '&' operators will
         run in sequence (because of left-to-right evaluation and
         orders of precedence.
         """
-        assert _isCSPType(other)
-        p = PAR(other, self, timeout=0.1)
-        p.start()
-        return p
+        assert _is_csp_type(other)
+        par = Par(other, self, timeout = 0.1)
+        par.start()
+        return par
 
     def __gt__(self, other):
-        """Implementation of CSP SEQ."""
-        assert _isCSPType(other)
-        s = SEQ(self, other)
-        s.start()
-        return s
+        """Implementation of CSP Seq."""
+        assert _is_csp_type(other)
+        seq = Seq(self, other)
+        seq.start()
+        return seq
 
 
 class CSPProcess(threading.Thread, CSPOpMixin):
@@ -219,9 +226,10 @@ class CSPProcess(threading.Thread, CSPOpMixin):
                                   target=func,
                                   args=(args),
                                   kwargs=kwargs)
+        CSPOpMixin.__init__(self)
         assert callable(func)
         for arg in list(self._Thread__args) + self._Thread__kwargs.values():
-            if _isCSPType(arg):
+            if _is_csp_type(arg):
                 arg.enclosing = self
         # Add a ref to this process so _target can access the
         # underlying operating system process.
@@ -241,7 +249,9 @@ class CSPProcess(threading.Thread, CSPOpMixin):
     def __str__(self):
         return 'CSPProcess running in TID %s' % self.getName()
 
-    def run(self, event=None):
+    def run(self): #, event=None):
+        """Called automatically when the L{start} methods is called.
+        """
         try:
             self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
         except ChannelPoison:
@@ -252,73 +262,44 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
-            t, exc, tb = sys.exc_info()
-            sys.excepthook(t, exc, tb)
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
         return
 
 
 class Guard(object):
+    """Abstract class to represent CSP guards.
 
-    def isSelectable(self):
+    All methods must be overridden in subclasses.
+    """
+    
+    def is_selectable(self):
+        """Should return C{True} if this guard can be selected by an L{Alt}.
+        """
         raise NotImplementedError('Must be implemented in subclass')
 
     def enable(self):
+        """Prepare for, but do not commit to a synchronisation.
+        """
         raise NotImplementedError('Must be implemented in subclass')
 
     def disable(self):
+        """Roll back from an L{enable} call.
+        """
         raise NotImplementedError('Must be implemented in subclass')
 
     def select(self):
+        """Commit to a synchronisation started by L{enable}.
+        """
         raise NotImplementedError('Must be implemented in subclass')
 
     def poison(self):
+        """Terminate all processes attached to this guard.
+        """
         pass
 
     def __str__(self):
         return 'CSP Guard: must be subclassed.'
-
-
-class TimedGuard(Guard):
-
-    def __init__(self, timer):
-        super(TimedGuard, self).__init__()
-        self.tau = timer
-        return
-
-    def isSelectable(self):
-        return True
-
-    def enable(self):
-        return
-
-    def disable(self):
-        return
-
-    def select(self):
-        time.sleep(self.tau)
-        return
-
-
-class ConditionGuard(Guard):
-    """ ??? """
-
-    def __init__(self, expr):
-        assert callable(expr)
-        self.expr = expr
-        super(ConditionGuard, self).__init__()
-        return
-
-    def isSelectable(self):
-        return bool(self.expr())
-
-    def enable(self):
-        return
-
-    def disable(self):
-        return
-
-    def select(self):
-        return
 
 
 class _PortFactory(object):
@@ -379,7 +360,7 @@ class Channel(Guard):
     """CSP Channel objects.
 
     In python-csp there are two sorts of channel. In JCSP terms these
-    are Any2Any, ALTing channels. However, each channel creates an
+    are Any2Any, Alting channels. However, each channel creates an
     operating system level pipe. Since this is a file object the
     number of channels a program can create is limited to the maximum
     number of files the operating system allows to be open at any one
@@ -401,9 +382,9 @@ class Channel(Guard):
         self._rlock = None	# Read lock.
         self._available = None
         self._taken = None
-        self._isAlting = None
-        self._isSelectable = None
-        self._hasSelected = None
+        self._is_alting = None
+        self._is_selectable = None
+        self._has_selected = None
         self._store = None # Holds value transferred by channel
         self._setup()
         super(Channel, self).__init__()
@@ -419,21 +400,21 @@ class Channel(Guard):
         self._rlock = threading.RLock()	# Read lock.
         self._available = threading.Semaphore(0)
         self._taken = threading.Semaphore(0)
-        # Process-safe synchronisation for CSP Select / Occam ALT.
-        self._isAlting = False
-        self._isSelectable = False
+        # Process-safe synchronisation for CSP Select / Occam Alt.
+        self._is_alting = False
+        self._is_selectable = False
         # Kludge to say a select has finished (to prevent the channel
         # from being re-enabled). If values were really process safe
-        # we could just have writers set _isSelectable and read that.
-        self._hasSelected = False
+        # we could just have writers set _is_selectable and read that.
+        self._has_selected = False
 
     def __getstate__(self):
         """Return state required for pickling."""
         state = [self._available.getValue(),
                  self._taken.getValue(),
-                 self._isAlting,
-                 self._isSelectable,
-                 self._hasSelected]
+                 self._is_alting,
+                 self._is_selectable,
+                 self._has_selected]
         if self._available.getValue() > 0:
             obj = self.get()
         else:
@@ -447,9 +428,9 @@ class Channel(Guard):
         self._rlock = threading.RLock()	# Read lock.
         self._available = threading.Semaphore(state[0])
         self._taken = threading.Semaphore(state[1])
-        self._isAlting = state[2]
-        self._isSelectable = state[3]
-        self._hasSelected = state[4]
+        self._is_alting = state[2]
+        self._is_selectable = state[3]
+        self._has_selected = state[4]
         if state[5] is not None:
             self.put(state[5])
         return
@@ -466,26 +447,23 @@ class Channel(Guard):
         self._store = None
         return item
 
-    def __del__(self):
-        return
-
-    def isSelectable(self):
-        """Test whether ALT can select this channel.
+    def is_selectable(self):
+        """Test whether Alt can select this channel.
         """
-        _debug('ALT THINKS _isSelectable IS: ' +
-               str(self._isSelectable))
-        return self._isSelectable
+        _debug('Alt THINKS _is_selectable IS: ' +
+               str(self._is_selectable))
+        return self._is_selectable
 
     def write(self, obj):
         """Write a Python object to this channel.
         """
         _debug('+++ Write on Channel %s started.' % self.name)
         with self._wlock: # Protect from races between multiple writers.
-            # If this channel has already been selected by an ALT then
-            # _hasSelected will be True, blocking other readers. If a
+            # If this channel has already been selected by an Alt then
+            # _has_selected will be True, blocking other readers. If a
             # new write is performed that flag needs to be reset for
             # the new write transaction.
-            self._hasSelected = False
+            self._has_selected = False
             # Make the object available to the reader.
             self.put(obj)
             self._available.release()
@@ -501,8 +479,8 @@ class Channel(Guard):
     def read(self):
         """Read (and return) a Python object from this channel.
         """
-#        assert self._isAlting.value == Channel.FALSE
-#        assert self._isSelectable.value == Channel.FALSE
+#        assert self._is_alting.value == Channel.FALSE
+#        assert self._is_selectable.value == Channel.FALSE
         _debug('+++ Read on Channel %s started.' % self.name)
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
@@ -523,41 +501,41 @@ class Channel(Guard):
         return obj
 
     def enable(self):
-        """Enable a read for an ALT select.
+        """Enable a read for an Alt select.
 
-        MUST be called before L{select()} or L{isSelectable()}.
+        MUST be called before L{select()} or L{is_selectable()}.
         """
         # Prevent re-synchronization.
-        if (self._hasSelected or self._isSelectable):
+        if (self._has_selected or self._is_selectable):
             return
-        self._isAlting = True
+        self._is_alting = True
         with self._rlock:
             # Attempt to acquire _available.
             time.sleep(0.00001) # Won't work without this -- why?
             retval = self._available.acquire(blocking=False)
         if retval:
-            self._isSelectable = True
+            self._is_selectable = True
         else:
-            self._isSelectable = False
+            self._is_selectable = False
         return
 
     def disable(self):
-        """Disable this channel for ALT selection.
+        """Disable this channel for Alt selection.
 
         MUST be called after L{enable} if this channel is not selected.
         """
-        self._isAlting = False
-        if self._isSelectable:
+        self._is_alting = False
+        if self._is_selectable:
             with self._rlock:
                 self._available.release()
-            self._isSelectable = False
+            self._is_selectable = False
         return
 
     def select(self):
-        """Complete a Channel read for an ALT select.
+        """Complete a Channel read for an Alt select.
         """
         _debug('channel select starting')
-        assert self._isSelectable == True
+        assert self._is_selectable == True
         with self._rlock:
             _debug('got read lock')
             # Obtain object on Channel.
@@ -567,9 +545,9 @@ class Channel(Guard):
             self._taken.release()
             _debug('released _taken')
             # Reset flags to ensure a future read / enable / select.
-            self._isSelectable = False
-            self._isAlting = False
-            self._hasSelected = True
+            self._is_selectable = False
+            self._is_alting = False
+            self._has_selected = True
             _debug('reset bools')
         if obj == _POISON:
             raise ChannelPoison()
@@ -584,9 +562,13 @@ class Channel(Guard):
         raise ChannelPoison()
 
     def suspend(self):
+        """Suspend this mobile channel before migrating between processes.
+        """
         raise NotImplementedError('Suspend / resume not implemented')
 
     def resume(self):
+        """Resume this mobile channel after migrating between processes.
+        """
         raise NotImplementedError('Suspend / resume not implemented')
 
 
@@ -606,12 +588,12 @@ class FileChannel(Channel):
         self._rlock = None	# Read lock.
         self._available = None
         self._taken = None
-        self._isAlting = None
-        self._isSelectable = None
-        self._hasSelected = None
+        self._is_alting = None
+        self._is_selectable = None
+        self._has_selected = None
         # Process-safe store.
-        fd, self._fname = tempfile.mkstemp()
-        os.close(fd)
+        file_d, self._fname = tempfile.mkstemp()
+        os.close(file_d)
         self._setup()
         return
 
@@ -619,9 +601,9 @@ class FileChannel(Channel):
         """Return state required for pickling."""
         state = [pickle.dumps(self._available),
                  pickle.dumps(self._taken),
-                 pickle.dumps(self._isAlting),
-                 pickle.dumps(self._isSelectable),
-                 pickle.dumps(self._hasSelected),
+                 pickle.dumps(self._is_alting),
+                 pickle.dumps(self._is_selectable),
+                 pickle.dumps(self._has_selected),
                  self._fname]
         if self._available.getValue() > 0:
             obj = self.get()
@@ -636,31 +618,35 @@ class FileChannel(Channel):
         self._rlock = threading.RLock()	# Read lock.
         self._available = pickle.loads(state[0])
         self._taken = pickle.loads(state[1])
-        self._isAlting = pickle.loads(state[2])
-        self._isSelectable = pickle.loads(state[3])
-        self._hasSelected = pickle.loads(state[4])
+        self._is_alting = pickle.loads(state[2])
+        self._is_selectable = pickle.loads(state[3])
+        self._has_selected = pickle.loads(state[4])
         self._fname = state[5]
         if state[6] is not None:
             self.put(state[6])
         return
 
     def put(self, item):
-        f = file(self._fname, 'w')
-        f.write(pickle.dumps(item))
-        f.flush()
-        f.close()
+        """Put C{item} on a process-safe store.
+        """
+        file_d = file(self._fname, 'w')
+        file_d.write(pickle.dumps(item))
+        file_d.flush()
+        file_d.close()
         return
 
     def get(self):
-        s = ''
-        while s=='':
-            f = file(self._fname, 'r')
-            s = f.read()
-            f.close()
+        """Get a Python object from a process-safe store.
+        """
+        stored = ''
+        while stored == '':
+            file_d = file(self._fname, 'r')
+            stored = file_d.read()
+            file_d.close()
         # Unlinking here ensures that FileChannel objects exhibit the
         # same semantics as Channel objects.
         os.unlink(self._fname)
-        obj = pickle.loads(s)
+        obj = pickle.loads(stored)
         return obj
 
     def __del__(self):
@@ -673,52 +659,57 @@ class FileChannel(Channel):
         return 'Channel using files for IPC.'
 
     def suspend(self):
+        """Suspend this mobile channel before migrating between processes.
+        """
         raise NotImplementedError('Suspend / resume not implemented')
 
     def resume(self):
+        """Suspend this mobile channel after migrating between processes.
+        """
         raise NotImplementedError('Suspend / resume not implemented')
 
 
-### CSP combinators -- PAR, ALT, SEQ, ...
+### CSP combinators -- Par, Alt, Seq, ...
 
-class ALT(CSPOpMixin):
+class Alt(CSPOpMixin):
     """CSP select (OCCAM ALT) process.
 
     What should happen if a guard is poisoned?
     """
 
     def __init__(self, *args):
-        super(ALT, self).__init__()
+        super(Alt, self).__init__()
         for arg in args:
             assert isinstance(arg, Guard)
         self.guards = list(args)
-        self.lastSelected = None
+        self.last_selected = None
 
     def poison(self):
         """Poison the last selected guard and unlink from the guard list.
 
-        Sets self.lastSelected to None.
+        Sets self.last_selected to None.
         """
-        _debug(type(self.lastSelected))
-        self.lastSelected.disable() # Just in case
+        _debug(type(self.last_selected))
+        self.last_selected.disable() # Just in case
         try:
-            self.lastSelected.poison()
+            self.last_selected.poison()
         except:
             pass
         _debug('Poisoned last selected.')
-        self.guards.remove(self.lastSelected)
+        self.guards.remove(self.last_selected)
         _debug('%i guards' % len(self.guards))
-        self.lastSelected = None
+        self.last_selected = None
 
     def _preselect(self):
         """Check for special cases when any form of select() is called.
         """
         if len(self.guards) == 0:
-            raise NoGuardInALT()
+            raise NoGuardInAlt()
         elif len(self.guards) == 1:
-            _debug('ALT Selecting unique guard:', self.guards[0].name)
-            self.lastSelected = self.guards[0]
-            return self.guards[0].read()
+            _debug('Alt Selecting unique guard:', self.guards[0].name)
+            self.last_selected = self.guards[0]
+            self.guards[0].enable()
+            return self.guards[0].select()
         return None
 
     def select(self):
@@ -726,96 +717,108 @@ class ALT(CSPOpMixin):
         selected = self._preselect()
         if selected is not None:
             return selected
-        for g in self.guards:
-            g.enable()
+        for guard in self.guards:
+            guard.enable()
         _debug('Alt enabled all guards')
-        ready = [g for g in self.guards if g.isSelectable()]
+        ready = [guard for guard in self.guards if guard.is_selectable()]
         while len(ready) == 0:
             time.sleep(0.01) # Not sure about this.
-            ready = [g for g in self.guards if g.isSelectable()]
+            ready = [guard for guard in self.guards if guard.is_selectable()]
             _debug('Alt got no items to choose from')
         _debug('Alt got %i items to choose from' % len(ready))
-        selected = _rangen.choice(ready)
-        self.lastSelected = selected
-        for g in self.guards:
-            if g is not selected:
-                g.disable()
+        selected = _RANGEN.choice(ready)
+        self.last_selected = selected
+        for guard in self.guards:
+            if guard is not selected:
+                guard.disable()
         return selected.select()
 
-    def fairSelect(self):
-        if self.lastSelected is None:
+    def fair_select(self):
+        """Select a guard to synchronise with. Do not select the
+        previously selected guard (unless it is the only guard
+        available).
+        """
+        if self.last_selected is None:
             return self.select()
         selected = self._preselect()
         if selected is not None:
             return selected
-        for g in self.guards:
-            g.enable()
+        for guard in self.guards:
+            guard.enable()
         _debug('Alt enabled all guards')
-        ready = [g for g in self.guards if g.isSelectable()]
+        ready = [guard for guard in self.guards if guard.is_selectable()]
         while len(ready) == 0:
             time.sleep(0.1) # Not sure about this.
-            ready = [g for g in self.guards if g.isSelectable()]
+            ready = [guard for guard in self.guards if guard.is_selectable()]
         _debug('Alt got %i items to choose from' % len(ready))
         selected = None
-        if self.lastSelected in ready and len(ready) > 1:
-            ready.remove(self.lastSelected)
+        if self.last_selected in ready and len(ready) > 1:
+            ready.remove(self.last_selected)
             _debug('Alt removed last selected from ready list')
-        selected = _rangen.choice(ready)
-        self.lastSelected = selected
-        for g in self.guards:
-            if g is not selected:
-                g.disable()
+        selected = _RANGEN.choice(ready)
+        self.last_selected = selected
+        for guard in self.guards:
+            if guard is not selected:
+                guard.disable()
         return selected.select()
 
-    def priSelect(self):
+    def pri_select(self):
+        """Select a guard to synchronise with, in order of
+        "priority". The guard with the lowest index in the L{guards}
+        list has the highest priority.
+        """
         selected = self._preselect()
         if selected is not None:
             return selected
-        for g in self.guards:
-            g.enable()
+        for guard in self.guards:
+            guard.enable()
         _debug('Alt enabled all guards')
-        ready = [g for g in self.guards if g.isSelectable()]
+        ready = [guard for guard in self.guards if guard.is_selectable()]
         while len(ready) == 0:
             time.sleep(0.01) # Not sure about this.
-            ready = [g for g in self.guards if g.isSelectable()]
+            ready = [guard for guard in self.guards if guard.is_selectable()]
         _debug('Alt got %i items to choose from' % len(ready))
         selected = ready[0]
-        self.lastSelected = selected
-        for g in self.guards:
-            if g is not selected:
-                g.disable()
+        self.last_selected = selected
+        for guard in self.guards:
+            if guard is not selected:
+                guard.disable()
         return selected.select()
 
 
-class PAR(threading.Thread, CSPOpMixin):
+class Par(threading.Thread, CSPOpMixin):
     """Run CSP processes in parallel.
     """
 
     def __init__(self, *procs, **kwargs):
-        super(PAR, self).__init__(None)
+        super(Par, self).__init__(None)
         if 'timeout' in kwargs:
             self.timeout = kwargs['timeout']
         else:
-            self.timeout=0.5
+            self.timeout = 0.5
         self.procs = []
         for proc in procs:
             # FIXME: only catches shallow nesting.
-            if isinstance(proc, PAR):
+            if isinstance(proc, Par):
                 self.procs += proc.procs
             else:
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
-        _debug('# processes in PAR:', len(self.procs))
+        _debug('# processes in Par:', len(self.procs))
         return
 
     def __str__(self):
-        return 'CSP PAR running in process %i.' % self.getPid()
+        return 'CSP Par running in process %i.' % self.getPid()
 
     def run(self):
+        """Run this process. Analogue of L{CSPProcess.run}.
+        """
         self.start()
 
     def _terminate(self):
+        """Terminate the execution of this process.
+        """
         for proc in self.procs:
             proc._terminate()
         if self._Thread__started.is_set():
@@ -835,21 +838,21 @@ class PAR(threading.Thread, CSPOpMixin):
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
-            t, exc, tb = sys.exc_info()
-            sys.excepthook(t, exc, tb)
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
         return
 
 
-class SEQ(threading.Thread, CSPOpMixin):
+class Seq(threading.Thread, CSPOpMixin):
     """Run CSP processes sequentially.
     """
 
     def __init__(self, *procs):
-        super(SEQ, self).__init__()
+        super(Seq, self).__init__()
         self.procs = []
         for proc in procs:
             # FIXME: only catches shallow nesting.
-            if isinstance(proc, SEQ):
+            if isinstance(proc, Seq):
                 self.procs += proc.procs
             else:
                 self.procs.append(proc)
@@ -858,15 +861,19 @@ class SEQ(threading.Thread, CSPOpMixin):
         return
 
     def __str__(self):
-        return 'CSP SEQ running in process %i.' % self.getPid()
+        return 'CSP Seq running in process %i.' % self.getPid()
 
     def stop(self):
+        """Terminate the execution of this process.
+        """
         for proc in self.procs:
             proc._terminate()
         if self._Thread__started.is_set():
             self._Thread__stop()
 
     def start(self):
+        """Start this process running.
+        """
         try:
             for proc in self.procs:
                 proc._start()
@@ -876,8 +883,8 @@ class SEQ(threading.Thread, CSPOpMixin):
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
-            t, exc, tb = sys.exc_info()
-            sys.excepthook(t, exc, tb)
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
         return
 
 ### Function decorators
@@ -891,52 +898,111 @@ def process(func):
 
     @wraps(func)
     def _call(*args, **kwargs):
+        """Call the target function."""
         return CSPProcess(func, *args, **kwargs)
     return _call
 
-### List of CSP based types (class names). Used by _isCSPType.
-_csptypes = [CSPProcess, PAR, SEQ, ALT]
+### List of CSP based types (class names). Used by _is_csp_type.
+_CSPTYPES = [CSPProcess, Par, Seq, Alt]
 
 
-def _isCSPType(name):
+def _is_csp_type(name):
     """Return True if name is any type of CSP process."""
-    for ty in _csptypes:
-        if isinstance(name, ty):
+    for typ in _CSPTYPES:
+        if isinstance(name, typ):
             return True
     return False
 
 # Common idioms for processes, guards, etc.
 # Mainly taken from JCSP plugNplay package.
 
-class SKIP(Guard):
-
+class Skip(Guard):
+    """Guard which will always return C{True}. Useful in L{Alt}s where
+    the programmer wants to ensure that L{Alt.select} will always
+    synchronise with at least one guard.
+    """
+    
     def __init__(self):
         Guard.__init__(self)
 
-    def isSelectable(self):
+    def is_selectable(self):
+        """Skip is always selectable."""
         return True
 
     def enable(self):
+        """Has no effect."""
         return
 
     def disable(self):
+        """Has no effect."""
         return
 
     def select(self):
+        """Has no effect."""
         return 'SKIP'
 
     def __str__(self):
         return 'SKIP guard is always selectable.'
 
 
+class ConditionGuard(Guard):
+    """FIXME: NOT YET IMPLEMENTED
+    """
+
+    def __init__(self, expr):
+        assert callable(expr)
+        self.expr = expr
+        super(ConditionGuard, self).__init__()
+        raise NotImplementedError('')
+
+    def is_selectable(self):
+        """Should return C{True} if this guard can be selected by an L{Alt}.
+        """
+        raise NotImplementedError('')
+
+    def enable(self):
+        """Prepare for, but do not commit to a synchronisation.
+        """
+        raise NotImplementedError('')
+
+    def disable(self):
+        """Roll back from an L{enable} call.
+        """
+        raise NotImplementedError('')
+
+    def select(self):
+        """Commit to a synchronisation started by L{enable}.
+        """
+        raise NotImplementedError('')
+
+
 class TimerGuard(Guard):
+    """Guard which only commits to synchronisation when a timer has expired.
+    """
 
     def __init__(self):
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
+
+    def is_selectable(self):
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
+
+    def enable(self):
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
+
+    def disable(self):
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
+
+    def select(self):
+        """Timer guards not yet implemented."""
         raise NotImplementedError('Timer guards not yet implemented.')
 
 
 @process
-def ZEROES(cout, _process=None):
+def Zeroes(cout, _process=None):
     """Writes out a stream of zeroes."""
     while True:
         cout.write(0)
@@ -944,8 +1010,8 @@ def ZEROES(cout, _process=None):
 
 
 @process
-def ID(cin, cout, _process=None):
-    """ID is the CSP equivalent of lambda x: x.
+def Id(cin, cout, _process=None):
+    """Id is the CSP equivalent of lambda x: x.
     """
     while True:
         cout.write(cin.read())
@@ -953,8 +1019,8 @@ def ID(cin, cout, _process=None):
 
 
 @process
-def SUCC(cin, cout, _process=None):
-    """SUCC is the successor process, which writes out 1 + its input event.
+def Succ(cin, cout, _process=None):
+    """Succ is the successor process, which writes out 1 + its input event.
     """
     while True:
         cout.write(cin.read() + 1)
@@ -962,8 +1028,8 @@ def SUCC(cin, cout, _process=None):
 
 
 @process
-def PRED(cin, cout, _process=None):
-    """PRED is the predecessor process, which writes out 1 - its input event.
+def Pred(cin, cout, _process=None):
+    """Pred is the predecessor process, which writes out 1 - its input event.
     """
     while True:
         cout.write(cin.read() - 1)
@@ -971,40 +1037,43 @@ def PRED(cin, cout, _process=None):
 
 
 @process
-def PREFIX(cin, cout, prefixItem=None, _process=None):
+def Prefix(cin, cout, prefix_item=None, _process=None):
+    """Prefix a write on L{cout} with the value read from L{cin}.
+
+    @type prefix_item: object
+    @param prefix_item: prefix value to use before first item read from L{cin}.
     """
-    """
-    t = prefixItem
+    pre = prefix_item
     while True:
-        cout.write(t)
-        t = cin.read()
+        cout.write(pre)
+        pre = cin.read()
     return
 
 
 @process
-def DELTA2(cin, cout1, cout2, _process=None):
-    """DELTA2 sends input values down two output channels.
+def Delta2(cin, cout1, cout2, _process=None):
+    """Delta2 sends input values down two output channels.
     """
     while True:
-        t = cin.read()
-        cout1.write(t)
-        cout2.write(t)
+        val = cin.read()
+        cout1.write(val)
+        cout2.write(val)
     return
 
 
 @process
-def MUX2(cin1, cin2, cout, _process=None):
-    """MUX2 provides a fair multiplex between two input channels.
+def Mux2(cin1, cin2, cout, _process=None):
+    """Mux2 provides a fair multiplex between two input channels.
     """
-    alt = ALT(cin1.read, cin2.read)
+    alt = Alt(cin1.read, cin2.read)
     while True:
-        c = alt.priSelect()
-        cout.write(c.read())
+        guard = alt.pri_select()
+        cout.write(guard.read())
     return
 
 
 @process
-def CLOCK(cout, resolution=1, _process=None):
+def Clock(cout, resolution=1, _process=None):
     """Send None object down output channel every C{resolution} seconds.
     """
     while True:
@@ -1014,7 +1083,9 @@ def CLOCK(cout, resolution=1, _process=None):
 
 
 @process
-def PRINTER(cin, _process=None, out=sys.stdout):
+def Printer(cin, _process=None, out=sys.stdout):
+    """Print all values read from L{cin} to standard out or L{out}.
+    """
     while True:
         msg = str(cin.read()) + '\n'
         out.write(msg)
@@ -1022,7 +1093,10 @@ def PRINTER(cin, _process=None, out=sys.stdout):
 
 
 @process
-def PAIRS(cin1, cin2, cout, _process=None):
+def Pairs(cin1, cin2, cout, _process=None):
+    """Read values from L{cin1} and L{cin2} and write their addition
+    to L{cout}.
+    """
     while True:
         in1 = cin1.read()
         in2 = cin2.read()
@@ -1031,23 +1105,30 @@ def PAIRS(cin1, cin2, cout, _process=None):
 
 
 @process
-def MULT(cin, cout, scale, _process=None):
+def Mult(cin, cout, scale, _process=None):
+    """Scale values read on L{cin} and write to L{cout}.
+    """
     while True:
         cout.write(cin.read() * scale)
     return
 
 
 @process
-def GENERATE(cout, _process=None):
-    i = 0
+def Generate(cout, _process=None):
+    """Generate successive (+ve) ints and write to L{cout}.
+    """
+    counter = 0
     while True:
-        cout.write(i)
-        i += 1
+        cout.write(counter)
+        counter += 1
     return
 
 
 @process
-def FIXEDDELAY(cin, cout, delay, _process=None):
+def FixedDelay(cin, cout, delay, _process=None):
+    """Read values from L{cin} and write to L{cout} after a delay of
+    L{delay} seconds.
+    """
     while True:
         in1 = cin.read()
         time.sleep(delay)
@@ -1056,26 +1137,32 @@ def FIXEDDELAY(cin, cout, delay, _process=None):
 
 
 @process
-def FIBONACCI(cout, _process=None):
-    a = b = 1
+def Fibonacci(cout, _process=None):
+    """Write successive Fibonacci numbers to L{cout}.
+    """
+    a_int = b_int = 1
     while True:
-        cout.write(a)
-        a, b = b, a+b
+        cout.write(a_int)
+        a_int, b_int = b_int, a_int + b_int
     return
 
 
 @process
-def BLACKHOLE(cin, _process=None):
+def Blackhole(cin, _process=None):
+    """Read values from L{cin} and do nothing with them.
+    """
     while True:
         cin.read()
     return
 
 
 @process
-def SIGN(cin, cout, prefix, _process=None):
+def Sign(cin, cout, prefix, _process=None):
+    """Read values from L{cin} and write to L{cout}, prefixed by L{prefix}.
+    """
     while True:
-        d = cin.read()
-        cout.write(prefix + str(d))
+        val = cin.read()
+        cout.write(prefix + str(val))
     return
 
 
@@ -1111,128 +1198,128 @@ def _applybinop(binop, docstring):
 
 # Numeric operators
 
-PLUS = _applybinop(operator.__add__,
+Plus = _applybinop(operator.__add__,
                    """Writes out the addition of two input events.
 """)
 
-SUB = _applybinop(operator.__sub__,
+Sub = _applybinop(operator.__sub__,
                   """Writes out the subtraction of two input events.
 """)
 
-MUL = _applybinop(operator.__mul__,
+Mul = _applybinop(operator.__mul__,
                   """Writes out the multiplication of two input events.
 """)
 
-DIV = _applybinop(operator.__div__,
+Div = _applybinop(operator.__div__,
                   """Writes out the division of two input events.
 """)
 
-FLOORDIV = _applybinop(operator.__floordiv__,
+Floordiv = _applybinop(operator.__floordiv__,
                        """Writes out the floor div of two input events.
 """)
 
-MOD = _applybinop(operator.__mod__,
+Mod = _applybinop(operator.__mod__,
                   """Writes out the modulo of two input events.
 """)
 
-POW = _applybinop(operator.__pow__,
+Pow = _applybinop(operator.__pow__,
                   """Writes out the power of two input events.
 """)
 
-LSHIFT = _applybinop(operator.__lshift__,
+LShift = _applybinop(operator.__lshift__,
                      """Writes out the left shift of two input events.
 """)
 
-RSHIFT = _applybinop(operator.__rshift__,
+RShift = _applybinop(operator.__rshift__,
                      """Writes out the right shift of two input events.
 """)
 
-NEG = _applyunop(operator.__neg__,
+Neg = _applyunop(operator.__neg__,
                  """Writes out the negation of input events.
 """)
 
 # Bitwise operators
 
-NOT = _applyunop(operator.__inv__,
+Not = _applyunop(operator.__inv__,
                  """Writes out the inverse of input events.
 """)
 
-AND = _applybinop(operator.__and__,
+And = _applybinop(operator.__and__,
                   """Writes out the bitwise and of two input events.
 """)
 
-OR = _applybinop(operator.__or__,
+Or = _applybinop(operator.__or__,
                  """Writes out the bitwise or of two input events.
 """)
 
-NAND = _applybinop(lambda x, y: ~ (x & y),
+Nand = _applybinop(lambda x, y: ~ (x & y),
                    """Writes out the bitwise nand of two input events.
 """)
 
-NOR = _applybinop(lambda x, y: ~ (x | y),
+Nor = _applybinop(lambda x, y: ~ (x | y),
                   """Writes out the bitwise nor of two input events.
 """)
 
-XOR = _applybinop(operator.xor,
+Xor = _applybinop(operator.xor,
                   """Writes out the bitwise xor of two input events.
 """)
 
 # Logical operators
 
-LAND = _applybinop(lambda x, y: x and y,
+Land = _applybinop(lambda x, y: x and y,
                    """Writes out the logical and of two input events.
 """)
 
-LOR = _applybinop(lambda x, y: x or y,
+Lor = _applybinop(lambda x, y: x or y,
                   """Writes out the logical or of two input events.
 """)
 
-LNOT = _applyunop(operator.__not__,
+Lnot = _applyunop(operator.__not__,
                   """Writes out the logical not of input events.
 """)
 
-LNAND = _applybinop(lambda x, y: not (x and y),
+Lnand = _applybinop(lambda x, y: not (x and y),
                     """Writes out the logical nand of two input events.
 """)
 
-LNOR = _applybinop(lambda x, y: not (x or y),
+Lnor = _applybinop(lambda x, y: not (x or y),
                    """Writes out the logical nor of two input events.
 """)
 
-LXOR = _applybinop(lambda x, y: (x or y) and (not x and y),
+Lxor = _applybinop(lambda x, y: (x or y) and (not x and y),
                    """Writes out the logical xor of two input events.
 """)
 
 # Comparison operators
 
-EQ = _applybinop(operator.__eq__,
+Eq = _applybinop(operator.__eq__,
                  """Writes True if two input events are equal (==).
 """)
 
-NE = _applybinop(operator.__ne__,
+Ne = _applybinop(operator.__ne__,
                    """Writes True if two input events are not equal (not ==).
 """)
 
-GEQ = _applybinop(operator.__ge__,
+Geq = _applybinop(operator.__ge__,
                    """Writes True if 'right' input event is >= 'left'.
 """)
 
-LEQ = _applybinop(operator.__le__,
+Leq = _applybinop(operator.__le__,
                    """Writes True if 'right' input event is <= 'left'.
 """)
 
-GT = _applybinop(operator.__gt__,
+Gt = _applybinop(operator.__gt__,
                    """Writes True if 'right' input event is > 'left'.
 """)
 
-LT = _applybinop(operator.__lt__,
+Lt = _applybinop(operator.__lt__,
                    """Writes True if 'right' input event is < 'left'.
 """)
 
-IS = _applybinop(lambda x, y: x is y,
+Is = _applybinop(lambda x, y: x is y,
                  """Writes True if two input events are the same (is).
 """)
 
-IS_NOT = _applybinop(lambda x, y: not (x is y),
+Is_Not = _applybinop(lambda x, y: not (x is y),
                    """Writes True if two input events are not the same (is).
 """)
