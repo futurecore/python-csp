@@ -84,7 +84,7 @@ def mandelbrot(xcoord, (width, height), cout,
 
 
 @process
-def consume(IMSIZE, filename, cins, _process=None):
+def consume(IMSIZE, filename, chan, _process=None):
     """Consumer process to aggregate image data for Mandelbrot fractal.
 
     @type IMSIZE: C{tuple}
@@ -100,8 +100,8 @@ def consume(IMSIZE, filename, cins, _process=None):
     # Create initial pixel data
     pixmap = Numeric.zeros((IMSIZE[0], IMSIZE[1], 3))
     # Wait on channel events
-    for cin in cins:
-        xcoord, column = cin.read()
+    for i in range(IMSIZE[0]):
+        xcoord, column = chan.read()
         logging.debug('Consumer got some data for column %i' % xcoord)
         # Update column of blit buffer
         pixmap[xcoord] = column
@@ -140,21 +140,20 @@ def main(IMSIZE, filename, level='info'):
               'critical': logging.CRITICAL}
     assert(level in LEVELS.keys())
     logging.basicConfig(level=LEVELS[level]) 
-    # Channel and process lists.
-    channels, processes = [], []
-    # Create channels and add producer processes to process list.
+    processes = []
+    channel = Channel()
+    # Add producer processes to process list.
     for x in range(IMSIZE[0]):
-        channels.append(Channel())
-        processes.append(mandelbrot(x, IMSIZE, channels[x]))
+        processes.append(mandelbrot(x, IMSIZE, channel))
     # Start consumer processes separately.
-    con = consume(IMSIZE, filename, channels)
+    con = consume(IMSIZE, filename, channel)
     con.start()
     time.sleep(1)
     logging.info('Image size: %ix%i' % IMSIZE)
     logging.info('%i producer processes, %i consumer processes' %
                  (len(processes), 1))
     # Start and join producer processes.
-    mandel = PAR(*processes)
+    mandel = Par(*processes)
     mandel.start()
     mandel._join()
     con._join()
@@ -163,15 +162,12 @@ def main(IMSIZE, filename, level='info'):
 
 
 if __name__ == '__main__':
-    print """
-    Increasing the number of processes here makes no difference
-    to the result. However, increasing the height of the image
-    leads to early or non-termination.
-"""
-    
-#    IMSIZE = (640,480)		# Ideal value.
-#    IMSIZE = (480, 320)	# Can't start new thread (Queue problem).
-    IMSIZE = (320, 240)	# Works OK.
+#    IMSIZE = (1024, 768) 
+    IMSIZE = (800, 600)   
+#    IMSIZE = (640, 480)
+#    IMSIZE = (480, 320)
+#    IMSIZE = (320, 240)
+#    IMSIZE = (250, 150)
 
     import sys
     if len(sys.argv) > 1:

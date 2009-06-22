@@ -28,7 +28,7 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
 
 @process
-def BOOL1(cout, _process=None):
+def Bool1(cout, _process=None):
     while True:
         cout.write(1)
         cout.write(1)
@@ -37,7 +37,7 @@ def BOOL1(cout, _process=None):
     return
         
 @process
-def BOOL2(cout, _process=None):
+def Bool2(cout, _process=None):
     while True:
         cout.write(1)
         cout.write(0)
@@ -62,15 +62,15 @@ def fulladder(Ain, Bin, Cin, Sum, Carry):
     i2 = Channel()
     i3 = Channel()
 
-    return PAR(DELTA2(Ain, Aa, Ab),
-               DELTA2(Bin, Ba, Bb),
-               DELTA2(Cin, Ca, Cb),
-               DELTA2(i1, i1a, i1b),
-               XOR(Aa, Ba, i1),
-               XOR(i1a, Ca, Sum),
-               AND(Ab, Bb, i2),
-               AND(i1b, Cb, i3),
-               OR(i2, i3, Carry))
+    return Par(Delta2(Ain, Aa, Ab),
+               Delta2(Bin, Ba, Bb),
+               Delta2(Cin, Ca, Cb),
+               Delta2(i1, i1a, i1b),
+               Xor(Aa, Ba, i1),
+               Xor(i1a, Ca, Sum),
+               And(Ab, Bb, i2),
+               And(i1b, Cb, i3),
+               Or(i2, i3, Carry))
 
 if __name__ == '__main__':
     print '\nFull adder implemented in Python CSP\n'
@@ -85,14 +85,14 @@ if __name__ == '__main__':
     PCarry = Channel()
     PSum = Channel()
     # Create and start adder
-    adder = PAR(BOOL1(A),
-                BOOL2(B),
-                ZEROES(Cin),
+    adder = Par(Bool1(A),
+                Bool2(B),
+                Zeroes(Cin),
                 fulladder(A, B, Cin, Sum, Carry),
-                SIGN(Carry, PCarry, 'Carry: '),
-                PRINTER(PCarry),
-                SIGN(Sum, PSum, 'Sum: '),
-                PRINTER(PSum))
+                Sign(Carry, PCarry, 'Carry: '),
+                Printer(PCarry),
+                Sign(Sum, PSum, 'Sum: '),
+                Printer(PSum))
     adder.start()
 
     

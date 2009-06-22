@@ -43,6 +43,7 @@ def _debug(*args):
         print 'DEBUG:', ' '.join(smap)
 
 from functools import wraps # Easy decorators
+
 import operator
 import os
 import random
@@ -69,10 +70,10 @@ except ImportError:
 
 import threading
 
-try:
-    import cPickle as pickle # Faster pickle
-except ImportError:
-    import pickle
+#try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
+#    import cPickle as pickle # Faster pickle
+#except ImportError:
+import pickle
 
 ### CONSTANTS
 
@@ -253,7 +254,8 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         """Called automatically when the L{start} methods is called.
         """
         try:
-            self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+            self._Thread__target(*self._Thread__args,
+                                  **self._Thread__kwargs)
         except ChannelPoison:
             if self.enclosing:
                 self.enclosing._terminate()
@@ -378,13 +380,13 @@ class Channel(Guard):
 
     def __init__(self):
         self.name = Channel.NAMEFACTORY.name()
-        self._wlock = None	# Write lock.
-        self._rlock = None	# Read lock.
-        self._available = None
-        self._taken = None
-        self._is_alting = None
-        self._is_selectable = None
-        self._has_selected = None
+        self._wlock = None	   # Write lock protects from races between writers.
+        self._rlock = None	   # Read lock protects from races between readers.
+        self._available = None     # Released if writer has made data available.
+        self._taken = None         # Released if reader has taken data.
+        self._is_alting = None     # True if engaged in an Alt synchronisation.
+        self._is_selectable = None # True if can be selected by an Alt.
+        self._has_selected = None  # True if already been committed to select.
         self._store = None # Holds value transferred by channel
         self._setup()
         super(Channel, self).__init__()
@@ -708,15 +710,13 @@ class Alt(CSPOpMixin):
         elif len(self.guards) == 1:
             _debug('Alt Selecting unique guard:', self.guards[0].name)
             self.last_selected = self.guards[0]
-            self.guards[0].enable()
-            return self.guards[0].select()
+            return self.guards[0].read()
         return None
 
     def select(self):
         """Randomly select from ready guards."""
-        selected = self._preselect()
-        if selected is not None:
-            return selected
+        if len(self.guards) <= 1:
+            return self._preselect()
         for guard in self.guards:
             guard.enable()
         _debug('Alt enabled all guards')
@@ -738,11 +738,8 @@ class Alt(CSPOpMixin):
         previously selected guard (unless it is the only guard
         available).
         """
-        if self.last_selected is None:
-            return self.select()
-        selected = self._preselect()
-        if selected is not None:
-            return selected
+        if len(self.guards) <= 1:
+            return self._preselect()
         for guard in self.guards:
             guard.enable()
         _debug('Alt enabled all guards')
@@ -767,9 +764,8 @@ class Alt(CSPOpMixin):
         "priority". The guard with the lowest index in the L{guards}
         list has the highest priority.
         """
-        selected = self._preselect()
-        if selected is not None:
-            return selected
+        if len(self.guards) <= 1:
+            return self._preselect()
         for guard in self.guards:
             guard.enable()
         _debug('Alt enabled all guards')
@@ -778,12 +774,10 @@ class Alt(CSPOpMixin):
             time.sleep(0.01) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
         _debug('Alt got %i items to choose from' % len(ready))
-        selected = ready[0]
-        self.last_selected = selected
-        for guard in self.guards:
-            if guard is not selected:
-                guard.disable()
-        return selected.select()
+        self.last_selected = ready[0]
+        for guard in ready[1:]:
+            guard.disable()
+        return ready[0].select()
 
 
 class Par(threading.Thread, CSPOpMixin):
@@ -913,15 +907,12 @@ def _is_csp_type(name):
             return True
     return False
 
-# Common idioms for processes, guards, etc.
-# Mainly taken from JCSP plugNplay package.
-
 class Skip(Guard):
     """Guard which will always return C{True}. Useful in L{Alt}s where
     the programmer wants to ensure that L{Alt.select} will always
     synchronise with at least one guard.
     """
-    
+
     def __init__(self):
         Guard.__init__(self)
 
@@ -939,10 +930,10 @@ class Skip(Guard):
 
     def select(self):
         """Has no effect."""
-        return 'SKIP'
+        return 'Skip'
 
     def __str__(self):
-        return 'SKIP guard is always selectable.'
+        return 'Skip guard is always selectable.'
 
 
 class ConditionGuard(Guard):
@@ -1214,7 +1205,8 @@ Div = _applybinop(operator.__div__,
                   """Writes out the division of two input events.
 """)
 
-Floordiv = _applybinop(operator.__floordiv__,
+
+FloorDiv = _applybinop(operator.__floordiv__,
                        """Writes out the floor div of two input events.
 """)
 
@@ -1323,3 +1315,4 @@ Is = _applybinop(lambda x, y: x is y,
 Is_Not = _applybinop(lambda x, y: not (x is y),
                    """Writes True if two input events are not the same (is).
 """)
+

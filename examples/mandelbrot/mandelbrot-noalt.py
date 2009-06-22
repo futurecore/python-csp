@@ -2,22 +2,6 @@
 
 """Mandelbrot set computed in parallel using python-csp.
 Multiple-producer, single consumer architecture.
-
-Copyright (C) Sarah Mount, 2009.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have rceeived a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
 from csp.cspprocess import *
@@ -93,8 +77,8 @@ def mandelbrot(xcoord, (width, height), cout,
             # Point lies outside the Mandelbrot set.
             colour = get_colour(nu(z, i), cmax=MAXITER)
         imgcolumn[ycoord] = colour
-#    logging.debug('process %g sending column for x=%i' %
-#                  (_process.getPid(), xcoord))
+    logging.debug('process %g sending column for x=%i' %
+                  (_process.getPid(), xcoord))
     cout.write((xcoord, imgcolumn))
     return
 
@@ -110,30 +94,21 @@ def consume(IMSIZE, filename, cins, _process=None):
     @type cins: C{list}
     @param cins: Input channels from which image columns will be read.
     """
-    # Create initial pixel data
-    pixmap = Numeric.zeros((IMSIZE[0], IMSIZE[1], 3))
     pygame.init()
     screen = pygame.display.set_mode((IMSIZE[0], IMSIZE[1]), 0)
     pygame.display.set_caption('python-csp Mandelbrot fractal example.')
+    # Create initial pixel data
+    pixmap = Numeric.zeros((IMSIZE[0], IMSIZE[1], 3))
     # Wait on channel events
-    t0 = time.time()
-    alt = ALT(*cins)
-    logging.debug('Consumer about to begin ALT loop')
-    for i in range(len(cins)):
-        xcoord, column = alt.select()
+    for cin in cins:
+        xcoord, column = cin.read()
         logging.debug('Consumer got some data for column %i' % xcoord)
-        alt.poison() # Remove last selected guard and associated processes.
         # Update column of blit buffer
         pixmap[xcoord] = column
 	# Update image on screen.
+        logging.debug('Consumer drawing image on screen')
         pygame.surfarray.blit_array(screen, pixmap)
-        pygame.display.update(xcoord, 0, 1, IMSIZE[1])        
-    print 'TIME TAKEN:', time.time() - t0, 'seconds.'
-    logging.debug('Consumer drawing image on screen')
-    # With ALT poisoning 320 cols: 211.819334984 seconds
-    # Without poisoning 320 cols: 212.845579147 seconds
-    # WITH poisoning, without pygame: 210.228826046 seconds.
-    # WithOUT poisoning, without pygame: 212.00081706 seconds.
+        pygame.display.update(xcoord, 0, 1, IMSIZE[1])
     pygame.image.save(screen, filename)
     logging.info('Consumer finished processing image data')
     while True:
@@ -168,27 +143,35 @@ def main(IMSIZE, filename, level='info'):
     # Channel and process lists.
     channels, processes = [], []
     # Create channels and add producer processes to process list.
-    for x in range(IMSIZE[0]):  # One producer + channel for each image column.
+    for x in range(IMSIZE[0]):
         channels.append(Channel())
-#        channels.append(FileChannel())
         processes.append(mandelbrot(x, IMSIZE, channels[x]))
-    processes.insert(0, consume(IMSIZE, filename, channels))
-    # Start and join producer processes.
-    mandel = PAR(*processes)
-    mandel.start()
+    # Start consumer processes separately.
+    con = consume(IMSIZE, filename, channels)
+    con.start()
+    time.sleep(1)
     logging.info('Image size: %ix%i' % IMSIZE)
     logging.info('%i producer processes, %i consumer processes' %
-                 (len(processes)-1, 1))    
+                 (len(processes), 1))
+    # Start and join producer processes.
+    mandel = Par(*processes)
+    mandel.start()
     mandel._join()
+    con._join()
     logging.info('All processes joined.')
     return
 
 
 if __name__ == '__main__':
-#    IMSIZE = (640,480)		# Can't open enough files for this...
-#    IMSIZE = (480, 320)
-    IMSIZE = (320, 240)
-#    IMSIZE = (250, 150)
+    print """
+    Increasing the number of processes here makes no difference
+    to the result. However, increasing the height of the image
+    leads to early or non-termination.
+"""
+    
+#    IMSIZE = (640,480)		# Ideal value.
+#    IMSIZE = (480, 320)	# Can't start new thread (Queue problem).
+    IMSIZE = (320, 240)	# Works OK.
 
     import sys
     if len(sys.argv) > 1:
@@ -196,15 +179,4 @@ if __name__ == '__main__':
     else:
         filename = 'mandelbrot.png'
     del sys
-
-#     try:
-#         import csptracer
-#         csptracer.start_trace()
-#     except Exception, e:
-#         pass
     main(IMSIZE, filename, level='info')
-#     try:
-#         csptracer.write_png()
-#     except Exception, e:
-#         pass
-#    main(IMSIZE, filename, level='debug')

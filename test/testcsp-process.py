@@ -111,12 +111,12 @@ def testAlt0(_process=None):
 
 @process
 def testAlt1(cin, _process=None):
-    alt = Alt(Skip(), cin)
+    alt = Alt(cin)
     numeric = 0 
     while numeric < 1:
         print '*** TestAlt1 selecting...'
         val = alt.select()
-        if isinstance(recv, int): numeric +=1 
+        if isinstance(recv, int): numeric += 1 
         print '* Got this from Alt:', val
 
 
@@ -261,7 +261,7 @@ def testAlt():
     ta0.start()
     ta0._join()
     print
-    print 'Alt with 1 SKIP, 1 channel read:'
+    print 'Alt with 1 channel read:'
     ch1 = Channel()
     ta1 = Par(testAlt1(ch1), sendAlt(ch1, 100))
     ta1.start()
