@@ -84,7 +84,7 @@ except ImportError:
 import processing.queue
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
-#import cPickle as mypickle # Faster pickle
+#    import cPickle as mypickle # Faster pickle
 #except ImportError:
 import pickle as mypickle
 
@@ -406,8 +406,8 @@ class Channel(Guard):
         self._available = processing.Semaphore(0)
         self._taken = processing.Semaphore(0)
         # Process-safe synchronisation for CSP Select / Occam Alt.
-        self._alting = processing.Value('h', Channel.FALSE)
-        self._selectable = processing.Value('h', Channel.FALSE)
+        self._is_alting = processing.Value('h', Channel.FALSE)
+        self._is_selectable = processing.Value('h', Channel.FALSE)
         # Kludge to say a select has finished (to prevent the channel
         # from being re-enabled). If values were really process safe
         # we could just have writers set _is_selectable and read that.
@@ -417,9 +417,9 @@ class Channel(Guard):
         """Return state required for pickling."""
         state = [self._available.getValue(),
                  self._taken.getValue(),
-                 self._alting.value,
-                 self._selectable.value,
-                 self._has_selected.value]
+                 self._is_alting,
+                 self._is_selectable,
+                 self._has_selected]
         if self._available.getValue() > 0:
             obj = self.get()
         else:
@@ -434,8 +434,8 @@ class Channel(Guard):
         self._itemr, self._itemw = os.pipe()
         self._available = processing.Semaphore(state[0])
         self._taken = processing.Semaphore(state[1])
-        self._alting = processing.Value('h', state[2])
-        self._selectable = processing.Value('h', state[3])
+        self._is_alting = processing.Value('h', state[2])
+        self._is_selectable = processing.Value('h', state[3])
         self._has_selected = processing.Value('h', state[4])
         if state[5] is not None:
             self.put(state[5])
@@ -474,12 +474,13 @@ class Channel(Guard):
         """Test whether Alt can select this channel.
         """
         _debug('Alt THINKS _is_selectable IS: ' +
-               str(self._selectable.value == Channel.TRUE))
-        return self._selectable.value == Channel.TRUE
+               str(self._is_selectable.value == Channel.TRUE))
+        return self._is_selectable.value == Channel.TRUE
 
     def write(self, obj):
         """Write a Python object to this channel.
         """
+        _debug('+++ Write on Channel %s started.' % self.name)
         with self._wlock: # Protect from races between multiple writers.
             # If this channel has already been selected by an Alt then
             # _has_selected will be True, blocking other readers. If a
@@ -489,10 +490,13 @@ class Channel(Guard):
             # Make the object available to the reader.
             self.put(obj)
             self._available.release()
+            _debug('++++ Writer on Channel %s: _available: %i _taken: %i. ' %
+                   (self.name, self._available.getValue(),
+                    self._taken.getValue()))
             # Block until the object has been read.
             self._taken.acquire()
             # Remove the object from the channel.
-        _debug('+++ Write on channel has finished.')
+        _debug('+++ Write on Channel %s finished.' % self.name)
         return
 
     def read(self):
@@ -501,13 +505,21 @@ class Channel(Guard):
         # FIXME: These assertions sometimes fail...why?
 #        assert self._is_alting.value == Channel.FALSE
 #        assert self._is_selectable.value == Channel.FALSE
+        _debug('+++ Read on Channel %s started.' % self.name)
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
+            _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
+                   (self.name, self._available.getValue(),
+                    self._taken.getValue()))
             self._available.acquire()
             # Get the item.
+            _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
+                   (self.name, self._available.getValue(),
+                    self._taken.getValue()))
             obj = self.get()
             # Announce the item has been read.
             self._taken.release()
+        _debug('+++ Read on Channel %s finished.' % self.name)
         if obj == _POISON:
             raise ChannelPoison()
         return obj
@@ -519,19 +531,19 @@ class Channel(Guard):
         """
         # Prevent re-synchronization.
         if (self._has_selected.value == Channel.TRUE or
-            self._selectable.value == Channel.TRUE):
+            self._is_selectable.value == Channel.TRUE):
             return
-        self._alting.value = Channel.TRUE
+        self._is_alting.value = Channel.TRUE
         with self._rlock:
             # Attempt to acquire _available.
             time.sleep(0.00001) # Won't work without this -- why?
             retval = self._available.acquire(block=False)
         if retval:
-            self._selectable.value = Channel.TRUE
+            self._is_selectable.value = Channel.TRUE
         else:
-            self._selectable.value = Channel.FALSE
+            self._is_selectable.value = Channel.FALSE
         _debug('Enable on guard', self.name, '_is_selectable:',
-               self._selectable.value, '_available:',
+               self._is_selectable.value, '_available:',
                self._available.getValue())
         return
 
@@ -540,18 +552,18 @@ class Channel(Guard):
 
         MUST be called after L{enable} if this channel is not selected.
         """
-        self._alting.value = Channel.FALSE
-        if self._selectable.value == Channel.TRUE:
+        self._is_alting.value = Channel.FALSE
+        if self._is_selectable.value == Channel.TRUE:
             with self._rlock:
                 self._available.release()
-            self._selectable.value = Channel.FALSE
+            self._is_selectable.value = Channel.FALSE
         return
 
     def select(self):
         """Complete a Channel read for an Alt select.
         """
         _debug('channel select starting')
-        assert self._selectable.value == Channel.TRUE
+        assert self._is_selectable.value == Channel.TRUE
         with self._rlock:
             _debug('got read lock on channel',
                    self.name, '_available: ',
@@ -563,8 +575,8 @@ class Channel(Guard):
             self._taken.release()
             _debug('released _taken')
             # Reset flags to ensure a future read / enable / select.
-            self._selectable.value = Channel.FALSE
-            self._alting.value = Channel.FALSE
+            self._is_selectable.value = Channel.FALSE
+            self._is_alting.value = Channel.FALSE
             self._has_selected.value = Channel.TRUE
             _debug('reset bools')
         if obj == _POISON:
@@ -585,7 +597,7 @@ class Channel(Guard):
         raise NotImplementedError('Suspend / resume not implemented')
 
     def resume(self):
-        """Suspend this mobile channel after migrating between processes.
+        """Resume this mobile channel after migrating between processes.
         """
         raise NotImplementedError('Suspend / resume not implemented')
 
@@ -606,8 +618,8 @@ class FileChannel(Channel):
         self._rlock = None	# Read lock.
         self._available = None
         self._taken = None
-        self._alting = None
-        self._selectable = None
+        self._is_alting = None
+        self._is_selectable = None
         self._has_selected = None
         # Process-safe store.
         file_d, self._fname = tempfile.mkstemp()
@@ -619,8 +631,8 @@ class FileChannel(Channel):
         """Return state required for pickling."""
         state = [mypickle.dumps(self._available),
                  mypickle.dumps(self._taken),
-                 mypickle.dumps(self._alting),
-                 mypickle.dumps(self._selectable),
+                 mypickle.dumps(self._is_alting),
+                 mypickle.dumps(self._is_selectable),
                  mypickle.dumps(self._has_selected),
                  self._fname]
         if self._available.getValue() > 0:
@@ -636,8 +648,8 @@ class FileChannel(Channel):
         self._rlock = processing.RLock()	# Read lock.
         self._available = mypickle.loads(state[0])
         self._taken = mypickle.loads(state[1])
-        self._alting = mypickle.loads(state[2])
-        self._selectable = mypickle.loads(state[3])
+        self._is_alting = mypickle.loads(state[2])
+        self._is_selectable = mypickle.loads(state[3])
         self._has_selected = mypickle.loads(state[4])
         self._fname = state[5]
         if state[6] is not None:
@@ -645,7 +657,7 @@ class FileChannel(Channel):
         return
 
     def put(self, item):
-        """Get a Python object from a process-safe store.
+        """Put C{item} on a process-safe store.
         """
         file_d = file(self._fname, 'w')
         file_d.write(mypickle.dumps(item))
@@ -767,6 +779,7 @@ class Alt(CSPOpMixin):
         selected = None
         if self.last_selected in ready and len(ready) > 1:
             ready.remove(self.last_selected)
+            _debug('Alt removed last selected from ready list')
         selected = _RANGEN.choice(ready)
         self.last_selected = selected
         for guard in self.guards:

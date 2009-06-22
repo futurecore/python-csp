@@ -176,7 +176,7 @@ class CSPOpMixin(object):
 
     def __init__(self):
         return
-    
+
     def _start(self):
         """Start only if self is not running."""
         if not self._Thread__started.is_set():
@@ -274,7 +274,7 @@ class Guard(object):
 
     All methods must be overridden in subclasses.
     """
-    
+
     def is_selectable(self):
         """Should return C{True} if this guard can be selected by an L{Alt}.
         """
@@ -412,12 +412,12 @@ class Channel(Guard):
 
     def __getstate__(self):
         """Return state required for pickling."""
-        state = [self._available.getValue(),
-                 self._taken.getValue(),
+        state = [self._available._Semaphore__value,
+                 self._taken._Semaphore__value,
                  self._is_alting,
                  self._is_selectable,
                  self._has_selected]
-        if self._available.getValue() > 0:
+        if self._available._Semaphore__value > 0:
             obj = self.get()
         else:
             obj = None
@@ -481,6 +481,7 @@ class Channel(Guard):
     def read(self):
         """Read (and return) a Python object from this channel.
         """
+        # FIXME: These assertions sometimes fail...why?
 #        assert self._is_alting.value == Channel.FALSE
 #        assert self._is_selectable.value == Channel.FALSE
         _debug('+++ Read on Channel %s started.' % self.name)
@@ -519,6 +520,9 @@ class Channel(Guard):
             self._is_selectable = True
         else:
             self._is_selectable = False
+        _debug('Enable on guard', self.name, '_is_selectable:',
+               self._is_selectable, '_available:',
+               self._available)
         return
 
     def disable(self):
@@ -539,7 +543,9 @@ class Channel(Guard):
         _debug('channel select starting')
         assert self._is_selectable == True
         with self._rlock:
-            _debug('got read lock')
+            _debug('got read lock on channel',
+                   self.name, '_available: ',
+                   self._available._Semaphore__value)
             # Obtain object on Channel.
             obj = self.get()
             _debug('got obj')
@@ -715,7 +721,7 @@ class Alt(CSPOpMixin):
 
     def select(self):
         """Randomly select from ready guards."""
-        if len(self.guards) <= 1:
+        if len(self.guards) < 2:
             return self._preselect()
         for guard in self.guards:
             guard.enable()
@@ -738,7 +744,7 @@ class Alt(CSPOpMixin):
         previously selected guard (unless it is the only guard
         available).
         """
-        if len(self.guards) <= 1:
+        if len(self.guards) < 2:
             return self._preselect()
         for guard in self.guards:
             guard.enable()
@@ -764,7 +770,7 @@ class Alt(CSPOpMixin):
         "priority". The guard with the lowest index in the L{guards}
         list has the highest priority.
         """
-        if len(self.guards) <= 1:
+        if len(self.guards) < 2:
             return self._preselect()
         for guard in self.guards:
             guard.enable()
