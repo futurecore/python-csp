@@ -81,7 +81,6 @@ except ImportError:
 except ImportError:
     print 'No library available for multiprocessing. Exiting now.'
     sys.exit(1)
-import processing.queue
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
