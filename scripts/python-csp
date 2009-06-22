@@ -136,12 +136,12 @@ def _createBuiltinDocs():
     docs = """ """
     docstrings = {}
     import csp.cspprocess
-    cspnames = [klass.__name__ for klass in csp.cspprocess._csptypes]
+    cspnames = [klass.__name__ for klass in csp.cspprocess._CSPTYPES]
     # Names imported by builtins
     imports = ['operator', 'os', 'process', 'random', 'socket', 'sys',
                'tempfile', 'threading', 'time', 'hmac', 'wraps', 'hashlib',
                'psyco', 'pickle']
-    exceptions = ['CorruptedData', 'NoGuardInALT', 'ChannelPoison',
+    exceptions = ['CorruptedData', 'NoGuardInAlt', 'ChannelPoison',
                   'ChannelAbort', 'ProcessSuspend']
     baseclasses = ['CSPOpMixin', 'CSPProcess', 'Guard',
                    'Channel', 'FileChannel', 'process']
@@ -180,7 +180,7 @@ PID: 15491, N:, 100
 >>> foo(10) & foo(20) # Run foo(10) and foo(20) in parallel
 PID: 15505, N:, 20
 PID: 15506, N:, 10
-<PAR(Process-93, initial)>
+<Par(Process-93, initial)>
 >>> 
 
 Alternatively, you can create a CSPProcess object directly and pass a
@@ -210,7 +210,7 @@ setName()	set the name of the process.
 """
 
 _par = """
-*** CSP Python: Info on PAR. ***
+*** CSP Python: Info on Par. ***
 
 There are two ways to run processes in parallel.  Firstly, given two
 (or more) processes you can parallelize them with the & operator, like this:
@@ -223,13 +223,13 @@ There are two ways to run processes in parallel.  Firstly, given two
 PID: 15251, N:, 2
 PID: 15252, N:, 1
 PID: 15253, N:, 3
-<PAR(Process-65, initial)>
+<Par(Process-65, initial)>
 >>>
 
-Alternatively, you can create a PAR object which is a sort of CSP
+Alternatively, you can create a Par object which is a sort of CSP
 process and start that process manually:
 
->>> p = PAR(foo(1), foo(2), foo(3))
+>>> p = Par(foo(1), foo(2), foo(3))
 >>> p.start()
 PID: 15276, N:, 1
 PID: 15278, N:, 3
@@ -240,7 +240,7 @@ PID: 15277, N:, 2
 """
 
 _seq = """
-*** CSP Python: Info on SEQ. ***
+*** CSP Python: Info on Seq. ***
 
 There are two ways to run processes in sequence.  Firstly, given two
 (or more) processes you can sequence them with the > operator, like this:
@@ -256,10 +256,10 @@ PID: 15290, N:, 3
 <CSPProcess(Process-75, stopped)>
 >>> 
 
-Secondly, you can create a SEQ object which is a sort of CSP process
+Secondly, you can create a Seq object which is a sort of CSP process
 and start that process manually:
 
->>> s = SEQ(foo(1), foo(2), foo(3))
+>>> s = Seq(foo(1), foo(2), foo(3))
 >>> s.start()
 PID: 16549 N: 1
 PID: 16550 N: 2
@@ -270,7 +270,7 @@ PID: 16551 N: 3
 """
 
 _alt = """
-*** CSP Python: Info on ALT. ***
+*** CSP Python: Info on Alt. ***
 
 Not yet implemented.
 
@@ -308,7 +308,7 @@ then be used either to read (using the .read() method) or to write
 ... 
 >>> send(c, 100) & recv(c)
 100
-<PAR(Process-88, initial)>
+<Par(Process-88, initial)>
 >>> 
 
 *** For more info, type 'info csp' at the prompt. ***
@@ -348,7 +348,7 @@ calling the poison() method on any channel. For example:
 >>> send(doomed) & recv(doomed) & poison(doomed)
 PID: 16791 sending: 0
 PID: 16790 read: 0
-<PAR(Process-6, initial)>
+<Par(Process-6, initial)>
 >>> PID: 16791 sending: 1
 PID: 16792 poisoning 127.0.1.1:16741:-2147483648
 
@@ -369,9 +369,9 @@ _builtin = _createBuiltinDocs()
 
 # COMMAND -> (descriptor, docstring)
 _INFO = {'info process':('processes', _proc),
-         'info par':('PARallel', _par),
-         'info seq':('SEQuence', _seq),
-         'info alt':('ALTernative', _alt),
+         'info par':('Parallel', _par),
+         'info seq':('Sequence', _seq),
+         'info alt':('Alternative', _alt),
          'info channel':('channels', _channel),
          'info poison':('poisoning', _poison),
          'info mobility':('mobility', _mobility),
