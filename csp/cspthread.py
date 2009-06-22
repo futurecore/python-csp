@@ -71,9 +71,9 @@ except ImportError:
 import threading
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
-#    import cPickle as pickle # Faster pickle
+#    import cPickle as mypickle # Faster pickle
 #except ImportError:
-import pickle
+import pickle as mypickle
 
 ### CONSTANTS
 
@@ -440,12 +440,12 @@ class Channel(Guard):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
-        self._store = pickle.dumps(item)
+        self._store = mypickle.dumps(item)
 
     def get(self):
         """Get a Python object from a process-safe store.
         """
-        item = pickle.loads(self._store)
+        item = mypickle.loads(self._store)
         self._store = None
         return item
 
@@ -601,11 +601,11 @@ class FileChannel(Channel):
 
     def __getstate__(self):
         """Return state required for pickling."""
-        state = [pickle.dumps(self._available),
-                 pickle.dumps(self._taken),
-                 pickle.dumps(self._is_alting),
-                 pickle.dumps(self._is_selectable),
-                 pickle.dumps(self._has_selected),
+        state = [mypickle.dumps(self._available),
+                 mypickle.dumps(self._taken),
+                 mypickle.dumps(self._is_alting),
+                 mypickle.dumps(self._is_selectable),
+                 mypickle.dumps(self._has_selected),
                  self._fname]
         if self._available.getValue() > 0:
             obj = self.get()
@@ -618,11 +618,11 @@ class FileChannel(Channel):
         """Restore object state after unpickling."""
         self._wlock = threading.RLock()	# Write lock.
         self._rlock = threading.RLock()	# Read lock.
-        self._available = pickle.loads(state[0])
-        self._taken = pickle.loads(state[1])
-        self._is_alting = pickle.loads(state[2])
-        self._is_selectable = pickle.loads(state[3])
-        self._has_selected = pickle.loads(state[4])
+        self._available = mypickle.loads(state[0])
+        self._taken = mypickle.loads(state[1])
+        self._is_alting = mypickle.loads(state[2])
+        self._is_selectable = mypickle.loads(state[3])
+        self._has_selected = mypickle.loads(state[4])
         self._fname = state[5]
         if state[6] is not None:
             self.put(state[6])
@@ -632,7 +632,7 @@ class FileChannel(Channel):
         """Put C{item} on a process-safe store.
         """
         file_d = file(self._fname, 'w')
-        file_d.write(pickle.dumps(item))
+        file_d.write(mypickle.dumps(item))
         file_d.flush()
         file_d.close()
         return
@@ -648,7 +648,7 @@ class FileChannel(Channel):
         # Unlinking here ensures that FileChannel objects exhibit the
         # same semantics as Channel objects.
         os.unlink(self._fname)
-        obj = pickle.loads(stored)
+        obj = mypickle.loads(stored)
         return obj
 
     def __del__(self):
