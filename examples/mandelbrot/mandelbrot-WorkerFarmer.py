@@ -124,7 +124,7 @@ def consume(IMSIZE, filename, cins, _process=None):
     pygame.display.set_caption('python-csp Mandelbrot fractal example.')
     # Wait on channel events
     t0 = time.time()
-    alt = ALT(*cins)
+    alt = Alt(*cins)
     logging.debug('Consumer about to begin ALT loop')
     for i in range(IMSIZE[0]-1):
         xcoord, column = alt.priSelect()
@@ -201,7 +201,7 @@ def main(IMSIZE, filename, level='info'):
     global sofar
     sofar = 10
     # Start and join producer processes.
-    mandel = PAR(*processes)
+    mandel = Par(*processes)
     mandel.start()
     logging.info('Image size: %ix%i' % IMSIZE)
     logging.info('%i producer processes, %i consumer processes' %
