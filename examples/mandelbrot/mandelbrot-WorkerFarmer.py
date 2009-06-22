@@ -20,7 +20,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
-from csp.csp import *
+from csp.cspprocess import *
 import logging, math, pygame, time
 import Numeric
 
@@ -127,7 +127,7 @@ def consume(IMSIZE, filename, cins, _process=None):
     alt = Alt(*cins)
     logging.debug('Consumer about to begin ALT loop')
     for i in range(IMSIZE[0]-1):
-        xcoord, column = alt.priSelect()
+        xcoord, column = alt.pri_select()
         logging.debug('Consumer got some data for column %i' % xcoord)
         #alt.poison() # Remove last selected guard and associated processes.
         #print len(alt.guards)
@@ -143,10 +143,10 @@ def consume(IMSIZE, filename, cins, _process=None):
         #alt.guards.remove(chan)
         global sofar
         if sofar < IMSIZE[0]:
-            alt.lastSelected.write(sofar)
+            alt.last_selected.write(sofar)
             sofar = sofar + 1
         else:
-            alt.lastSelected.write(-1)
+            alt.last_selected.write(-1)
         #alt.guards.append(chan)
                
     print 'TIME TAKEN:', time.time() - t0, 'seconds.'

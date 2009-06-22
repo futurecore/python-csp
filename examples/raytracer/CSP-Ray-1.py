@@ -3,7 +3,7 @@
 from __future__ import division
 
 import copy, math, struct, time
-from csp.csp import *
+from csp.cspprocess import *
 import psyco
 psyco.full()
 
@@ -165,7 +165,7 @@ def create_run(n, level, ss, filename='scene.pgm'):
             print 'can only read from channel', alt.guards[0].name
         chn = alt.select() 
         fp.write(struct.pack('B', chn))
-        print 'About to poison ' ,alt.lastSelected.name
+        print 'About to poison ' ,alt.last_selected.name
         alt.poison() 
         print len(alt.guards) 
     print 'about to close'        
