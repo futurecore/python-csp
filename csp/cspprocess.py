@@ -70,17 +70,13 @@ except ImportError:
 
 # Multiprocessing libary -- name changed between versions.
 try:
-    import processing
-    if sys.platform == 'win32':
-        import processing.reduction
-except ImportError:
     # Version 2.6 and above
     import multiprocessing as processing
     if sys.platform == 'win32':
         import processing.reduction
 except ImportError:
-    print 'No library available for multiprocessing. Exiting now.'
-    sys.exit(1)
+    raise ImportError('No library available for multiprocessing.\n'+
+                      'csp.cspprocess is only compatible with Python 2. 6 and above.')
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
@@ -414,12 +410,12 @@ class Channel(Guard):
 
     def __getstate__(self):
         """Return state required for pickling."""
-        state = [self._available.getValue(),
-                 self._taken.getValue(),
+        state = [self._available.get_value(),
+                 self._taken.get_value(),
                  self._is_alting,
                  self._is_selectable,
                  self._has_selected]
-        if self._available.getValue() > 0:
+        if self._available.get_value() > 0:
             obj = self.get()
         else:
             obj = None
@@ -490,8 +486,8 @@ class Channel(Guard):
             self.put(obj)
             self._available.release()
             _debug('++++ Writer on Channel %s: _available: %i _taken: %i. ' %
-                   (self.name, self._available.getValue(),
-                    self._taken.getValue()))
+                   (self.name, self._available.get_value(),
+                    self._taken.get_value()))
             # Block until the object has been read.
             self._taken.acquire()
             # Remove the object from the channel.
@@ -508,13 +504,13 @@ class Channel(Guard):
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
             _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
-                   (self.name, self._available.getValue(),
-                    self._taken.getValue()))
+                   (self.name, self._available.get_value(),
+                    self._taken.get_value()))
             self._available.acquire()
             # Get the item.
             _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
-                   (self.name, self._available.getValue(),
-                    self._taken.getValue()))
+                   (self.name, self._available.get_value(),
+                    self._taken.get_value()))
             obj = self.get()
             # Announce the item has been read.
             self._taken.release()
@@ -543,7 +539,7 @@ class Channel(Guard):
             self._is_selectable.value = Channel.FALSE
         _debug('Enable on guard', self.name, '_is_selectable:',
                self._is_selectable.value, '_available:',
-               self._available.getValue())
+               self._available.get_value())
         return
 
     def disable(self):
@@ -566,7 +562,7 @@ class Channel(Guard):
         with self._rlock:
             _debug('got read lock on channel',
                    self.name, '_available: ',
-                   self._available.getValue())
+                   self._available.get_value())
             # Obtain object on Channel.
             obj = self.get()
             _debug('got obj')
@@ -634,7 +630,7 @@ class FileChannel(Channel):
                  mypickle.dumps(self._is_selectable),
                  mypickle.dumps(self._has_selected),
                  self._fname]
-        if self._available.getValue() > 0:
+        if self._available.get_value() > 0:
             obj = self.get()
         else:
             obj = None
