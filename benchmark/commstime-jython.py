@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env jython
 """CSP Commstime benchmark.
 
 See F.R.M. Barnes (2006) Compiling CSP. In Proceedings of
@@ -13,7 +13,7 @@ Bjorndalen, Brian Vinter, Otto Anshus.  CPA 2007, Surrey, UK, July
 Systems Engineering Series (ISSN 1383-7575).
 """
 
-from csp.cspprocess import *
+from Jycspthread import *
 import os
 
 @process

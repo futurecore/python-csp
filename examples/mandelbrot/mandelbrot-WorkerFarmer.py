@@ -24,7 +24,8 @@ from csp.Jycspthread import *
 import logging, math, pygame, time
 import Numeric
 
-__author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
+__author__ = 'Sam Wilson'
+__credits__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
 
 MAXITER = 100
@@ -223,5 +224,5 @@ if __name__ == '__main__':
     else:
         filename = 'mandelbrot.png'
     del sys
-    main(IMSIZE, filename, level='info')
-#    main(IMSIZE, filename, level='debug')
+#    main(IMSIZE, filename, level='info')
+    main(IMSIZE, filename, level='debug')

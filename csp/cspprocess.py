@@ -880,6 +880,9 @@ class Seq(processing.Process, CSPOpMixin):
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
+        for proc in self.procs:
+            print type(proc),
+        print
         return
 
     def __str__(self):
