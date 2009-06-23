@@ -78,10 +78,10 @@ except ImportError:
     raise ImportError('No library available for multiprocessing.\n'+
                       'csp.cspprocess is only compatible with Python 2. 6 and above.')
 
-#try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
-#    import cPickle as mypickle # Faster pickle
-#except ImportError:
-import pickle as mypickle
+try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
+    import cPickle as mypickle # Faster pickle
+except ImportError:
+    import pickle as mypickle
 
 ### CONSTANTS
 
@@ -198,7 +198,6 @@ class CSPOpMixin(object):
     def _terminate(self):
         """Terminate only if self is running."""
         if self._popen:
-            _debug(str(self.getName()), 'terminating now...')
             self.terminate()
 
     def __and__(self, other):
@@ -231,7 +230,7 @@ class CSPProcess(processing.Process, CSPOpMixin):
         processing.Process.__init__(self,
                                     target=func,
                                     args=(args),
-                                    kwargs=kwargs)
+                                    kwargs=kwargs)        
         CSPOpMixin.__init__(self)
         assert callable(func)
         for arg in list(self._args) + self._kwargs.values():
@@ -243,6 +242,12 @@ class CSPProcess(processing.Process, CSPOpMixin):
         self.enclosing = None
         return
 
+    def getName(self):
+        return self._name
+
+    def getPid(self):
+        return self._parent_pid
+    
     def __str__(self):
         return 'CSPProcess running in PID %s' % self.getPid()
 
@@ -439,7 +444,7 @@ class Channel(Guard):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
-        os.write(self._itemw, mypickle.dumps(item))
+        os.write(self._itemw, mypickle.dumps(item, protocol=1))
 
     def get(self):
         """Get a Python object from a process-safe store.
@@ -624,11 +629,11 @@ class FileChannel(Channel):
 
     def __getstate__(self):
         """Return state required for pickling."""
-        state = [mypickle.dumps(self._available),
-                 mypickle.dumps(self._taken),
-                 mypickle.dumps(self._is_alting),
-                 mypickle.dumps(self._is_selectable),
-                 mypickle.dumps(self._has_selected),
+        state = [mypickle.dumps(self._available, protocol=1),
+                 mypickle.dumps(self._taken, protocol=1),
+                 mypickle.dumps(self._is_alting, protocol=1),
+                 mypickle.dumps(self._is_selectable, protocol=1),
+                 mypickle.dumps(self._has_selected, protocol=1),
                  self._fname]
         if self._available.get_value() > 0:
             obj = self.get()
@@ -655,7 +660,7 @@ class FileChannel(Channel):
         """Put C{item} on a process-safe store.
         """
         file_d = file(self._fname, 'w')
-        file_d.write(mypickle.dumps(item))
+        file_d.write(mypickle.dumps(item, protocol=1))
         file_d.flush()
         file_d.close()
         return

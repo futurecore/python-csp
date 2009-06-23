@@ -70,10 +70,10 @@ except ImportError:
 
 import threading
 
-#try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
-#    import cPickle as mypickle # Faster pickle
-#except ImportError:
-import pickle as mypickle
+try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
+    import cPickle as mypickle # Faster pickle
+except ImportError:
+    import pickle as mypickle
 
 ### CONSTANTS
 
@@ -440,7 +440,7 @@ class Channel(Guard):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
-        self._store = mypickle.dumps(item)
+        self._store = mypickle.dumps(item, protocol=1)
 
     def get(self):
         """Get a Python object from a process-safe store.
@@ -607,11 +607,11 @@ class FileChannel(Channel):
 
     def __getstate__(self):
         """Return state required for pickling."""
-        state = [mypickle.dumps(self._available),
-                 mypickle.dumps(self._taken),
-                 mypickle.dumps(self._is_alting),
-                 mypickle.dumps(self._is_selectable),
-                 mypickle.dumps(self._has_selected),
+        state = [mypickle.dumps(self._available, protocol=1),
+                 mypickle.dumps(self._taken, protocol=1),
+                 mypickle.dumps(self._is_alting, protocol=1),
+                 mypickle.dumps(self._is_selectable, protocol=1),
+                 mypickle.dumps(self._has_selected, protocol=1),
                  self._fname]
         if self._available.getValue() > 0:
             obj = self.get()
@@ -638,7 +638,7 @@ class FileChannel(Channel):
         """Put C{item} on a process-safe store.
         """
         file_d = file(self._fname, 'w')
-        file_d.write(mypickle.dumps(item))
+        file_d.write(mypickle.dumps(item, protocol=1))
         file_d.flush()
         file_d.close()
         return

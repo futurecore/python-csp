@@ -75,7 +75,7 @@ dist = setup(name = "csp",
       packages = ['csp'],
       data_files = (files +
 		    [(makeabs('share/applications/'),
-			       'applications/python-csp.desktop')]),
+			       ['applications/python-csp.desktop'])]),
 #		    [(makeabs('share/pixmaps/'),
 #			     ['applications/dingo.xpm'])]),
 
