@@ -285,6 +285,14 @@ class CSPProcess(Jthread, CSPOpMixin):
 
         return
 
+class JCSPProcess(CSPProcess):
+    def __init__(self, target): # target : java.lang.Object
+        self.target = target
+        #CSPProcess.__init__(self, self.target.target)
+        return
+
+    
+    
 
 class Guard(object):
     """Abstract class to represent CSP guards.
