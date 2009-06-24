@@ -303,6 +303,14 @@ class Guard(object):
     def __str__(self):
         return 'CSP Guard: must be subclassed.'
 
+    def __or__(self, other):
+        assert isinstance(other, Guard)
+        return Alt(self, other).select()
+
+    def __ror__(self, other):
+        assert isinstance(other, Guard)
+        return Alt(self, other).select()
+
 
 class _PortFactory(object):
     """Singleton factory class, generating unique (per-host) port numbers.

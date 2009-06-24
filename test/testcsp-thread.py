@@ -153,17 +153,21 @@ def testAlt4(cin1, cin2, cin3, _process=None):
         print '* Got this from Alt:', val
 
 @process
+def testOr(cin1, cin2, _process=None):
+    print cin1 | cin2
+    print cin1 | cin2
+    return
+
+@process
 def testAltRRep(cin1, cin2, cin3, _process=None):
-    alt = Alt(cin1, cin2, cin3)
-    gen = alt * 3
+    gen = Alt(cin1, cin2, cin3) * 3
     print gen.next()
     print gen.next()
     print gen.next()
 
 @process
 def testAltLRep(cin1, cin2, cin3, _process=None):
-    alt = Alt(cin1, cin2, cin3)
-    gen = 3 * alt
+    gen = 3 * Alt(cin1, cin2, cin3)
     print gen.next()
     print gen.next()
     print gen.next()
@@ -313,9 +317,7 @@ def testChoice():
     _printHeader('Choice')
     print 'Choice with |:'
     c1, c2 = Channel(), Channel()
-    sendAlt(c1, 100) & sendAlt(c2, 200)
-    for i in [1,2]:
-        print c1 or c2
+    sendAlt(c1, 100) & sendAlt(c2, 200) & testOr(c1, c2)
     return
 
 def testRep():

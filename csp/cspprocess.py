@@ -305,13 +305,11 @@ class Guard(object):
 
     def __or__(self, other):
         assert isinstance(other, Guard)
-        alt = Alt(self + other)
-        return alt.select()
+        return Alt(self, other).select()
 
     def __ror__(self, other):
         assert isinstance(other, Guard)
-        alt = Alt(self + other)
-        return alt.select()
+        return Alt(self, other).select()
     
 
 class _PortFactory(object):
