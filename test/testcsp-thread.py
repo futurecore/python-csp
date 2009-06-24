@@ -99,7 +99,6 @@ def sendAlt(cout, num, _process=None):
     cout.write(num)
     return
 
-
 @process
 def testAlt0(_process=None):
     alt = Alt(Skip(), Skip(), Skip())
@@ -116,7 +115,7 @@ def testAlt1(cin, _process=None):
     while numeric < 1:
         print '*** TestAlt1 selecting...'
         val = alt.select()
-        if isinstance(recv, int): numeric +=1 
+        if isinstance(recv, int): numeric += 1 
         print '* Got this from Alt:', val
 
 
@@ -153,6 +152,21 @@ def testAlt4(cin1, cin2, cin3, _process=None):
         if isinstance(val, int): numeric +=1
         print '* Got this from Alt:', val
 
+@process
+def testAltRRep(cin1, cin2, cin3, _process=None):
+    alt = Alt(cin1, cin2, cin3)
+    gen = alt * 3
+    print gen.next()
+    print gen.next()
+    print gen.next()
+
+@process
+def testAltLRep(cin1, cin2, cin3, _process=None):
+    alt = Alt(cin1, cin2, cin3)
+    gen = 3 * alt
+    print gen.next()
+    print gen.next()
+    print gen.next()
 
 @process
 def chMobSend(cout, klass=Channel, _process=None):
@@ -295,6 +309,28 @@ def testAlt():
     ta4._join()
     return
 
+def testChoice():
+    _printHeader('Choice')
+    print 'Choice with |:'
+    c1, c2 = Channel(), Channel()
+    sendAlt(c1, 100) & sendAlt(c2, 200)
+    for i in [1,2]:
+        print c1 or c2
+    return
+
+def testRep():
+    _printHeader('Repetition')
+    print 'Repetition with Alt * int:'
+    ch1, ch2, ch3 = Channel(), Channel(), Channel()
+    (sendAlt(ch1, 100) & sendAlt(ch2, 200) & sendAlt(ch3, 300) &
+     testAltRRep(ch1, ch2, ch3))
+    print
+    print 'Repetition with Alt * int:'
+    ch1, ch2, ch3 = Channel(), Channel(), Channel()
+    (sendAlt(ch1, 100) & sendAlt(ch2, 200) & sendAlt(ch3, 300) &
+     testAltLRep(ch1, ch2, ch3))
+    return
+
 def testEvent():
     _printHeader('syntactic sugar for guarded events')
     print 'Not implemented yet...'
@@ -347,6 +383,12 @@ if __name__ == '__main__':
     parser.add_option('-l', '--alt', dest='alt', 
                       action='store_true',
                       help='Test Alternatives')
+    parser.add_option('-i', '--choice', dest='choice',
+                      action='store_true',
+                      help='Test syntactic sugar for choice.')
+    parser.add_option('-r', '--rep', dest='rep',
+                      action='store_true',
+                      help='Test syntactic sugar for repetition.')
     parser.add_option('-e', '--event', dest='event', 
                       action='store_true',
                       help='Test syntactic sugar for guarded events')
@@ -366,6 +408,8 @@ if __name__ == '__main__':
         testOOP()
         testPoison()
         testAlt()
+        testChoice()
+        testRep()
         testEvent()
         testDynamicChannel()
 #    	testMobility()
@@ -377,6 +421,8 @@ if __name__ == '__main__':
     if options.oop: testOOP()
     if options.term: testPoison()
     if options.alt: testAlt()
+    if options.choice: testChoice()
+    if options.rep: testRep()
     if options.event: testEvent()
     if options.mobility: testMobility()
     print _exit

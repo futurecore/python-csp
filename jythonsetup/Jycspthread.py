@@ -817,6 +817,18 @@ class Alt(CSPOpMixin):
             guard.disable()
         return ready[0].select()
 
+    def __mul__(self, n):
+        assert n > 0
+        for i in xrange(n):
+            yield self.select()
+        return
+
+    def __rmul__(self, n):
+        assert n > 0
+        for i in xrange(n):
+            yield self.select()
+        return
+
 
 class Par(Jthread, CSPOpMixin):
     """Run CSP processes in parallel.

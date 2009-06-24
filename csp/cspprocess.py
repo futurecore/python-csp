@@ -303,6 +303,16 @@ class Guard(object):
     def __str__(self):
         return 'CSP Guard: must be subclassed.'
 
+    def __or__(self, other):
+        assert isinstance(other, Guard)
+        alt = Alt(self + other)
+        return alt.select()
+
+    def __ror__(self, other):
+        assert isinstance(other, Guard)
+        alt = Alt(self + other)
+        return alt.select()
+    
 
 class _PortFactory(object):
     """Singleton factory class, generating unique (per-host) port numbers.
@@ -806,6 +816,18 @@ class Alt(CSPOpMixin):
         for guard in ready[1:]:
             guard.disable()
         return ready[0].select()
+
+    def __mul__(self, n):
+        assert n > 0
+        for i in xrange(n):
+            yield self.select()
+        return
+
+    def __rmul__(self, n):
+        assert n > 0
+        for i in xrange(n):
+            yield self.select()
+        return
 
 
 class Par(processing.Process, CSPOpMixin):
