@@ -810,12 +810,13 @@ class Alt(CSPOpMixin):
         return ready[0].select()
 
 
-class Par(threading.Thread, CSPOpMixin):
+class Par(Jthread, CSPOpMixin):
     """Run CSP processes in parallel.
     """
 
     def __init__(self, *procs, **kwargs):
-        super(Par, self).__init__(None)
+        Jthread.__init__(self)
+        CSPOpMixin.__init__(self)
         #if 'timeout' in kwargs:
         #    self.timeout = kwargs['timeout']
         #else:
