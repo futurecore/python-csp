@@ -183,22 +183,22 @@ class CSPOpMixin(object):
 
     def _start(self):
         """Start only if self is not running."""
-        if not self._Thread__started.is_set():
+        if not self.isAlive():
             self.start()
 
-    def _join(self, timeout=None):
+    def _join(self, timeout=5):
         """Join only if self is running and impose a timeout."""
-        if self._Thread__started.is_set():
-            self.join(timeout)
+        if self.isAlive():
+            self.join(Long.valueOf(timeout))
 
     def _terminate(self):
         """Terminate only if self is running.
 
         FIXME: This doesn't work yet...
         """
-        if self._Thread__started.is_set():
+        if self.isAlive():
             _debug(str(self.getName()), 'terminating now...')
-            self._Thread__stop()
+            self.stop()
 
     def __and__(self, other):
         """Implementation of CSP Par.
@@ -536,7 +536,7 @@ class Channel(Guard):
         self._rlock.lock()
             # Attempt to acquire _available.
         time.sleep(0.00001) # Won't work without this -- why?
-        retval = self._available.acquire(blocking=False)
+        retval = self._available.tryAcquire()
         self._rlock.unlock()    
         if retval:
             self._is_selectable = True
@@ -580,7 +580,7 @@ class Channel(Guard):
         self._is_alting = False
         self._has_selected = True
         _debug('reset bools')
-        self._rlock.release()
+        self._rlock.unlock()
         if obj == _POISON:
             raise ChannelPoison()
         return obj
@@ -838,7 +838,7 @@ class Par(threading.Thread, CSPOpMixin):
     def run(self):
         """Run this process. Analogue of L{CSPProcess.run}.
         """
-        self.mystart()
+        self.start()
 
     def stop(self):
         """Terminate the execution of this process.
@@ -852,7 +852,7 @@ class Par(threading.Thread, CSPOpMixin):
         if self.isAlive():
             self.stop()
 
-    def mystart(self):
+    def start(self):
         """Start then synchronize with the execution of parallel processes.
         Return when all parallel processes have returned.
         """
