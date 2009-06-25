@@ -291,7 +291,7 @@ class JCSPProcess(CSPProcess):
         #CSPProcess.__init__(self, self.target.target)
         return
 
-    
+    #add method to overide start and run
     
 
 class Guard(object):
