@@ -57,7 +57,7 @@ def CommsTimeBM():
     
 
 if __name__ == '__main__':
-    N_BM = 10
+    N_BM = 11
     for i in xrange(N_BM):
         print "----------- run %d/%d -------------" % (i+1, N_BM)
         CommsTimeBM()

@@ -33,6 +33,12 @@ MAXITER = 100
 @see: L{mandelbrot}
 """
 
+SOFAR = 0
+"""@var: Number of columns processed so far.
+@see: L{consumer}
+"""
+
+
 def get_colour(mag, cmin=0, cmax=100):
     """Given a float, returns an RGB triple.
     Recipe 9.10 from the Python Cookbook.
@@ -97,8 +103,6 @@ def mandelbrot(xcoord, (width, height), cout,
             # Point lies outside the Mandelbrot set.
                 colour = get_colour(nu(z, i),0, cmax=MAXITER)
             imgcolumn[ycoord] = colour
-#    logging.debug('process %g sending column for x=%i' %
-#                  (_process.getPid(), xcoord))
         cout.write((xcoord, imgcolumn))
         #print '\nhere %d' % xcoord
         xcoord = cout.read()
@@ -127,52 +131,37 @@ def consume(IMSIZE, filename, cins, _process=None):
     t0 = time.time()
     alt = Alt(*cins)
     logging.debug('Consumer about to begin ALT loop')
-    for i in range(IMSIZE[0]-1):
+    for i in range(IMSIZE[0]):
         xcoord, column = alt.pri_select()
         logging.debug('Consumer got some data for column %i' % xcoord)
-        #alt.poison() # Remove last selected guard and associated processes.
-        #print len(alt.guards)
         # Update column of blit buffer
         pixmap[xcoord] = column
-    # Update image on screen.
+        # Update image on screen.
         pygame.surfarray.blit_array(screen, pixmap)
-        pygame.display.flip()
-        #pygame.display.update(xcoord, 0, 1, IMSIZE[1])
-        
-        #for chan in alt.guards : # or whatever you have
-        #alt.lastSelected._isAlting.value = Channel.FALSE
-        #alt.guards.remove(chan)
-        global sofar
-        if sofar < IMSIZE[0]:
-            alt.last_selected.write(sofar)
-            sofar = sofar + 1
+        pygame.display.update(xcoord, 0, 1, IMSIZE[1])
+        global SOFAR
+        if SOFAR < IMSIZE[0]:
+            alt.last_selected.write(SOFAR)
+            SOFAR = SOFAR + 1
         else:
-            alt.last_selected.write(-1)
-        #alt.guards.append(chan)
-               
+            alt.last_selected.write(-1)               
     print 'TIME TAKEN:', time.time() - t0, 'seconds.'
     logging.debug('Consumer drawing image on screen')
-#    pygame.surfarray.blit_array(screen, pixmap)
-#    pygame.display.flip()
-    # With ALT poisoning 320 cols: 211.819334984 seconds
-    # Without poisoning 320 cols: 212.845579147 seconds
-    # WITH poisoning, without pygame: 210.228826046 seconds.
-    # WithOUT poisoning, without pygame: 212.00081706 seconds.
     pygame.image.save(screen, filename)
     logging.info('Consumer finished processing image data')
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                print 'Goodbye'                
                 _process._terminate()
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
                 print 'Saving fractal image in:', filename
 
-sofar = 0
-    
-def main(IMSIZE, filename, level='info'):
+                
+def main(IMSIZE, filename, granularity=10, level='info'):
     """Manage all processes and channels required to generate fractal.
 
     @type IMSIZE: C{tuple}
@@ -194,13 +183,12 @@ def main(IMSIZE, filename, level='info'):
     # Channel and process lists.
     channels, processes = [], []
     # Create channels and add producer processes to process list.
-    for x in range(10):  # One producer + channel for each image column.
+    for x in xrange(granularity):
         channels.append(Channel())
-#        channels.append(FileChannel())
         processes.append(mandelbrot(x, IMSIZE, channels[x]))
     processes.insert(0, consume(IMSIZE, filename, channels))
-    global sofar
-    sofar = 10
+    global SOFAR
+    SOFAR = granularity - 1
     # Start and join producer processes.
     mandel = Par(*processes)
     mandel.start()
@@ -213,16 +201,13 @@ def main(IMSIZE, filename, level='info'):
 
 
 if __name__ == '__main__':
-    IMSIZE = (640,480)        # Can't open enough files for this...
-#    IMSIZE = (480, 320)
- #   IMSIZE = (320, 240)
-    #IMSIZE = (250, 150)
-
     import sys
     if len(sys.argv) > 1:
-        filename = sys.argv[1]
+        numprocs = int(sys.argv[1])
     else:
-        filename = 'mandelbrot.png'
+        numprocs = 10
     del sys
-#    main(IMSIZE, filename, level='info')
-    main(IMSIZE, filename, level='debug')
+
+#    main((320,240), 'mandelbrot.png', granularity=numprocs, level='info')
+#    main((480,320), 'mandelbrot.png', granularity=numprocs, level='info')
+    main((640,480), 'mandelbrot.png', granularity=numprocs, level='info')
