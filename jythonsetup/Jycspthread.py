@@ -30,7 +30,6 @@ __date__ = 'June 2009'
 #DEBUG = True
 DEBUG = False
 
-
 def _debug(*args):
     """Customised debug logging.
 
@@ -67,7 +66,7 @@ try: # Python optimisation compiler
 except ImportError:
     print 'No available optimisation'
 
-import threading
+
 from java.lang import Thread as  Jthread
 from java.util.concurrent.locks import ReentrantLock as RLock
 from java.util.concurrent import Semaphore as Semaphore
