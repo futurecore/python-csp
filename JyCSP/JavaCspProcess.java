@@ -20,11 +20,13 @@ public class JavaCspProcess implements JavaCspProcessInterface{
 	public void sleep(int t){
 		this.jcpi.sleep(t);
 	}
+	
+	public long getPid(){
+		return this.jcpi.getPid();
+	}
 
 	@Override
-	public void target() {
-		// TODO Auto-generated method stub
-		
+	public void target() {	
 	}
 
 }
