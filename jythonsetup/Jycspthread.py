@@ -75,6 +75,7 @@ import java.lang.Thread.State
 import JyCSP.JyCspProcessInterface as JyCspProcessInterface
 import JyCSP.ProcessStore as ProcessStore
 import JyCSP.JyCspParInterface as JyCspParInterface
+import JyCSP.JyCspSeqInterface as JyCspSeqInterface
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
@@ -292,8 +293,8 @@ class JCSPProcess(CSPProcess,JyCspProcessInterface):
         self.tar = ProcessStore.store.get(refname);
         #ProcessStore.store.remove(refname)
         #CSPProcess.__init__(self, self.target.target)
-        print 'Got object'
-        print 'Object name ', self.tar
+        #print 'Got object'
+        #print 'Object name ', self.tar
         return
 
     def start(self):
@@ -309,7 +310,7 @@ class JCSPProcess(CSPProcess,JyCspProcessInterface):
         """Called automatically when the L{start} methods is called.
         """ 
         try:
-            print 'Process ' , self.getPid() , 'Has Started'
+            print self.getPid() , 'Has Started'
             self.tar.target();
         except ChannelPoison:
             if self.enclosing:
@@ -917,10 +918,8 @@ class Par(Jthread, CSPOpMixin,JyCspParInterface):
         """Start then synchronize with the execution of parallel processes.
         Return when all parallel processes have returned.
         """
-        print 'This Par has started'
         try:
             for proc in self.procs:
-                print type(proc)
                 proc.start()
             for proc in self.procs:
                 proc.join(Long.valueOf(self.timeout))
@@ -946,7 +945,7 @@ class ParFactory(Par):
         return
 
 
-class Seq(Jthread, CSPOpMixin):
+class Seq(Jthread, CSPOpMixin,JyCspSeqInterface):
     """Run CSP processes sequentially.
     """
 
@@ -992,6 +991,18 @@ class Seq(Jthread, CSPOpMixin):
         return
 
 ### Function decorators
+
+class SeqFactory(Seq):
+    
+    def __init__(self,*refs):
+        
+        procs = []
+        for i in range(len(refs)):
+            procs.append(JCSPProcess(refs[i]))
+            #ProcessStore.store.remove(refs[i])
+        Seq.__init__(self,*procs)
+      
+        return
 
 def process(func):
     """Decorator to turn a function into a CSP process.
