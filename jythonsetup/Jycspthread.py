@@ -72,9 +72,10 @@ from java.util.concurrent.locks import ReentrantLock as RLock
 from java.util.concurrent import Semaphore as Semaphore
 from java.lang import Long as Long
 import java.lang.Thread.State
-import JavaCspProcessInterface
+import JyCSP.JyCspProcessInterface as JyCspProcessInterface
 import JavaCspProcess
-import Par as JPar
+import JyCSP.ProcessStore as ProcessStore
+import JyCSP.JyCspParInterface as JyCspParInterface
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
@@ -287,21 +288,44 @@ class CSPProcess(Jthread, CSPOpMixin):
 
         return
 
-class JCSPProcess(CSPProcess,JavaCspProcess):
-    def __init__(self): # target : java.lang.Object
-        
+class JCSPProcess(CSPProcess,JyCspProcessInterface):
+    def __init__(self,refname): # target : java.lang.Object
+        self.tar = ProcessStore.store.get(refname);
+        #ProcessStore.store.remove(refname)
         #CSPProcess.__init__(self, self.target.target)
+        print 'Got object'
+        print 'Object name ', self.tar
         return
 
-    #add method to overide start and run
+    def start(self):
+        #blah#
+        if self.getState() is java.lang.Thread.State.NEW:
+            Jthread.start(self)
     
-    
-class JCSPProcessInterface(JavaCspProcessInterface):
-    
-    def __init__(self):
+    def sleep(self,t):
+        Jthread.sleep(t);
         
-        return
 
+    def run(self): #, event=None):
+        """Called automatically when the L{start} methods is called.
+        """ 
+        try:
+            print 'Process ' , self.getPid() , 'Has Started'
+            self.tar.target();
+        except ChannelPoison:
+            if self.enclosing:
+                self.enclosing._terminate()
+            self._terminate()
+            del self
+        except ProcessSuspend:
+            raise NotImplementedError('Process suspension not yet implemented')
+        except Exception:
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
+        
+
+        return
+    
 class Guard(object):
     """Abstract class to represent CSP guards.
 
@@ -844,9 +868,10 @@ class Alt(CSPOpMixin):
         for i in xrange(n):
             yield self.select()
         return
+    
+ 
 
-
-class Par(Jthread, CSPOpMixin,JPar):
+class Par(Jthread, CSPOpMixin,JyCspParInterface):
     """Run CSP processes in parallel.
     """
 
@@ -896,6 +921,7 @@ class Par(Jthread, CSPOpMixin,JPar):
         print 'This Par has started'
         try:
             for proc in self.procs:
+                print type(proc)
                 proc.start()
             for proc in self.procs:
                 proc.join(Long.valueOf(self.timeout))
@@ -906,6 +932,18 @@ class Par(Jthread, CSPOpMixin,JPar):
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
+        return
+    
+class ParFactory(Par):
+    
+    def __init__(self,*refs):
+        
+        procs = []
+        for i in range(len(refs)):
+            procs.append(JCSPProcess(refs[i]))
+            #ProcessStore.store.remove(refs[i])
+        Par.__init__(self,*procs)
+      
         return
 
 
