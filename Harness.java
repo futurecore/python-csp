@@ -1,5 +1,5 @@
 import JyCSP.CspFactory;
-import JyCSP.Par;
+import JyCSP.*;
 
 
 public class Harness {
@@ -10,8 +10,9 @@ public class Harness {
 	public static void main(String[] args) {
 		TestProcess t = new TestProcess();
 		TestProcess t1 = new TestProcess();
-		Par p = new Par(t,t1);
-		p.start();
+		System.out.println(t1.getPid());
+		Seq s = new Seq(t1,t);
+		s.start();
 		
 		
 
