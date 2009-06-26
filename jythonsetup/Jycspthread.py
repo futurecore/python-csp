@@ -73,7 +73,6 @@ from java.util.concurrent import Semaphore as Semaphore
 from java.lang import Long as Long
 import java.lang.Thread.State
 import JyCSP.JyCspProcessInterface as JyCspProcessInterface
-import JavaCspProcess
 import JyCSP.ProcessStore as ProcessStore
 import JyCSP.JyCspParInterface as JyCspParInterface
 
