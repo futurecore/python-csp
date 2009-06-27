@@ -64,5 +64,13 @@ public class CspFactory {
 		return (JyCspSeqInterface) JCSPObj
 				.__tojava__(JyCspSeqInterface.class);
 	}
+	
+	public static JyCspChannelInterface createJavaCspChannel(){
+		PyObject jyJCSPChannel;
+		jyJCSPChannel = interpreter.get("Channel");
+		PyObject JCSPObj = jyJCSPChannel.__call__();
+		return (JyCspChannelInterface) JCSPObj
+				.__tojava__(JyCspChannelInterface.class);
+	}
 
 }

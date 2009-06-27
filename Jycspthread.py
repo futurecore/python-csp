@@ -76,6 +76,10 @@ import JyCSP.JyCspProcessInterface as JyCspProcessInterface
 import JyCSP.ProcessStore as ProcessStore
 import JyCSP.JyCspParInterface as JyCspParInterface
 import JyCSP.JyCspSeqInterface as JyCspSeqInterface
+import JyCSP.JyCspChannelInterface as JyCspChannelInterface
+import java.io.ObjectOutputStream as ObjectOutputStream
+import java.io.ObjectInputStream as ObjectInputStream
+import java.io.ByteArrayOutputStream as ByteArrayOutputStream
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
@@ -423,7 +427,7 @@ class _NameFactory(object):
         return name
 
 
-class Channel(Guard):
+class Channel(Guard,JyCspChannelInterface):
     """CSP Channel objects.
 
     In python-csp there are two sorts of channel. In JCSP terms these
@@ -505,13 +509,22 @@ class Channel(Guard):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
-        self._store = mypickle.dumps(item)
+        #self._store = mypickle.dumps(item)
+        b = ByteArrayOutputStream()
+        o = ObjectOutputStream(b)
+        b.write(item)
+        print 'got here'
+        self._store = b.toString()
+        print 'got here 2'
+        return 
 
     def get(self):
         """Get a Python object from a process-safe store.
         """
-        item = mypickle.loads(self._store)
-        self._store = None
+        #item = mypickle.loads(self._store)
+        #self._store = None
+        b = ByteArrayInputStream(self._store)
+        item = ObjectInputSteam(b).read() 
         return item
 
     def is_selectable(self):
