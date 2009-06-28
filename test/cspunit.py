@@ -2,7 +2,7 @@
 
 import csp.cspprocess
 import csp.cspthread
-import itertools
+
 import unittest
 import os
 import time
@@ -499,7 +499,7 @@ if __name__ == '__main__':
 
 == csp.cspprocess summary of results ===
 
-http://chart.apis.google.com/chart?cht=bhg&chs=400x200&chd=t:%i|%i|%i&chco=00cc00,cc0000,0000cc&chm=tPASSED,00cc00,0,0,13|tFAILED,cc0000,1,1,13,-1|tERRORS,0000cc,2,1,13&nonsense=foo.png'
+http://chart.apis.google.com/chart?cht=bhg&chs=400x150&chd=t:%i|%i|%i&chco=00cc00,cc0000,0000cc&chm=tPASSED,00cc00,0,0,13|tFAILED,cc0000,1,1,13,-1|tERRORS,0000cc,2,1,13&nonsense=foo.png'
 
 == csp.process testing output ==
 
@@ -509,7 +509,7 @@ http://chart.apis.google.com/chart?cht=bhg&chs=400x200&chd=t:%i|%i|%i&chco=00cc0
 
 == csp.cspthread summary of results ===
 
-http://chart.apis.google.com/chart?cht=bhg&chs=400x200&chd=t:%i|%i|%i&chco=00cc00,cc0000,0000cc&chm=tPASSED,00cc00,0,0,13|tFAILED,cc0000,1,1,13,-1|tERRORS,0000cc,2,1,13&nonsense=foo.png'
+http://chart.apis.google.com/chart?cht=bhg&chs=400x150&chd=t:%i|%i|%i&chco=00cc00,cc0000,0000cc&chm=tPASSED,00cc00,0,0,13|tFAILED,cc0000,1,1,13,-1|tERRORS,0000cc,2,1,13&nonsense=foo.png'
 
 == csp.process testing output ==
 

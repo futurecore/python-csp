@@ -3,9 +3,9 @@
 """Communicating sequential processes, in Python.
 
 When using CSP Python as a DSL, this module will normally be imported
-via the statement 'from csp.csp import *'. For that reason this module
-imports all names from the csp.builtins module (and therefore that
-module should not normally be imported by client code).
+via the statement 'from csp.cspprocess import *'. For that reason this
+module imports all names from the csp.builtins module (and therefore
+that module should not normally be imported by client code).
 
 Copyright (C) Sarah Mount, 2009.
 
@@ -622,6 +622,7 @@ class FileChannel(Channel):
     """
 
     def __init__(self):
+        self.name = Channel.NAMEFACTORY.name()
         self._wlock = None	# Write lock.
         self._rlock = None	# Read lock.
         self._available = None
@@ -900,9 +901,6 @@ class Seq(processing.Process, CSPOpMixin):
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
-        for proc in self.procs:
-            print type(proc),
-        print
         return
 
     def __str__(self):

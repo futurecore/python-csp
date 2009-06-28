@@ -600,6 +600,7 @@ class FileChannel(Channel):
     """
 
     def __init__(self):
+        self.name = Channel.NAMEFACTORY.name()
         self._wlock = None	# Write lock.
         self._rlock = None	# Read lock.
         self._available = None
