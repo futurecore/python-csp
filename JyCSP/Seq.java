@@ -1,6 +1,8 @@
 package JyCSP;
 
-public class Seq implements JyCspSeqInterface{
+import org.python.core.*;
+
+public class Seq extends PyObject implements JyCspSeqInterface{
 	
 	protected JyCspSeqInterface jcsi;
 	

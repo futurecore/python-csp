@@ -77,6 +77,7 @@ import JyCSP.ProcessStore as ProcessStore
 import JyCSP.JyCspParInterface as JyCspParInterface
 import JyCSP.JyCspSeqInterface as JyCspSeqInterface
 import JyCSP.JyCspChannelInterface as JyCspChannelInterface
+import JyCSP.JyCspAltInterface as JyCspAltInterface
 import java.io.ObjectOutputStream as ObjectOutputStream
 import java.io.ObjectInputStream as ObjectInputStream
 import java.io.ByteArrayOutputStream as ByteArrayOutputStream
@@ -291,10 +292,18 @@ class CSPProcess(Jthread, CSPOpMixin):
         
 
         return
+    
+    def join(self,t):
+        Jthread.join(t);
+        return 
+    
+    def join(self):
+        JThread.join();
+        return
 
 class JCSPProcess(CSPProcess,JyCspProcessInterface):
     def __init__(self,refname): # target : java.lang.Object
-        self.tar = ProcessStore.store.get(refname);
+        self.tar = refname
         #ProcessStore.store.remove(refname)
         #CSPProcess.__init__(self, self.target.target)
         #print 'Got object'
@@ -764,7 +773,7 @@ class FileChannel(Channel):
 
 ### CSP combinators -- Par, Alt, Seq, ...
 
-class Alt(CSPOpMixin):
+class Alt(CSPOpMixin,JyCspAltInterface):
     """CSP select (OCCAM ALT) process.
 
     What should happen if a guard is poisoned?
@@ -882,7 +891,16 @@ class Alt(CSPOpMixin):
             yield self.select()
         return
     
- 
+
+class AltFactory(Alt):
+    
+    def __init__(self,*refs):
+        procs = []
+        for i in range(len(refs)):
+            procs.append(ProcessStore.store.get(refs[i]))
+            ProcessStore.store.remove(refs[i])
+        Alt.__init__(self,*procs)
+        return
 
 class Par(Jthread, CSPOpMixin,JyCspParInterface):
     """Run CSP processes in parallel.
@@ -948,12 +966,8 @@ class Par(Jthread, CSPOpMixin,JyCspParInterface):
 class ParFactory(Par):
     
     def __init__(self,*refs):
-        
-        procs = []
-        for i in range(len(refs)):
-            procs.append(JCSPProcess(refs[i]))
-            #ProcessStore.store.remove(refs[i])
-        Par.__init__(self,*procs)
+    
+        Par.__init__(self,*refs)
       
         return
 
@@ -1008,12 +1022,8 @@ class Seq(Jthread, CSPOpMixin,JyCspSeqInterface):
 class SeqFactory(Seq):
     
     def __init__(self,*refs):
-        
-        procs = []
-        for i in range(len(refs)):
-            procs.append(JCSPProcess(refs[i]))
-            #ProcessStore.store.remove(refs[i])
-        Seq.__init__(self,*procs)
+
+        Seq.__init__(self,*refs)
       
         return
 

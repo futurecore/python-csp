@@ -21,37 +21,31 @@ public class CspFactory {
 			JavaCspProcessInterface i) {
 		PyObject jyJCSPClass;
 		jyJCSPClass = interpreter.get("JCSPProcess");
-		ProcessStore.store.put(i.toString(), i);
-		if (debug) {
-			System.out.println("CspFactory output: Store size: "
-					+ ProcessStore.store.size());
-		}
-		PyObject JCSPObj = jyJCSPClass.__call__(new PyString(i.toString()));
+		PyObject JCSPObj = jyJCSPClass.__call__((PyObject)i);
 		return (JyCspProcessInterface) JCSPObj
 				.__tojava__(JyCspProcessInterface.class);
 	}
 
 	public static JyCspParInterface createJavaCspPar(JavaCspProcess... args) {
 		PyObject jyJCSPParClass;
-		PyString[] n = new PyString[args.length];
 		jyJCSPParClass = interpreter.get("ParFactory");
-		for (int i = 0; i < args.length; i++) {
-			ProcessStore.store.put(args[i].toString(),args[i]);
-			n[i] = new PyString(args[i].toString());
-		}
-		if (debug) {
-			System.out.println("CspFactory output: Store size: "
-					+ ProcessStore.store.size());
-		}
-		PyObject JCSPObj = jyJCSPParClass.__call__(n);
+		PyObject JCSPObj = jyJCSPParClass.__call__((PyObject[])args);
 		return (JyCspParInterface) JCSPObj
 				.__tojava__(JyCspParInterface.class);
 	}
 	
 	public static JyCspSeqInterface createJavaCspSeq(JavaCspProcess... args) {
 		PyObject jyJCSPSeqClass;
-		PyString[] n = new PyString[args.length];
 		jyJCSPSeqClass = interpreter.get("SeqFactory");
+		PyObject JCSPObj = jyJCSPSeqClass.__call__((PyObject[])args);
+		return (JyCspSeqInterface) JCSPObj
+				.__tojava__(JyCspSeqInterface.class);
+	}
+	
+	public static JyCspAltInterface createJavaCspAlt(JCspChannel... args) {
+		PyObject jyJCSPAltClass;
+		PyString[] n = new PyString[args.length];
+		jyJCSPAltClass = interpreter.get("AltFactory");
 		for (int i = 0; i < args.length; i++) {
 			ProcessStore.store.put(args[i].toString(),args[i]);
 			n[i] = new PyString(args[i].toString());
@@ -60,9 +54,9 @@ public class CspFactory {
 			System.out.println("CspFactory output: Store size: "
 					+ ProcessStore.store.size());
 		}
-		PyObject JCSPObj = jyJCSPSeqClass.__call__(n);
-		return (JyCspSeqInterface) JCSPObj
-				.__tojava__(JyCspSeqInterface.class);
+		PyObject JCSPObj = jyJCSPAltClass.__call__(n);
+		return (JyCspAltInterface) JCSPObj
+				.__tojava__(JyCspAltInterface.class);
 	}
 	
 	public static JyCspChannelInterface createJavaCspChannel(){

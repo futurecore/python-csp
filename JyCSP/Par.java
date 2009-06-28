@@ -1,6 +1,8 @@
 package JyCSP;
 
-public class Par implements JyCspParInterface {
+import org.python.core.*;
+
+public class Par extends PyObject implements JyCspParInterface {
 
 	protected JyCspParInterface jcpi;
 	

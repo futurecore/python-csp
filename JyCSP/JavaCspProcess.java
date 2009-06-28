@@ -1,8 +1,12 @@
 package JyCSP;
 
-public class JavaCspProcess implements JavaCspProcessInterface{
+import org.python.core.*;
+
+public class JavaCspProcess extends PyObject implements JavaCspProcessInterface{
 	
 	protected JyCspProcessInterface jcpi;
+	
+	public Object enclosing;
 	
 	public JavaCspProcess(){
 		super();
@@ -23,6 +27,14 @@ public class JavaCspProcess implements JavaCspProcessInterface{
 	
 	public long getPid(){
 		return this.jcpi.getPid();
+	}
+	
+	public void join(long t){
+		this.jcpi.join(t);
+	}
+	
+	public void join(){
+		this.jcpi.join();
 	}
 
 	@Override

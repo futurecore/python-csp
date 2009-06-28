@@ -4,6 +4,6 @@ import java.util.Hashtable;
 
 public class ProcessStore {
 	
-	public static Hashtable<String,JavaCspProcessInterface>  store = new Hashtable<String,JavaCspProcessInterface>();
+	public static Hashtable<String,Object>  store = new Hashtable<String,Object>();
 
 }
