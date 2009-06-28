@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'June 2009'
 
-#DEBUG = True
-DEBUG = False
+DEBUG = True
+#DEBUG = False
 
 
 def _debug(*args):
@@ -81,6 +81,10 @@ import JyCSP.JyCspAltInterface as JyCspAltInterface
 import java.io.ObjectOutputStream as ObjectOutputStream
 import java.io.ObjectInputStream as ObjectInputStream
 import java.io.ByteArrayOutputStream as ByteArrayOutputStream
+import java.io.ByteArrayInputStream as ByteArrayInputStream
+import java.lang.String as String
+import java.lang.Byte as Byte
+import jarray
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
@@ -470,6 +474,7 @@ class Channel(Guard,JyCspChannelInterface):
         super(Channel, self).__init__()
         return
 
+
     def _setup(self):
         """Set up synchronisation.
 
@@ -522,9 +527,8 @@ class Channel(Guard,JyCspChannelInterface):
         b = ByteArrayOutputStream()
         o = ObjectOutputStream(b)
         b.write(item)
-        print 'got here'
-        self._store = b.toString()
-        print 'got here 2'
+        b.flush()
+        self._store = str(b.toString)
         return 
 
     def get(self):
@@ -532,8 +536,13 @@ class Channel(Guard,JyCspChannelInterface):
         """
         #item = mypickle.loads(self._store)
         #self._store = None
-        b = ByteArrayInputStream(self._store)
-        item = ObjectInputSteam(b).read() 
+        
+        print type(self._store)
+        
+        a = str(self._store)
+        print type(a)
+        b = ByteArrayInputStream(a)
+        item = ObjectInputStream(b).read() 
         return item
 
     def is_selectable(self):
@@ -781,8 +790,10 @@ class Alt(CSPOpMixin,JyCspAltInterface):
 
     def __init__(self, *args):
         super(Alt, self).__init__()
-        for arg in args:
-            assert isinstance(arg, Guard)
+        #for arg in args:
+            #print type(arg)
+            #POSSIBLY NEED THIS BUT CANT GET IT TO WORK!!!!!!!!!!!!!!!!!!!!
+            #assert isinstance(arg, Guard)
         self.guards = list(args)
         self.last_selected = None
 
@@ -895,11 +906,8 @@ class Alt(CSPOpMixin,JyCspAltInterface):
 class AltFactory(Alt):
     
     def __init__(self,*refs):
-        procs = []
-        for i in range(len(refs)):
-            procs.append(ProcessStore.store.get(refs[i]))
-            ProcessStore.store.remove(refs[i])
-        Alt.__init__(self,*procs)
+        
+        Alt.__init__(self,*refs)
         return
 
 class Par(Jthread, CSPOpMixin,JyCspParInterface):

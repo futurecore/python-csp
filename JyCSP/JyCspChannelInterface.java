@@ -9,6 +9,6 @@ public interface JyCspChannelInterface {
 	public void disable();
 	public void enable();
 	public boolean is_selected();
-	
+	public boolean is_selectable();
 	
 }

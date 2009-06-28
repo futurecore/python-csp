@@ -5,10 +5,11 @@ import org.python.core.*;
 public class JCspChannel extends PyObject implements JyCspChannelInterface{
 	
 	protected JyCspChannelInterface jcsi;
-	
+
 	public JCspChannel(){
 		super();
 		this.jcsi = CspFactory.createJavaCspChannel();
+		
 	}
 
 	public void write(Object o){
@@ -37,6 +38,10 @@ public class JCspChannel extends PyObject implements JyCspChannelInterface{
 	
 	public boolean is_selected(){
 		return this.jcsi.is_selected();
+	}
+	
+	public boolean is_selectable(){
+		return this.jcsi.is_selectable();
 	}
 
 

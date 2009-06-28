@@ -44,17 +44,8 @@ public class CspFactory {
 	
 	public static JyCspAltInterface createJavaCspAlt(JCspChannel... args) {
 		PyObject jyJCSPAltClass;
-		PyString[] n = new PyString[args.length];
 		jyJCSPAltClass = interpreter.get("AltFactory");
-		for (int i = 0; i < args.length; i++) {
-			ProcessStore.store.put(args[i].toString(),args[i]);
-			n[i] = new PyString(args[i].toString());
-		}
-		if (debug) {
-			System.out.println("CspFactory output: Store size: "
-					+ ProcessStore.store.size());
-		}
-		PyObject JCSPObj = jyJCSPAltClass.__call__(n);
+		PyObject JCSPObj = jyJCSPAltClass.__call__((PyObject[])args);
 		return (JyCspAltInterface) JCSPObj
 				.__tojava__(JyCspAltInterface.class);
 	}
