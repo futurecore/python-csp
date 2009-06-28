@@ -195,16 +195,6 @@ def chMobRecv(cin, _process=None):
     return
 
 
-@process
-def recvEv(_process=None):
-    #print event
-    return
-
-@process
-def sendEv(cout, _process=None):
-    cout.write('Sending this to a guarded event...')
-    return
-
 ########## Top level stuff
 
 def _printHeader(name):
@@ -333,13 +323,6 @@ def testRep():
      testAltLRep(ch1, ch2, ch3))
     return
 
-def testEvent():
-    _printHeader('syntactic sugar for guarded events')
-    print 'Not implemented yet...'
-#    ch = Channel()
-#    sendEv() & ch > recvEv()
-    return
-
 def testDynamicChannel():
     _printHeader('dynamic channel creation')
     print 'Not implemented yet...'
@@ -391,9 +374,6 @@ if __name__ == '__main__':
     parser.add_option('-r', '--rep', dest='rep',
                       action='store_true',
                       help='Test syntactic sugar for repetition.')
-    parser.add_option('-e', '--event', dest='event', 
-                      action='store_true',
-                      help='Test syntactic sugar for guarded events')
     parser.add_option('-m', '--mobility', dest='mobility', 
                       action='store_true',
                       help='Test channel and process mobility')
@@ -412,7 +392,6 @@ if __name__ == '__main__':
         testAlt()
         testChoice()
         testRep()
-        testEvent()
         testDynamicChannel()
 #    	testMobility()
         print _exit
@@ -425,7 +404,6 @@ if __name__ == '__main__':
     if options.alt: testAlt()
     if options.choice: testChoice()
     if options.rep: testRep()
-    if options.event: testEvent()
     if options.mobility: testMobility()
     print _exit
     sys.exit()
