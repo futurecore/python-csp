@@ -32,6 +32,9 @@ __date__ = 'June 2009'
 
 temp = 'unittest.out'
 
+################################################################################
+# Seq tests.
+################################################################################
 
 class __TestSeqProc(unittest.TestCase):
     """Test Seq objects and syntactic sugar for them.
@@ -116,6 +119,9 @@ class TestSeqObjectsThread(__TestSeqThread):
         fd.close()
         return
 
+################################################################################
+# Channel object tests for csp.cspprocess.
+################################################################################
 
 class __TestChannelProc(unittest.TestCase):
     """Test basic channel reading and writing.
@@ -144,6 +150,7 @@ class TestChannelSingleProc(__TestChannelProc):
         self.assertEquals(val, 100)
         return
 
+
 class TestFileChannelSingleProc(__TestChannelProc):
 
     def runTest(self):
@@ -155,6 +162,7 @@ class TestFileChannelSingleProc(__TestChannelProc):
         val = c2.read()
         self.assertEquals(val, 100)
         return
+
 
 class TestChannelMultipleProc(__TestChannelProc):
 
@@ -178,6 +186,7 @@ class TestChannelMultipleProc(__TestChannelProc):
         self.assertEquals(out, range(10))
         return
 
+
 class TestFileChannelMultipleProc(__TestChannelProc):
 
     def runTest(self):
@@ -200,6 +209,10 @@ class TestFileChannelMultipleProc(__TestChannelProc):
         self.assertEquals(out, range(10))
         return
 
+
+################################################################################
+# Channel object tests for csp.cspthreads.
+################################################################################
 
 class __TestChannelThread(unittest.TestCase):
     """Test basic channel reading and writing.
@@ -228,6 +241,7 @@ class TestChannelSingleThread(__TestChannelThread):
         self.assertEquals(val, 100)
         return
 
+
 class TestFileChannelSingleThread(__TestChannelThread):
 
     def runTest(self):
@@ -239,6 +253,7 @@ class TestFileChannelSingleThread(__TestChannelThread):
         val = c2.read()
         self.assertEquals(val, 100)
         return
+
 
 class TestChannelMultipleThread(__TestChannelThread):
 
@@ -262,6 +277,7 @@ class TestChannelMultipleThread(__TestChannelThread):
         self.assertEquals(out, range(10))
         return
 
+
 class TestFileChannelMultipleThread(__TestChannelThread):
 
     def runTest(self):
@@ -284,6 +300,100 @@ class TestFileChannelMultipleThread(__TestChannelThread):
         self.assertEquals(out, range(10))
         return
 
+
+################################################################################
+# Timer guard tests for csp.cspprocess
+################################################################################
+
+class TestTimerGuardProc(unittest.TestCase):
+
+    def setUp(self):
+        self.timeout = 5.0 # seconds
+        return
+
+    @csp.cspprocess.process
+    def read_guard(self, guard, cout, _process=None):
+        alt = csp.cspprocess.Alt(guard)
+        t0 = guard.read()
+        alt.select()
+        t1 = guard.read()
+        cout.write(t1 - t0)
+        return
+    
+    def runTest(self):
+        guard = csp.cspprocess.TimerGuard()
+        chan = csp.cspprocess.Channel()
+        reader = self.read_guard(guard, chan)
+        guard.set_alarm(self.timeout)
+        reader.start()
+        duration = chan.read()
+        self.assertAlmostEqual(duration, self.timeout, 1) # Equal to 1 d.p.
+        return
+
+
+class TestSleepProc(unittest.TestCase):
+
+    def setUp(self):
+        self.timeout = 5.0
+        return
+    
+    def runTest(self):
+        guard = csp.cspprocess.TimerGuard()
+        t0 = guard.read()
+        guard.sleep(self.timeout)
+        t1 = guard.read()
+        self.assertAlmostEqual(t1 - t0, self.timeout, 1) # Equal to 1 d.p.
+        return
+
+################################################################################
+# Timer guard tests for csp.cspthread
+################################################################################
+
+class TestTimerGuardThread(unittest.TestCase):
+
+    def setUp(self):
+        self.timeout = 5.0 # seconds
+        return
+
+    @csp.cspthread.process
+    def read_guard(self, guard, cout, _process=None):
+        alt = csp.cspthread.Alt(guard)
+        t0 = guard.read()
+        alt.select()
+        t1 = guard.read()
+        duration = t1 - t0
+        cout.write(duration)
+        return
+    
+    def runTest(self):
+        guard = csp.cspthread.TimerGuard()
+        chan = csp.cspthread.Channel()
+        reader = self.read_guard(guard, chan)
+        guard.set_alarm(self.timeout)
+        reader.start()
+        duration = chan.read()
+        self.assertAlmostEqual(duration, self.timeout, 1) # Equal to 1 d.p.
+        return
+
+
+class TestSleepThread(unittest.TestCase):
+
+    def setUp(self):
+        self.timeout = 5.0
+        return
+    
+    def runTest(self):
+        guard = csp.cspthread.TimerGuard()
+        t0 = guard.read()
+        guard.sleep(self.timeout)
+        t1 = guard.read()
+        self.assertAlmostEqual(t1 - t0, self.timeout, 1) # Equal to 1 d.p.
+        return
+
+
+################################################################################
+# Choice operator tests
+################################################################################
 
 class TestOrProc(unittest.TestCase):
     """Test syntactic sugar for Alting with the | operator.
@@ -336,6 +446,10 @@ class TestOrThread(unittest.TestCase):
         self.assertEquals(out, [100, 200])
         return
 
+
+################################################################################
+# Alt tests -- will be replaced when Mohammad's proofs are complete.
+################################################################################
 
 # class TestAlt(unittest.TestCase):
 
@@ -443,7 +557,8 @@ def runtests(tests):
             for klass, err in res.failures:
                 msg += 'FAIL: ' + str(klass) + ' ' + err + ' '
         if len(res.errors) > 0:
-            msg += 'ERROR ' + res.errors[0] + ' ' + res.errors[1] + '\n'
+            for klass, err in res.errors:
+                msg += 'ERROR:' + str(klass) + '\n' + err + '\n'
     msg += 'Ran %i tests in %gs.\n' % (len(tests), duration)
     msg += '\n----------------------------------------------------------------------\n'
     if failures == 0 and errors == 0:
@@ -464,6 +579,8 @@ if __name__ == '__main__':
     proctests = [(TestSeqOperatorProc(), unittest.TestResult()),
                  (TestSeqObjectsProc(), unittest.TestResult()),
                  (TestOrProc(), unittest.TestResult()),
+                 (TestTimerGuardProc(), unittest.TestResult()),
+                 (TestSleepProc(), unittest.TestResult()),
                  (TestChannelSingleProc(), unittest.TestResult()),
                  (TestFileChannelSingleProc(), unittest.TestResult()),
                  (TestChannelMultipleProc(), unittest.TestResult()),
@@ -472,6 +589,8 @@ if __name__ == '__main__':
     threadtests = [(TestSeqOperatorThread(), unittest.TestResult()),
                  (TestSeqObjectsThread(), unittest.TestResult()),
                  (TestOrThread(), unittest.TestResult()),
+                 (TestTimerGuardThread(), unittest.TestResult()),
+                 (TestSleepThread(), unittest.TestResult()),
                  (TestChannelSingleThread(), unittest.TestResult()),
                  (TestFileChannelSingleThread(), unittest.TestResult()),
                  (TestChannelMultipleThread(), unittest.TestResult()),
@@ -479,12 +598,12 @@ if __name__ == '__main__':
 
 
     print
-    print '*** Unit testing for csp.cspprocess ***'
+    print '*** Running unit tests for csp.cspprocess. This may take a while...'
     print
     procsucc, procfail, procerr, procmsg = runtests(proctests)
     print procmsg
     print
-    print '*** Unit testing for csp.cspthread ***'
+    print '*** Running unit tests for csp.cspthread. This may take a while...'
     print
     threadsucc, threadfail, threaderr, threadmsg = runtests(threadtests)
     print threadmsg

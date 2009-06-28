@@ -725,7 +725,10 @@ class Alt(CSPOpMixin):
         elif len(self.guards) == 1:
             _debug('Alt Selecting unique guard:', self.guards[0].name)
             self.last_selected = self.guards[0]
-            return self.guards[0].read()
+            self.guards[0].enable()
+            while not self.guards[0].is_selectable():
+                time.sleep(0.01)
+            return self.guards[0].select()
         return None
 
     def select(self):
@@ -963,60 +966,50 @@ class Skip(Guard):
         return 'Skip guard is always selectable.'
 
 
-class ConditionGuard(Guard):
-    """FIXME: NOT YET IMPLEMENTED
-    """
-
-    def __init__(self, expr):
-        assert callable(expr)
-        self.expr = expr
-        super(ConditionGuard, self).__init__()
-        raise NotImplementedError('')
-
-    def is_selectable(self):
-        """Should return C{True} if this guard can be selected by an L{Alt}.
-        """
-        raise NotImplementedError('')
-
-    def enable(self):
-        """Prepare for, but do not commit to a synchronisation.
-        """
-        raise NotImplementedError('')
-
-    def disable(self):
-        """Roll back from an L{enable} call.
-        """
-        raise NotImplementedError('')
-
-    def select(self):
-        """Commit to a synchronisation started by L{enable}.
-        """
-        raise NotImplementedError('')
-
-
 class TimerGuard(Guard):
     """Guard which only commits to synchronisation when a timer has expired.
     """
 
     def __init__(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
+        super(TimerGuard, self).__init__()
+        self.now = time.time()
+        self.name = 'Timer guard created at:' + str(self.now)
+        self.alarm = None
+        return
 
+    def set_alarm(self, timeout):
+        self.now = time.time()
+        self.alarm = self.now + timeout
+        return
+    
     def is_selectable(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
+        self.now = time.time()
+        if self.alarm is None:
+            return True
+        elif self.now < self.alarm:
+            return False
+        return True
 
+    def read(self):
+        """Return current time.
+        """
+        self.now = time.time()
+        return self.now
+
+    def sleep(self, timeout):
+        """Put this process to sleep for a number of seconds.
+        """
+        time.sleep(timeout)
+        return
+    
     def enable(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
-
+        return
+    
     def disable(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
+        return
 
     def select(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
+        return
 
 
 @process
