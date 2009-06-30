@@ -77,7 +77,9 @@ dist = setup(name = "csp",
 		    [(makeabs('share/applications/'),
 			       ['applications/python-csp.desktop'])] +
             [('/usr/local/lib/jython2.5/Lib/',
-                    ['jythonsetup/Jycspthread.py'])]),
+                    ['jythonsetup/Jycspthread.py'])] +
+            [('/usr/local/lib/jython2.5/Lib/',
+                    ['jythonsetup/Javacspthread.py'])]),
 
       ## Borrowed from wxPython:
       ## Causes the data_files to be installed into the modules directory.
