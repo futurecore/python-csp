@@ -1,10 +1,12 @@
 package JyCSP;
 
 import org.python.core.*;
+import org.python.core.PyObject;
 
 public class JCspChannel extends PyObject implements JyCspChannelInterface{
 	
 	protected JyCspChannelInterface jcsi;
+	
 
 	public JCspChannel(){
 		super();

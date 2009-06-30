@@ -1,5 +1,7 @@
 import JyCSP.CspFactory;
 import JyCSP.*;
+import org.python.core.*;
+
 
 public class Harness {
 

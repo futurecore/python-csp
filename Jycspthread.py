@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'June 2009'
 
-DEBUG = True
-#DEBUG = False
+#DEBUG = True
+DEBUG = False
 
 
 def _debug(*args):
@@ -84,7 +84,7 @@ import java.io.ByteArrayOutputStream as ByteArrayOutputStream
 import java.io.ByteArrayInputStream as ByteArrayInputStream
 import java.lang.String as String
 import java.lang.Byte as Byte
-import jarray
+import JyCSP.Serializer as serializer
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
@@ -142,10 +142,10 @@ class NoGuardInAlt(Exception):
 _POISON = ';;;__POISON__;;;'
 """Used as special data sent down a channel to invoke termination."""
 
-_SUSPEND = ';;;__SUSPEND__;;;' 	### NOT IMPLEMENTED
+_SUSPEND = ';;;__SUSPEND__;;;'     ### NOT IMPLEMENTED
 """Used as special data sent down a channel to invoke suspension."""
 
-_RESUME = ';;;__RESUME__;;;'	### NOT IMPLEMENTED
+_RESUME = ';;;__RESUME__;;;'    ### NOT IMPLEMENTED
 """Used as special data sent down a channel to resume operation."""
 
 
@@ -462,8 +462,8 @@ class Channel(Guard,JyCspChannelInterface):
 
     def __init__(self):
         self.name = Channel.NAMEFACTORY.name()
-        self._wlock = None	   # Write lock protects from races between writers.
-        self._rlock = None	   # Read lock protects from races between readers.
+        self._wlock = None       # Write lock protects from races between writers.
+        self._rlock = None       # Read lock protects from races between readers.
         self._available = None     # Released if writer has made data available.
         self._taken = None         # Released if reader has taken data.
         self._is_alting = None     # True if engaged in an Alt synchronisation.
@@ -481,10 +481,11 @@ class Channel(Guard,JyCspChannelInterface):
         MUST be called in __init__ of this class and all subclasses.
         """
         # Process-safe synchronisation.
-        self._wlock = RLock()	# Write lock.
-        self._rlock = RLock()	# Read lock.
-        self._available = Semaphore(0)
-        self._taken = Semaphore(0)
+        self._wlock = RLock()    # Write lock.
+        self._rlock = RLock()    # Read lock.
+        self._store = serializer()
+        self._available = Semaphore(1)
+        self._taken = Semaphore(1)
         # Process-safe synchronisation for CSP Select / Occam Alt.
         self._is_alting = False
         self._is_selectable = False
@@ -509,8 +510,8 @@ class Channel(Guard,JyCspChannelInterface):
 
     def __setstate__(self, state):
         """Restore object state after unpickling."""
-        self._wlock = RLock()	# Write lock.
-        self._rlock = RLock()	# Read lock.
+        self._wlock = RLock()    # Write lock.
+        self._rlock = RLock()    # Read lock.
         self._available = Semaphore(state[0])
         self._taken = Semaphore(state[1])
         self._is_alting = state[2]
@@ -523,26 +524,16 @@ class Channel(Guard,JyCspChannelInterface):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
-        #self._store = mypickle.dumps(item)
-        b = ByteArrayOutputStream()
-        o = ObjectOutputStream(b)
-        b.write(item)
-        b.flush()
-        self._store = str(b.toString)
-        return 
-
+        #self._store = mypickle.dumps(item, protocol=1)
+        
+        self._store.put(item) 
+        
     def get(self):
         """Get a Python object from a process-safe store.
         """
         #item = mypickle.loads(self._store)
         #self._store = None
-        
-        print type(self._store)
-        
-        a = str(self._store)
-        print type(a)
-        b = ByteArrayInputStream(a)
-        item = ObjectInputStream(b).read() 
+        item = self._store.get()
         return item
 
     def is_selectable(self):
@@ -695,8 +686,8 @@ class FileChannel(Channel):
     """
 
     def __init__(self):
-        self._wlock = None	# Write lock.
-        self._rlock = None	# Read lock.
+        self._wlock = None    # Write lock.
+        self._rlock = None    # Read lock.
         self._available = None
         self._taken = None
         self._is_alting = None
@@ -725,8 +716,8 @@ class FileChannel(Channel):
 
     def __setstate__(self, state):
         """Restore object state after unpickling."""
-        self._wlock = RLock()	# Write lock.
-        self._rlock = RLock()	# Read lock.
+        self._wlock = RLock()    # Write lock.
+        self._rlock = RLock()    # Read lock.
         self._available = mypickle.loads(state[0])
         self._taken = mypickle.loads(state[1])
         self._is_alting = mypickle.loads(state[2])
@@ -906,7 +897,7 @@ class Alt(CSPOpMixin,JyCspAltInterface):
 class AltFactory(Alt):
     
     def __init__(self,*refs):
-        
+        print type(refs[0])
         Alt.__init__(self,*refs)
         return
 
