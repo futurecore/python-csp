@@ -13,7 +13,7 @@ public class CspFactory {
 	static boolean debug = false;
 
 	static {
-		String cmd = "from Jycspthread import *";
+		String cmd = "from Javacspthread import *";
 		interpreter.exec(cmd);
 	}
 
