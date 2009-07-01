@@ -327,7 +327,6 @@ class JCSPProcess(CSPProcess,JyCspProcessInterface):
         """Called automatically when the L{start} methods is called.
         """ 
         try:
-            print self.getPid() , 'Has Started'
             self.tar.target();
         except ChannelPoison:
             if self.enclosing:
@@ -880,7 +879,19 @@ class Alt(CSPOpMixin,JyCspAltInterface):
         for guard in ready[1:]:
             guard.disable()
         return ready[0].select()
-
+    
+    def last_selected(self):
+        return self.last_selected;
+    
+    def hasNext(self):
+            if len(self.guards) >0:
+                return True
+            else:
+                return False
+            
+    def getGuardLength(self):
+        return len(self.guards);
+            
     def __mul__(self, n):
         assert n > 0
         for i in xrange(n):
