@@ -6,7 +6,8 @@ public interface JyCspAltInterface {
 	public Object preselect();
 	public Object select();
 	public Object fair_select();
-	public object last_selected();
+	public Object last_selected();
 	public boolean hasNext();
+	public int getGuardLength();
 		
 }

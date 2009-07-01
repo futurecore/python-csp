@@ -6,7 +6,7 @@ public class Alt extends PyObject implements JyCspAltInterface{
 	
 	protected JyCspAltInterface jcsi;
 	
-	public Alt(JCspChannel...args){
+	public Alt(JavaCspChannel...args){
 		super();
 		this.jcsi = CspFactory.createJavaCspAlt(args);
 	}
@@ -27,12 +27,17 @@ public class Alt extends PyObject implements JyCspAltInterface{
 		return this.jcsi.fair_select();
 	}
 	
-	public object last_selected(){
+	public Object last_selected(){
 		return this.jcsi.last_selected();
 	}
 	
 	public boolean hasNext(){
 		return this.jcsi.hasNext();
+	}
+
+	@Override
+	public int getGuardLength() {
+		return this.jcsi.getGuardLength();
 	}
 
 }

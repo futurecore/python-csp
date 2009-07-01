@@ -3,12 +3,14 @@ package JyCSP;
 import org.python.core.*;
 import org.python.core.PyObject;
 
-public class JCspChannel extends PyObject implements JyCspChannelInterface{
+public class JavaCspChannel extends PyObject implements JyCspChannelInterface{
 	
 	protected JyCspChannelInterface jcsi;
 	
+	public String name;
+	
 
-	public JCspChannel(){
+	public JavaCspChannel(){
 		super();
 		this.jcsi = CspFactory.createJavaCspChannel();
 		

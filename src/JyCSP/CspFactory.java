@@ -42,7 +42,7 @@ public class CspFactory {
 				.__tojava__(JyCspSeqInterface.class);
 	}
 	
-	public static JyCspAltInterface createJavaCspAlt(JCspChannel... args) {
+	public static JyCspAltInterface createJavaCspAlt(JavaCspChannel... args) {
 		PyObject jyJCSPAltClass;
 		jyJCSPAltClass = interpreter.get("AltFactory");
 		PyObject JCSPObj = jyJCSPAltClass.__call__((PyObject[])args);
