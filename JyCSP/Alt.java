@@ -26,5 +26,13 @@ public class Alt extends PyObject implements JyCspAltInterface{
 	public Object fair_select(){
 		return this.jcsi.fair_select();
 	}
+	
+	public object last_selected(){
+		return this.jcsi.last_selected();
+	}
+	
+	public boolean hasNext(){
+		return this.jcsi.hasNext();
+	}
 
 }
