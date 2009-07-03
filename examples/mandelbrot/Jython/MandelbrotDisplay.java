@@ -93,12 +93,15 @@ public class MandelbrotDisplay extends javax.swing.JFrame {
 		
 	}
 	
-	public void setColorArray(int x, int[][] colors){
+	public int count = 0;
+	
+	public  void setColorArray(int x, int[][] colors){
 		int[] p = new int[colors.length];
 		for(int i = 0; i<colors.length;i++){
 			p[i] = new Color(colors[i][0], colors[i][1], colors[i][2]).getRGB();
 		}
 		this.impnl.setArray(x,p);
+		System.out.println("Here " + count++);
 	}
 	public void toggleVis(){
 		this.setVisible(!this.isVisible());
@@ -150,9 +153,10 @@ public class MandelbrotDisplay extends javax.swing.JFrame {
 		}
 		
 		public void setArray(int x,int[] colors){
-
+			synchronized(this.myimg){
 			this.myimg.setRGB(x, 0, 1, this.myimg.getHeight(), colors, 0, 1);
 			repaint();
+			}
 			
 		}
 	}

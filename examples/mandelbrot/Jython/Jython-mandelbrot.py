@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 from Jycspthread import *
 
 import logging, math, time
-from javax.swing import *
 import MandelbrotDisplay as MBDisplay
 
 
