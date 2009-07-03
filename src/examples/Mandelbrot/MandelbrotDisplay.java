@@ -1,6 +1,9 @@
 package examples.Mandelbrot;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Panel;
+import java.awt.image.BufferedImage;
 
 import javax.swing.*;
 
@@ -86,6 +89,64 @@ public class MandelbrotDisplay extends javax.swing.JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		
+	}
+	
+	public void setColorArray(int x, int[] colors){
+		this.impnl.setArray(x,colors);
 	}
 
+	public class ImagePanel extends Panel {
+		private BufferedImage myimg = null;
+
+		public ImagePanel() {
+			setLayout(null);
+			setSize(500, 500);
+			this.setMyimg(new BufferedImage(500,500,BufferedImage.TYPE_INT_RGB));
+		}
+		
+		public ImagePanel(int x, int y) {
+			setLayout(null);
+			setSize(x, y);
+			this.setMyimg(new BufferedImage(x,y,BufferedImage.TYPE_INT_RGB));
+		}
+
+		public void setImage(BufferedImage img) {
+			this.setMyimg(img);
+			repaint();
+		}
+
+		public void paint(Graphics g) {
+			if (getMyimg() != null) {
+				g.drawImage(getMyimg(), 0, 0, this);
+			}
+		}
+		
+		public BufferedImage getCompatible(){
+			return new BufferedImage(this.getMyimg().getWidth(null),this.getMyimg().getHeight(null),BufferedImage.TYPE_INT_RGB);
+		}
+
+		/**
+		 * @return the myimg
+		 */
+		public Image getImage() {
+			return getMyimg();
+		}
+
+		public void setMyimg(BufferedImage myimg) {
+			this.myimg = myimg;
+		}
+
+		public Image getMyimg() {
+			return myimg;
+		}
+		
+		public void setArray(int x,int[] colors){
+			
+			this.myimg.setRGB(x, 0, 1, this.myimg.getHeight(), colors, 0, 1);
+			repaint();
+			
+		}
+	}
 }

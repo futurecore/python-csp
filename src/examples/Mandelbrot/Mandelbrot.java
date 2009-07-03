@@ -29,7 +29,7 @@ public class Mandelbrot extends JavaCspProcess {
 
 	public Color getColor(double mag, int cmin, int cmax) {
 		assert cmin != cmax;
-		float a = (float) ((mag - cmin) / (cmax - cmin));
+		double a = (double) ((mag - cmin) / (cmax - cmin));
 
 		int blue = (int) Math.min((Math.max((4 * (0.75 - a)), 0.0)), 1.0);
 
