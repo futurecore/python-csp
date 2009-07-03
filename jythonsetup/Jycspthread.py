@@ -189,7 +189,8 @@ class CSPOpMixin(object):
     def _join(self, timeout=5):
         """Join only if self is running and impose a timeout."""
         if self.isAlive():
-            self.join(Long.valueOf(timeout))
+            #self.join(Long.valueOf(timeout))
+            self.join()
 
     def _terminate(self):
         """Terminate only if self is running.
@@ -892,6 +893,7 @@ class Par(Jthread, CSPOpMixin):
         try:
             for proc in self.procs:
                 proc.start()
+                _debug(proc.getName() , "has started")
             for proc in self.procs:
                 proc.join(Long.valueOf(self.timeout))
         except ChannelPoison:
