@@ -84,6 +84,7 @@ import java.io.ByteArrayOutputStream as ByteArrayOutputStream
 import java.io.ByteArrayInputStream as ByteArrayInputStream
 import java.lang.String as String
 import java.lang.Byte as Byte
+import java.land.System as System
 import JyCSP.Serializer as serializer
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
@@ -1126,25 +1127,45 @@ class TimerGuard(Guard):
     """
 
     def __init__(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
+        super(TimerGuard, self).__init__()
+        self.now = System.currentTimeMillis()
+        self.name = 'Timer guard created at:' + str(self.now)
+        self.alarm = None
+        return
 
+    def set_alarm(self, timeout):
+        self.now = System.currentTimeMillis()
+        self.alarm = self.now + (timeout*1000)
+        return
+    
     def is_selectable(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
+        self.now = System.currentTimeMillis()
+        if self.alarm is None:
+            return True
+        elif self.now < self.alarm:
+            return False
+        return True
 
+    def read(self):
+        """Return current time.
+        """
+        self.now = System.currentTimeMillis()
+        return self.now
+
+    def sleep(self, timeout):
+        """Put this process to sleep for a number of seconds.
+        """
+        time.sleep(timeout)
+        return
+    
     def enable(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
-
+        return
+    
     def disable(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
+        return
 
     def select(self):
-        """Timer guards not yet implemented."""
-        raise NotImplementedError('Timer guards not yet implemented.')
-
+        return
 
 @process
 def Zeroes(cout, _process=None):
