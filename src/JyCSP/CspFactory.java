@@ -8,15 +8,41 @@ import org.python.util.PythonInterpreter;
 
 public class CspFactory {
 
+	/**
+	 * Handle on the Python Interpreter
+	 */
 	static PythonInterpreter interpreter = new PythonInterpreter();
 	
+	/**
+	 * Flag if the class should print Debug information
+	 * Default False
+	 */
 	static boolean debug = false;
 
+	/**
+	 * static Constructor
+	 * Make a call to the interpreter to import Javacspthread 
+	 */
 	static {
 		String cmd = "from Javacspthread import *";
 		interpreter.exec(cmd);
 	}
 
+	/**
+	 * Gets a handle to a Jython JCSPProcess object
+	 * 
+	 * @param i Class which implements the JavaCspProcessInterface,
+	 * 			Similar to the Runnable interface.
+	 * 
+	 * 			If the user is extending JavaCspProcess this call is made
+	 * 			by the constructor of the JavaCspProcess.
+	 * 	
+	 * 			If the user is implementing the JavaCspProcessInterface
+	 * 			this method is analogous to Runnable interface, used with
+	 * 			native java threads.
+	 * 
+	 * @return JyCspProcessInterface
+	 */
 	public static JyCspProcessInterface createJavaCspProcess(
 			JavaCspProcessInterface i) {
 		PyObject jyJCSPClass;
@@ -26,6 +52,15 @@ public class CspFactory {
 				.__tojava__(JyCspProcessInterface.class);
 	}
 
+	/**
+	 * Gets a handle to a Jython Par Object
+	 * 
+	 * @param args  List of JavaCspProcesses which should be run in parallel
+	 * 			   
+	 * 				Users should avoid using this method, instead use
+	 * 				the Java Par Class which makes a call to this
+	 * @return
+	 */
 	public static JyCspParInterface createJavaCspPar(JavaCspProcess... args) {
 		PyObject jyJCSPParClass;
 		jyJCSPParClass = interpreter.get("ParFactory");
@@ -34,6 +69,15 @@ public class CspFactory {
 				.__tojava__(JyCspParInterface.class);
 	}
 	
+	/**
+	 * Gets a handle to a Jython Seq Object
+	 * 
+	 * @param args  List of JavaCspProcesses which should be run in sequence
+	 * 			   
+	 * 				Users should avoid using this method, instead use
+	 * 				the Java Seq Class which makes a call to this
+	 * @return
+	 */
 	public static JyCspSeqInterface createJavaCspSeq(JavaCspProcess... args) {
 		PyObject jyJCSPSeqClass;
 		jyJCSPSeqClass = interpreter.get("SeqFactory");
@@ -42,6 +86,15 @@ public class CspFactory {
 				.__tojava__(JyCspSeqInterface.class);
 	}
 	
+	/**
+	 * Gets a handle to a Jython Alt Object
+	 * 
+	 * @param args  List of Channels for the Alt to select from
+	 * 			   
+	 * 				Users should avoid using this method, instead use
+	 * 				the Java Alt Class which makes a call to this
+	 * @return JyCspAltInterface
+	 */
 	public static JyCspAltInterface createJavaCspAlt(JavaCspChannel... args) {
 		PyObject jyJCSPAltClass;
 		jyJCSPAltClass = interpreter.get("AltFactory");
@@ -50,6 +103,11 @@ public class CspFactory {
 				.__tojava__(JyCspAltInterface.class);
 	}
 	
+	/**
+	 * Gets a handle to a Jython Channel Object
+	 * 
+	 * @return JyCspChannelInterface
+	 */
 	public static JyCspChannelInterface createJavaCspChannel(){
 		PyObject jyJCSPChannel;
 		jyJCSPChannel = interpreter.get("Channel");

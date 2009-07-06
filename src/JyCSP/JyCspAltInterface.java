@@ -3,7 +3,7 @@ package JyCSP;
 public interface JyCspAltInterface {
 
 	public void poison();
-	public Object preselect();
+	public Object pri_select();
 	public Object select();
 	public Object fair_select();
 	public Object last_selected();
