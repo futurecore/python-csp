@@ -59,7 +59,7 @@ public class CspFactory {
 	 * 			   
 	 * 				Users should avoid using this method, instead use
 	 * 				the Java Par Class which makes a call to this
-	 * @return
+	 * @return JyCspParInterface
 	 */
 	public static JyCspParInterface createJavaCspPar(JavaCspProcess... args) {
 		PyObject jyJCSPParClass;
@@ -76,7 +76,7 @@ public class CspFactory {
 	 * 			   
 	 * 				Users should avoid using this method, instead use
 	 * 				the Java Seq Class which makes a call to this
-	 * @return
+	 * @return JyCspSeqInterface
 	 */
 	public static JyCspSeqInterface createJavaCspSeq(JavaCspProcess... args) {
 		PyObject jyJCSPSeqClass;
