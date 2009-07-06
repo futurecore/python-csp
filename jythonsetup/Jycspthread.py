@@ -286,14 +286,6 @@ class CSPProcess(Jthread, CSPOpMixin):
        
 
         return
-
-class JCSPProcess(CSPProcess):
-    def __init__(self, target): # target : java.lang.Object
-        self.target = target
-        #CSPProcess.__init__(self, self.target.target)
-        return
-
-    #add method to overide start and run
    
 
 class Guard(object):
