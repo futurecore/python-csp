@@ -234,10 +234,7 @@ class CSPProcess(Jthread, CSPOpMixin):
         self._target = func
         self._args = args
         self._kwargs = kwargs
-#        threading.Thread.__init__(self,
-#                                  target=func,
-#                                  args=(args),
-#                                  kwargs=kwargs)
+
         CSPOpMixin.__init__(self)
         assert callable(func)
         for arg in list(args) + kwargs.values():
@@ -262,7 +259,6 @@ class CSPProcess(Jthread, CSPOpMixin):
         return 'CSPProcess running in TID %s' % self.getName()
 
     def start(self):
-        #blah#
         if self.getState() is java.lang.Thread.State.NEW:
             Jthread.start(self)
        
