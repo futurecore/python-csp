@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 """Communicating sequential processes, in Python.
 
@@ -66,26 +67,10 @@ try: # Python optimisation compiler
 except ImportError:
     print 'No available optimisation'
 
-#import threading
-from java.lang import Thread as  Jthread
-from java.util.concurrent.locks import ReentrantLock as RLock
-from java.util.concurrent import Semaphore as Semaphore
-from java.lang import Long as Long
-import java.lang.Thread.State
-import JyCSP.JyCspProcessInterface as JyCspProcessInterface
-import JyCSP.ProcessStore as ProcessStore
-import JyCSP.JyCspParInterface as JyCspParInterface
-import JyCSP.JyCspSeqInterface as JyCspSeqInterface
-import JyCSP.JyCspChannelInterface as JyCspChannelInterface
-import JyCSP.JyCspAltInterface as JyCspAltInterface
-import java.io.ObjectOutputStream as ObjectOutputStream
-import java.io.ObjectInputStream as ObjectInputStream
-import java.io.ByteArrayOutputStream as ByteArrayOutputStream
-import java.io.ByteArrayInputStream as ByteArrayInputStream
-import java.lang.String as String
-import java.lang.Byte as Byte
-import java.lang.System as System
-import JyCSP.Serializer as serializer
+import threading
+from java.lang import Thread as  thread
+from java.util.concurrent.locks import ReentrantLock
+from java.util.concurrent import Semaphore
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
@@ -196,22 +181,22 @@ class CSPOpMixin(object):
 
     def _start(self):
         """Start only if self is not running."""
-        if not self.isAlive():
+        if not self._Thread__started.is_set():
             self.start()
 
-    def _join(self, timeout=5):
+    def _join(self, timeout=None):
         """Join only if self is running and impose a timeout."""
-        if self.isAlive():
-            self.join(Long.valueOf(timeout))
+        if self._Thread__started.is_set():
+            self.join(timeout)
 
     def _terminate(self):
         """Terminate only if self is running.
 
         FIXME: This doesn't work yet...
         """
-        if self.isAlive():
+        if self._Thread__started.is_set():
             _debug(str(self.getName()), 'terminating now...')
-            self.stop()
+            self._Thread__stop()
 
     def __and__(self, other):
         """Implementation of CSP Par.
@@ -235,13 +220,12 @@ class CSPOpMixin(object):
 
 
 
-class CSPProcess(Jthread, CSPOpMixin,JyCspProcessInterface):
+class CSPProcess(thread, CSPOpMixin):
     """Implementation of CSP processes.
     Not intended to be used in client code. Use @process instead.
     """
 
     def __init__(self, func, *args, **kwargs):
-        Jthread.__init__(self)
         self._target = func
         self._args = args
         self._kwargs = kwargs
@@ -251,7 +235,7 @@ class CSPProcess(Jthread, CSPOpMixin,JyCspProcessInterface):
 #                                  kwargs=kwargs)
         CSPOpMixin.__init__(self)
         assert callable(func)
-        for arg in list(args) + kwargs.values():
+        for arg in list(self._args) + self._kwargs.values():
             if _is_csp_type(arg):
                 arg.enclosing = self
         # Add a ref to this process so _target can access the
@@ -267,23 +251,17 @@ class CSPProcess(Jthread, CSPOpMixin,JyCspProcessInterface):
         in this module is identical to the one defined in
         cspprocess.py.
         """
-        return self.getId()
+        return self.getName()
 
     def __str__(self):
         return 'CSPProcess running in TID %s' % self.getName()
 
-    def start(self):
-        #blah#
-        if self.getState() is java.lang.Thread.State.NEW:
-            Jthread.start(self)
-        
-
     def run(self): #, event=None):
         """Called automatically when the L{start} methods is called.
-        """ 
+        """
         try:
             self._target(*self._args,
-                        **self._kwargs)
+                         **self._kwargs)
         except ChannelPoison:
             if self.enclosing:
                 self.enclosing._terminate()
@@ -294,59 +272,9 @@ class CSPProcess(Jthread, CSPOpMixin,JyCspProcessInterface):
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
-        
-
-        return
-    
-    def join(self,t):
-        Jthread.join(t);
-        return 
-    
-    def join(self):
-        JThread.join();
         return
 
-class JCSPProcess(CSPProcess):
-    def __init__(self,refname): # target : java.lang.Object
-        self.tar = refname
-        #ProcessStore.store.remove(refname)
-        #CSPProcess.__init__(self, self.target.target)
-        #print 'Got object'
-        #print 'Object name ', self.tar
-        return
 
-    def start(self):
-        #blah#
-        if self.getState() is java.lang.Thread.State.NEW:
-            Jthread.start(self)
-    
-    def sleep(self,t):
-        Jthread.sleep(t);
-        
-
-    def run(self): #, event=None):
-        """Called automatically when the L{start} methods is called.
-        """ 
-        try:
-            self.tar.target();
-        except ChannelPoison:
-            if self.enclosing:
-                self.enclosing._terminate()
-            self._terminate()
-            del self
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
-        except Exception:
-            typ, excn, tback = sys.exc_info()
-            sys.excepthook(typ, excn, tback)
-        
-
-        return
-    
-    def getState(self):
-        return self.getState()
-        
-    
 class Guard(object):
     """Abstract class to represent CSP guards.
 
@@ -380,14 +308,6 @@ class Guard(object):
 
     def __str__(self):
         return 'CSP Guard: must be subclassed.'
-
-    def __or__(self, other):
-        assert isinstance(other, Guard)
-        return Alt(self, other).select()
-
-    def __ror__(self, other):
-        assert isinstance(other, Guard)
-        return Alt(self, other).select()
 
 
 class _PortFactory(object):
@@ -444,7 +364,7 @@ class _NameFactory(object):
         return name
 
 
-class Channel(Guard,JyCspChannelInterface):
+class Channel(Guard):
     """CSP Channel objects.
 
     In python-csp there are two sorts of channel. In JCSP terms these
@@ -478,18 +398,16 @@ class Channel(Guard,JyCspChannelInterface):
         super(Channel, self).__init__()
         return
 
-
     def _setup(self):
         """Set up synchronisation.
 
         MUST be called in __init__ of this class and all subclasses.
         """
         # Process-safe synchronisation.
-        self._wlock = RLock()	# Write lock.
-        self._rlock = RLock()	# Read lock.
-        self._store = serializer()
-        self._available = Semaphore(1)
-        self._taken = Semaphore(1)
+        self._wlock = threading.RLock()	# Write lock.
+        self._rlock = threading.RLock()	# Read lock.
+        self._available = threading.Semaphore(0)
+        self._taken = threading.Semaphore(0)
         # Process-safe synchronisation for CSP Select / Occam Alt.
         self._is_alting = False
         self._is_selectable = False
@@ -500,12 +418,12 @@ class Channel(Guard,JyCspChannelInterface):
 
     def __getstate__(self):
         """Return state required for pickling."""
-        state = [self._available.availablePermits(),
-                 self._taken.availablePermits() ,
+        state = [self._available._Semaphore__value,
+                 self._taken._Semaphore__value,
                  self._is_alting,
                  self._is_selectable,
                  self._has_selected]
-        if self._available.availablePermits()  > 0:
+        if self._available._Semaphore__value > 0:
             obj = self.get()
         else:
             obj = None
@@ -514,10 +432,10 @@ class Channel(Guard,JyCspChannelInterface):
 
     def __setstate__(self, state):
         """Restore object state after unpickling."""
-        self._wlock = RLock()	# Write lock.
-        self._rlock = RLock()	# Read lock.
-        self._available = Semaphore(state[0])
-        self._taken = Semaphore(state[1])
+        self._wlock = threading.RLock()	# Write lock.
+        self._rlock = threading.RLock()	# Read lock.
+        self._available = threading.Semaphore(state[0])
+        self._taken = threading.Semaphore(state[1])
         self._is_alting = state[2]
         self._is_selectable = state[3]
         self._has_selected = state[4]
@@ -528,16 +446,13 @@ class Channel(Guard,JyCspChannelInterface):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
-        #self._store = mypickle.dumps(item, protocol=1)
-        
-        self._store.put(item) 
-        
+        self._store = mypickle.dumps(item)
+
     def get(self):
         """Get a Python object from a process-safe store.
         """
-        #item = mypickle.loads(self._store)
-        #self._store = None
-        item = self._store.get()
+        item = mypickle.loads(self._store)
+        self._store = None
         return item
 
     def is_selectable(self):
@@ -551,7 +466,7 @@ class Channel(Guard,JyCspChannelInterface):
         """Write a Python object to this channel.
         """
         _debug('+++ Write on Channel %s started.' % self.name)
-        self._wlock.lock()
+        self._wlock.acquire(true)
              # Protect from races between multiple writers.
             # If this channel has already been selected by an Alt then
             # _has_selected will be True, blocking other readers. If a
@@ -562,12 +477,12 @@ class Channel(Guard,JyCspChannelInterface):
         self.put(obj)
         self._available.release()
         _debug('++++ Writer on Channel %s: _available: %i _taken: %i. ' %
-                   (self.name, self._available.availablePermits() ,
-                    self._taken.availablePermits()))
+                   (self.name, self._available._Semaphore__value,
+                    self._taken._Semaphore__value))
             # Block until the object has been read.
         self._taken.acquire()
             # Remove the object from the channel.
-        self._wlock.unlock()
+        self._wlock.release()
         _debug('+++ Write on Channel %s finished.' % self.name)
         return
 
@@ -578,21 +493,21 @@ class Channel(Guard,JyCspChannelInterface):
 #        assert self._is_alting.value == Channel.FALSE
 #        assert self._is_selectable.value == Channel.FALSE
         _debug('+++ Read on Channel %s started.' % self.name)
-        self._rlock.lock()
+        self._rlock.acquire(true)
              # Protect from races between multiple readers.
             # Block until an item is in the Channel.
         _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
-                (self.name, self._available.availablePermits() ,
-                self._taken.availablePermits() ))
+                (self.name, self._available._Semaphore__value,
+                self._taken._Semaphore__value))
         self._available.acquire()
             # Get the item.
         _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
-                 (self.name, self._available.availablePermits(),
-                  self._taken.availablePermits()))
+                 (self.name, self._available._Semaphore__value,
+                  self._taken._Semaphore__value))
         obj = self.get()
             # Announce the item has been read.
         self._taken.release()
-        self._rlock.unlock()
+        self._rlock.r
         _debug('+++ Read on Channel %s finished.' % self.name)
         if obj == _POISON:
             raise ChannelPoison()
@@ -607,11 +522,11 @@ class Channel(Guard,JyCspChannelInterface):
         if (self._has_selected or self._is_selectable):
             return
         self._is_alting = True
-        self._rlock.lock()
+        self._rlock.acquire(true)
             # Attempt to acquire _available.
         time.sleep(0.00001) # Won't work without this -- why?
-        retval = self._available.tryAcquire()
-        self._rlock.unlock()    
+        retval = self._available.acquire(blocking=False)
+        self._rlock.release()    
         if retval:
             self._is_selectable = True
         else:
@@ -628,9 +543,9 @@ class Channel(Guard,JyCspChannelInterface):
         """
         self._is_alting = False
         if self._is_selectable:
-            self._rlock.lock()
+            self._rlock.acquire(true)
             self._available.release()
-            self._rlock.unlock()
+            self._rlock.release()
             self._is_selectable = False
         return
 
@@ -639,10 +554,10 @@ class Channel(Guard,JyCspChannelInterface):
         """
         _debug('channel select starting')
         assert self._is_selectable == True
-        self._rlock.lock()
+        self._rlock.acquire(true)
         _debug('got read lock on channel',
                 self.name, '_available: ',
-                self._available.availablePermits())
+                self._available._Semaphore__value)
             # Obtain object on Channel.
         obj = self.get()
         _debug('got obj')
@@ -654,7 +569,7 @@ class Channel(Guard,JyCspChannelInterface):
         self._is_alting = False
         self._has_selected = True
         _debug('reset bools')
-        self._rlock.unlock()
+        self._rlock.release()
         if obj == _POISON:
             raise ChannelPoison()
         return obj
@@ -720,8 +635,8 @@ class FileChannel(Channel):
 
     def __setstate__(self, state):
         """Restore object state after unpickling."""
-        self._wlock = RLock()	# Write lock.
-        self._rlock = RLock()	# Read lock.
+        self._wlock = threading.RLock()	# Write lock.
+        self._rlock = threading.RLock()	# Read lock.
         self._available = mypickle.loads(state[0])
         self._taken = mypickle.loads(state[1])
         self._is_alting = mypickle.loads(state[2])
@@ -777,7 +692,7 @@ class FileChannel(Channel):
 
 ### CSP combinators -- Par, Alt, Seq, ...
 
-class Alt(CSPOpMixin,JyCspAltInterface):
+class Alt(CSPOpMixin):
     """CSP select (OCCAM ALT) process.
 
     What should happen if a guard is poisoned?
@@ -785,10 +700,8 @@ class Alt(CSPOpMixin,JyCspAltInterface):
 
     def __init__(self, *args):
         super(Alt, self).__init__()
-        #for arg in args:
-            #print type(arg)
-            #POSSIBLY NEED THIS BUT CANT GET IT TO WORK!!!!!!!!!!!!!!!!!!!!
-            #assert isinstance(arg, Guard)
+        for arg in args:
+            assert isinstance(arg, Guard)
         self.guards = list(args)
         self.last_selected = None
 
@@ -884,50 +797,18 @@ class Alt(CSPOpMixin,JyCspAltInterface):
         for guard in ready[1:]:
             guard.disable()
         return ready[0].select()
-    
-    def last_selected(self):
-        return self.last_selected;
-    
-    def hasNext(self):
-            if len(self.guards) >0:
-                return True
-            else:
-                return False
-            
-    def getGuardLength(self):
-        return len(self.guards);
-            
-    def __mul__(self, n):
-        assert n > 0
-        for i in xrange(n):
-            yield self.select()
-        return
 
-    def __rmul__(self, n):
-        assert n > 0
-        for i in xrange(n):
-            yield self.select()
-        return
-    
 
-class AltFactory(Alt):
-    
-    def __init__(self,*refs):
-        print type(refs[0])
-        Alt.__init__(self,*refs)
-        return
-
-class Par(Jthread, CSPOpMixin,JyCspParInterface):
+class Par(threading.Thread, CSPOpMixin):
     """Run CSP processes in parallel.
     """
 
     def __init__(self, *procs, **kwargs):
-        Jthread.__init__(self)
-        CSPOpMixin.__init__(self)
-        #if 'timeout' in kwargs:
-        #    self.timeout = kwargs['timeout']
-        #else:
-        self.timeout = 5
+        super(Par, self).__init__(None)
+        if 'timeout' in kwargs:
+            self.timeout = kwargs['timeout']
+        else:
+            self.timeout = 0.5
         self.procs = []
         for proc in procs:
             # FIXME: only catches shallow nesting.
@@ -948,17 +829,13 @@ class Par(Jthread, CSPOpMixin,JyCspParInterface):
         """
         self.start()
 
-    def stop(self):
+    def _terminate(self):
         """Terminate the execution of this process.
         """
-#        for proc in self.procs:
-#            proc._terminate()
-#        if self._Thread__started.is_set():
-#            self._Thread__stop()
         for proc in self.procs:
-            proc.stop()
-        if self.isAlive():
-            self.stop()
+            proc._terminate()
+        if self._Thread__started.is_set():
+            self._Thread__stop()
 
     def start(self):
         """Start then synchronize with the execution of parallel processes.
@@ -966,33 +843,25 @@ class Par(Jthread, CSPOpMixin,JyCspParInterface):
         """
         try:
             for proc in self.procs:
-                proc.start()
+                proc._start()
             for proc in self.procs:
-                proc.join(Long.valueOf(self.timeout))
+                proc._join(self.timeout)
         except ChannelPoison:
-            self.stop()
+            self._terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
         return
-    
-class ParFactory(Par):
-    
-    def __init__(self,*refs):
-    
-        Par.__init__(self,*refs)
-      
-        return
 
 
-class Seq(Jthread, CSPOpMixin,JyCspSeqInterface):
+class Seq(thread, CSPOpMixin):
     """Run CSP processes sequentially.
     """
 
     def __init__(self, *procs):
-        Jthread.__init__(self)
+        super(Seq, self).__init__()
         CSPOpMixin.__init__(self)
         self.procs = []
         for proc in procs:
@@ -1003,6 +872,7 @@ class Seq(Jthread, CSPOpMixin,JyCspSeqInterface):
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
+        return
 
     def __str__(self):
         return 'CSP Seq running in process %i.' % self.getPid()
@@ -1018,29 +888,20 @@ class Seq(Jthread, CSPOpMixin,JyCspSeqInterface):
     def start(self):
         """Start this process running.
         """
-        if self.getState() is java.lang.Thread.State.NEW:
-            try:
-                for proc in self.procs:
-                    proc.start()
-                    proc.join()
-            except ChannelPoison:
-                self._terminate()
-            except ProcessSuspend:
-                raise NotImplementedError('Process suspension not yet implemented')
-            except Exception:
-                typ, excn, tback = sys.exc_info()
-                sys.excepthook(typ, excn, tback)
+        try:
+            for proc in self.procs:
+                proc.start()
+                proc.join()
+        except ChannelPoison:
+            self._terminate()
+        except ProcessSuspend:
+            raise NotImplementedError('Process suspension not yet implemented')
+        except Exception:
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
         return
 
 ### Function decorators
-
-class SeqFactory(Seq):
-    
-    def __init__(self,*refs):
-
-        Seq.__init__(self,*refs)
-      
-        return
 
 def process(func):
     """Decorator to turn a function into a CSP process.
@@ -1131,45 +992,25 @@ class TimerGuard(Guard):
     """
 
     def __init__(self):
-        super(TimerGuard, self).__init__()
-        self.now = System.currentTimeMillis()
-        self.name = 'Timer guard created at:' + str(self.now)
-        self.alarm = None
-        return
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
 
-    def set_alarm(self, timeout):
-        self.now = System.currentTimeMillis()
-        self.alarm = self.now + (timeout*1000)
-        return
-    
     def is_selectable(self):
-        self.now = System.currentTimeMillis()
-        if self.alarm is None:
-            return True
-        elif self.now < self.alarm:
-            return False
-        return True
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
 
-    def read(self):
-        """Return current time.
-        """
-        self.now = System.currentTimeMillis()
-        return self.now
-
-    def sleep(self, timeout):
-        """Put this process to sleep for a number of seconds.
-        """
-        time.sleep(timeout)
-        return
-    
     def enable(self):
-        return
-    
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
+
     def disable(self):
-        return
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
 
     def select(self):
-        return
+        """Timer guards not yet implemented."""
+        raise NotImplementedError('Timer guards not yet implemented.')
+
 
 @process
 def Zeroes(cout, _process=None):

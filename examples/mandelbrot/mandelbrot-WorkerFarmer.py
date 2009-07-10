@@ -131,18 +131,19 @@ def consume(IMSIZE, filename, cins, _process=None):
     t0 = time.time()
     alt = Alt(*cins)
     logging.debug('Consumer about to begin ALT loop')
+    j = 0
     for i in range(IMSIZE[0]):
-        xcoord, column = alt.pri_select()
+        xcoord, column = alt.fair_select()
         logging.debug('Consumer got some data for column %i' % xcoord)
         # Update column of blit buffer
         pixmap[xcoord] = column
         # Update image on screen.
         pygame.surfarray.blit_array(screen, pixmap)
         pygame.display.update(xcoord, 0, 1, IMSIZE[1])
-        global SOFAR
-        if SOFAR < IMSIZE[0]:
-            alt.last_selected.write(SOFAR)
-            SOFAR = SOFAR + 1
+        
+        if j < IMSIZE[0]:
+            alt.last_selected.write(j)
+            j += 1
         else:
             alt.last_selected.write(-1)               
     print 'TIME TAKEN:', time.time() - t0, 'seconds.'
@@ -183,12 +184,13 @@ def main(IMSIZE, filename, granularity=10, level='info'):
     # Channel and process lists.
     channels, processes = [], []
     # Create channels and add producer processes to process list.
+    
+    SOFAR = granularity - 1
     for x in xrange(granularity):
         channels.append(Channel())
         processes.append(mandelbrot(x, IMSIZE, channels[x]))
     processes.insert(0, consume(IMSIZE, filename, channels))
-    global SOFAR
-    SOFAR = granularity - 1
+    
     # Start and join producer processes.
     mandel = Par(*processes)
     mandel.start()
