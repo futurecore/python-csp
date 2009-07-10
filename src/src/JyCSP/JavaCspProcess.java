@@ -83,29 +83,8 @@ public abstract class JavaCspProcess extends PyObject implements JavaCspProcessI
 		return this.jcpi.getPid();
 	}
 	
-	/**
-	 * Straight through method call to Jython Class
-	 * 
-	 * Equivalent to :
-	 * 
-	 * Thread.join(long)
-	 * 
-	 * @param t Duration
-	 */
-	public void join(long t){
-		this.jcpi.join(t);
-	}
-	
-	/**
-	 * Straight through method call to Jython Class
-	 * 
-	 * Equivalent to :
-	 * 
-	 * Thread.join()
-	 * 
-	 */
-	public void join(){
-		this.jcpi.join();
+	public Thread.State getState(){
+		return this.jcpi.getState();
 	}
 
 }

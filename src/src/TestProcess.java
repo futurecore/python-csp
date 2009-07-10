@@ -8,7 +8,8 @@ public class TestProcess extends JavaCspProcess{
 	public void target() {
 			//System.out.println("Hello world! from " + this.getPid());
 			this.c = new JavaCspChannel();
-			c.write(new PyString("Hello world! from " + this.getPid()));
+			//c.write(new PyString("Hello world! from " + this.getPid()));
+			
 			
 			
 	}

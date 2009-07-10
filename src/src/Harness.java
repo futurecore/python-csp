@@ -19,9 +19,6 @@ public class Harness {
 		JCspChannel c4 = new JCspChannel();
 		JCspChannel c5 = new JCspChannel();*/
 		// c.write("HELLO");
-		p.start();
-		Alt a = new Alt(t.c,t1.c);
-		System.out.println(a.select());
 		
 
 	}
