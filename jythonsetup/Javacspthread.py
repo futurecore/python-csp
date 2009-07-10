@@ -84,7 +84,7 @@ import java.io.ByteArrayOutputStream as ByteArrayOutputStream
 import java.io.ByteArrayInputStream as ByteArrayInputStream
 import java.lang.String as String
 import java.lang.Byte as Byte
-import java.land.System as System
+import java.lang.System as System
 import JyCSP.Serializer as serializer
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
