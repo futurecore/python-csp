@@ -345,6 +345,15 @@ class JCSPProcess(CSPProcess):
     
     def getState(self):
         return self.getState()
+    
+    
+    def join(self,t):
+        self.join(t);
+        return 
+    
+    def join(self):
+        self.join();
+        return
         
     
 class Guard(object):
