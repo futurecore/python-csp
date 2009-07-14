@@ -64,6 +64,7 @@ public class TestSeq extends TestCase {
 		String a1 = (String) a.select();
 		String a2 = (String) a.select();
 		String a3 = (String) a.select();
+		System.out.println(a1 + " " + a2 + " " + a3);
 		assertEquals(a1, "2");
 		assertEquals(a2, "1");
 		assertEquals(a3, "0");
