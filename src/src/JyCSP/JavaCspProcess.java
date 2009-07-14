@@ -86,5 +86,9 @@ public abstract class JavaCspProcess extends PyObject implements JavaCspProcessI
 	public Thread.State getState(){
 		return this.jcpi.getState();
 	}
+	
+	public void join(){
+		this.jcpi.join();
+	}
 
 }

@@ -7,4 +7,5 @@ public interface JyCspProcessInterface {
 	public void sleep(int t);
 	public long getPid();
 	public Thread.State getState();
+	public void join();
 }

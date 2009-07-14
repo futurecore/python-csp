@@ -46,7 +46,15 @@ public class TestSeq extends TestCase {
 	}
 
 	public void testRun() {
-		fail("Not yet implemented");
+		this.t = new Seq(t0,t1,t2);
+		this.t.run();
+		Alt a = new Alt(c0,c1,c2);
+		String a1 = (String) a.select();
+		String a2 = (String) a.select();
+		String a3 = (String) a.select();
+		assertEquals(a1, "2");
+		assertEquals(a2, "1");
+		assertEquals(a3, "0");
 	}
 
 	public void testStart() {
@@ -56,9 +64,9 @@ public class TestSeq extends TestCase {
 		String a1 = (String) a.select();
 		String a2 = (String) a.select();
 		String a3 = (String) a.select();
-		assertEquals(a1, "0");
+		assertEquals(a1, "2");
 		assertEquals(a2, "1");
-		assertEquals(a3, "2");
+		assertEquals(a3, "0");
 	}
 
 	public void testStop() {
