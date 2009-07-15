@@ -49,10 +49,14 @@ public class TestCspProcess extends TestCase {
 		this.t.start();
 		this.t.chnl.read();
 		this.t.chnl.read();
+		
+		
 		long t0 = ((BigInteger) t.chnl.read()).longValue();
 		t.sleep(5);
 		long t1 = ((BigInteger) t.chnl.read()).longValue();
-		assertTrue(t1-t0 < 100);
+		System.out.println(t1-t0);
+		//assertTrue(t1-t0 < 100);
+		assertEquals(5, t1-t0, 1);
 	}
 
 	public void testGetPid() {

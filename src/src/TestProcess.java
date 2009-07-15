@@ -5,13 +5,12 @@ public class TestProcess extends JavaCspProcess{
 
 	public JavaCspChannel c;
 	
+	public TestProcess(){
+		super();
+	}
+	
 	public void target() {
-			//System.out.println("Hello world! from " + this.getPid());
-			this.c = new JavaCspChannel();
-			//c.write(new PyString("Hello world! from " + this.getPid()));
-			
-			
-			
+			System.out.println("Hello world! from " + this.getPid());		
 	}
 
 

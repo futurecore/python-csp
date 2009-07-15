@@ -115,5 +115,18 @@ public class CspFactory {
 		return (JyCspChannelInterface) JCSPObj
 				.__tojava__(JyCspChannelInterface.class);
 	}
+	
+	/**
+	 * Gets a handle to a Jython Channel Object
+	 * 
+	 * @return JyCspChannelInterface
+	 */
+	public static JyCspTimerGuardInterface createJavaCspTimerGuard(){
+		PyObject jyCspTimerGuard;
+		jyCspTimerGuard = interpreter.get("TimerGuard");
+		PyObject JCSPObj = jyCspTimerGuard.__call__();
+		return (JyCspTimerGuardInterface) JCSPObj
+				.__tojava__(JyCspTimerGuardInterface.class);
+	}
 
 }

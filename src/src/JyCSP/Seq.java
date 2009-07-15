@@ -33,15 +33,6 @@ public class Seq extends PyObject implements JyCspSeqInterface{
 	}
 
 	/**
-	 * Straight through method call to Seq.run()
-	 * 
-	 * UnKnown behaviour
-	 */
-	public void run() {
-		this.jcsi.run();
-	}
-
-	/**
 	 * Straight through method call to Seq.Start()
 	 * 
 	 * Starts the Seq
@@ -50,14 +41,5 @@ public class Seq extends PyObject implements JyCspSeqInterface{
 		this.jcsi.start();
 	}
 
-	/**
-	 * Straight through method call to Seq.Stop()
-	 * Stops the Seq
-	 * 
-	 * Unknown behaviour
-	 */
-	public void stop() {
-		this.jcsi.stop();
-	}
 
 }
