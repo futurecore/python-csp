@@ -26,7 +26,7 @@ public class Alt extends PyObject implements JyCspAltInterface {
 	 * 
 	 * @param args List of Guards for the ALT to Select from.
 	 */
-	public Alt(JavaCspChannel... args) {
+	public Alt(PyObject... args) {
 		super();
 		this.jcsi = CspFactory.createJavaCspAlt(args);
 	}

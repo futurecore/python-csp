@@ -48,12 +48,10 @@ public class TestSeq extends TestCase {
 	public void testStart() {
 		this.t = new Seq(t0,t1,t2);
 		this.t.start();
-		System.out.println("HERE");
 		Alt a = new Alt(c0,c1,c2);
 		String a1 = (String) a.pri_select();
 		String a2 = (String) a.pri_select();
 		String a3 = (String) a.pri_select();
-		System.out.println(a1 + " " + a2 + " " + a3);
 		assertEquals(a1, "0");
 		assertEquals(a2, "1");
 		assertEquals(a3, "2");

@@ -95,7 +95,7 @@ public class CspFactory {
 	 * 				the Java Alt Class which makes a call to this
 	 * @return JyCspAltInterface
 	 */
-	public static JyCspAltInterface createJavaCspAlt(JavaCspChannel... args) {
+	public static JyCspAltInterface createJavaCspAlt(PyObject... args) {
 		PyObject jyJCSPAltClass;
 		jyJCSPAltClass = interpreter.get("AltFactory");
 		PyObject JCSPObj = jyJCSPAltClass.__call__((PyObject[])args);

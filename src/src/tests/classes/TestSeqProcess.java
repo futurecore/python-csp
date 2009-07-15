@@ -18,7 +18,6 @@ public class TestSeqProcess extends JavaCspProcess {
 	}
 
 	public void target() {
-		System.out.println(this.y);
 		this.chnl.write(Integer.valueOf(this.y).toString());
 	}
 

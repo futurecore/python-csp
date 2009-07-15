@@ -1,18 +1,20 @@
 package JyCSP;
 
-public class TimerGuard implements JyCspTimerGuardInterface {
+import org.python.core.PyObject;
+
+public class TimerGuard extends PyObject implements JyCspTimerGuardInterface{
 
 	/**
 	 * Java Timer Guard Interface for the Jython Class TimerGuard.
 	 */
 	protected JyCspTimerGuardInterface jcsi;
+	
+	/**
+	 * Name of the Guard
+	 */
+	public String name;
 
 	/**
-	 * Default Constructor. Make a Call to the static method createJavaCspAlt in
-	 * the CspFactory Class
-	 * 
-	 * @param args
-	 *            List of Guards for the ALT to Select from.
 	 */
 	public TimerGuard() {
 		super();
@@ -31,8 +33,8 @@ public class TimerGuard implements JyCspTimerGuardInterface {
 	}
 
 	@Override
-	public boolean isSelectable() {
-		return this.jcsi.isSelectable();
+	public boolean is_selectable() {
+		return this.jcsi.is_selectable();
 	}
 
 	@Override
@@ -47,8 +49,8 @@ public class TimerGuard implements JyCspTimerGuardInterface {
 	}
 
 	@Override
-	public void setAlarm(long duration) {
-		this.jcsi.setAlarm(duration);
+	public void set_alarm(long duration) {
+		this.jcsi.set_alarm(duration);
 	}
 
 	@Override
@@ -56,5 +58,10 @@ public class TimerGuard implements JyCspTimerGuardInterface {
 		this.jcsi.sleep(duration);
 
 	}
+
+	public long get_alarm() {
+		return this.jcsi.get_alarm();
+	}
+	
 
 }

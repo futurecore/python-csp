@@ -57,20 +57,7 @@ public abstract class JavaCspProcess extends PyObject implements JavaCspProcessI
 	public void run(){
 		this.jcpi.run();
 	}
-	
-	/**
-	 * Stright through method call to Jython method
-	 * 
-	 * Causes the thread to sleep for a set about of time,
-	 * this is equivalent to
-	 * 
-	 * Thread.sleep(long)
-	 * 
-	 * @param t Duration to sleep for
-	 */
-	public void sleep(int t){
-		this.jcpi.sleep(t);
-	}
+
 	
 	/**
 	 * Straight through method call
