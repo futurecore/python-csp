@@ -78,6 +78,7 @@ import JyCSP.JyCspParInterface as JyCspParInterface
 import JyCSP.JyCspSeqInterface as JyCspSeqInterface
 import JyCSP.JyCspChannelInterface as JyCspChannelInterface
 import JyCSP.JyCspAltInterface as JyCspAltInterface
+import JyCSP.JyCspTimerGuardInterface as JyCspTimerGuardInterface
 import java.io.ObjectOutputStream as ObjectOutputStream
 import java.io.ObjectInputStream as ObjectInputStream
 import java.io.ByteArrayOutputStream as ByteArrayOutputStream
@@ -269,6 +270,7 @@ class CSPProcess(Jthread, CSPOpMixin,JyCspProcessInterface):
         """
         return self.getId()
 
+
     def __str__(self):
         return 'CSPProcess running in TID %s' % self.getName()
 
@@ -298,13 +300,7 @@ class CSPProcess(Jthread, CSPOpMixin,JyCspProcessInterface):
 
         return
     
-    def join(self,t):
-        Jthread.join(t);
-        return 
-    
-    def join(self):
-        JThread.join();
-        return
+
 
 class JCSPProcess(CSPProcess):
     def __init__(self,refname): # target : java.lang.Object
@@ -344,15 +340,15 @@ class JCSPProcess(CSPProcess):
         return
     
     def getState(self):
-        return self.getState()
+        return Jthread.getState(self)
     
     
     def join(self,t):
-        self.join(t);
+        Jthread.join(t);
         return 
     
     def join(self):
-        self.join();
+        Jthread.join();
         return
         
     
@@ -825,7 +821,10 @@ class Alt(CSPOpMixin,JyCspAltInterface):
         elif len(self.guards) == 1:
             _debug('Alt Selecting unique guard:', self.guards[0].name)
             self.last_selected = self.guards[0]
-            return self.guards[0].read()
+            self.guards[0].enable()
+            while not self.guards[0].is_selectable():
+                time.sleep(0.01)
+            return self.guards[0].select()
         return None
 
     def select(self):
@@ -922,7 +921,6 @@ class Alt(CSPOpMixin,JyCspAltInterface):
 class AltFactory(Alt):
     
     def __init__(self,*refs):
-        print type(refs[0])
         Alt.__init__(self,*refs)
         return
 
@@ -1135,27 +1133,27 @@ class ConditionGuard(Guard):
         raise NotImplementedError('')
 
 
-class TimerGuard(Guard):
+class TimerGuard(Guard,JyCspTimerGuardInterface):
     """Guard which only commits to synchronisation when a timer has expired.
     """
 
     def __init__(self):
         super(TimerGuard, self).__init__()
         self.now = System.currentTimeMillis()
+        self.fffalarm = -1L # Tell Jython this is a long int
         self.name = 'Timer guard created at:' + str(self.now)
-        self.alarm = None
         return
 
     def set_alarm(self, timeout):
         self.now = System.currentTimeMillis()
-        self.alarm = self.now + (timeout*1000)
+        self.fffalarm = self.now + (timeout * 1000)
         return
     
     def is_selectable(self):
         self.now = System.currentTimeMillis()
-        if self.alarm is None:
+        if self.fffalarm is None or self.fffalarm <= 0.0:
             return True
-        elif self.now < self.alarm:
+        elif self.now < self.fffalarm:
             return False
         return True
 
@@ -1179,6 +1177,9 @@ class TimerGuard(Guard):
 
     def select(self):
         return
+    
+    def get_alarm(self):
+        return self.fffalarm
 
 @process
 def Zeroes(cout, _process=None):
