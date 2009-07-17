@@ -18,7 +18,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A ParTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have rceeived a copy of the GNU General Public License
+You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
@@ -86,6 +86,7 @@ import java.io.ByteArrayInputStream as ByteArrayInputStream
 import java.lang.String as String
 import java.lang.Byte as Byte
 import java.lang.System as System
+import java.lang.Integer as Integer
 import JyCSP.Serializer as serializer
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
@@ -306,7 +307,7 @@ class JCSPProcess(CSPProcess):
     def __init__(self,refname): # target : java.lang.Object
         self.tar = refname
         #ProcessStore.store.remove(refname)
-        #CSPProcess.__init__(self, self.target.target)
+        CSPProcess.__init__(self, self.tar.target)
         #print 'Got object'
         #print 'Object name ', self.tar
         return
@@ -493,8 +494,8 @@ class Channel(Guard,JyCspChannelInterface):
         self._wlock = RLock()	# Write lock.
         self._rlock = RLock()	# Read lock.
         self._store = serializer()
-        self._available = Semaphore(1)
-        self._taken = Semaphore(1)
+        self._available = Semaphore(Integer.MAX_VALUE)
+        self._taken = Semaphore(Integer.MAX_VALUE)
         # Process-safe synchronisation for CSP Select / Occam Alt.
         self._is_alting = False
         self._is_selectable = False
@@ -570,7 +571,10 @@ class Channel(Guard,JyCspChannelInterface):
                    (self.name, self._available.availablePermits() ,
                     self._taken.availablePermits()))
             # Block until the object has been read.
-        self._taken.acquire()
+        self._taken.acquireUninterruptibly()
+        _debug('++++ Writer on Channel %s: _available: %i _taken: %i. ' %
+                   (self.name, self._available.availablePermits() ,
+                    self._taken.availablePermits()))
             # Remove the object from the channel.
         self._wlock.unlock()
         _debug('+++ Write on Channel %s finished.' % self.name)
@@ -589,7 +593,7 @@ class Channel(Guard,JyCspChannelInterface):
         _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
                 (self.name, self._available.availablePermits() ,
                 self._taken.availablePermits() ))
-        self._available.acquire()
+        self._available.acquireUninterruptibly()
             # Get the item.
         _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
                  (self.name, self._available.availablePermits(),
@@ -597,6 +601,9 @@ class Channel(Guard,JyCspChannelInterface):
         obj = self.get()
             # Announce the item has been read.
         self._taken.release()
+        _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
+                 (self.name, self._available.availablePermits(),
+                  self._taken.availablePermits()))
         self._rlock.unlock()
         _debug('+++ Read on Channel %s finished.' % self.name)
         if obj == _POISON:
@@ -830,6 +837,7 @@ class Alt(CSPOpMixin,JyCspAltInterface):
     def select(self):
         """Randomly select from ready guards."""
         if len(self.guards) < 2:
+            _debug('Alt got %i items to choose from' % len(self.guards))
             return self._preselect()
         for guard in self.guards:
             guard.enable()
@@ -1245,10 +1253,10 @@ def Delta2(cin, cout1, cout2, _process=None):
 def Mux2(cin1, cin2, cout, _process=None):
     """Mux2 provides a fair multiplex between two input channels.
     """
-    alt = Alt(cin1.read, cin2.read)
+    alt = Alt(cin1, cin2)
     while True:
         guard = alt.pri_select()
-        cout.write(guard.read())
+        cout.write(guard)
     return
 
 
