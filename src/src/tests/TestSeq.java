@@ -41,6 +41,7 @@ public class TestSeq extends TestCase {
 
 			this.t = new Seq(t0,t1,t2);
 		} catch (Exception e) {
+			e.printStackTrace();
 			assertTrue(false);
 		}
 	}

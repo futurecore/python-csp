@@ -24,7 +24,7 @@ public abstract class JavaCspProcess extends PyObject implements JavaCspProcessI
 	/**
 	 * Required for nesting
 	 */
-	public Object enclosing;
+	public Object enclosing = new Object();
 	
 	
 	/**
