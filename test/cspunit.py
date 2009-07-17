@@ -311,22 +311,13 @@ class TestTimerGuardProc(unittest.TestCase):
         self.timeout = 5.0 # seconds
         return
 
-    @csp.cspprocess.process
-    def read_guard(self, guard, cout, _process=None):
+    def runTest(self):
+        guard = csp.cspprocess.TimerGuard()
+        guard.set_alarm(self.timeout)
         alt = csp.cspprocess.Alt(guard)
         t0 = guard.read()
         alt.select()
-        t1 = guard.read()
-        cout.write(t1 - t0)
-        return
-    
-    def runTest(self):
-        guard = csp.cspprocess.TimerGuard()
-        chan = csp.cspprocess.Channel()
-        reader = self.read_guard(guard, chan)
-        guard.set_alarm(self.timeout)
-        reader.start()
-        duration = chan.read()
+        duration = guard.read() - t0
         self.assertAlmostEqual(duration, self.timeout, 1) # Equal to 1 d.p.
         return
 
@@ -354,24 +345,14 @@ class TestTimerGuardThread(unittest.TestCase):
     def setUp(self):
         self.timeout = 5.0 # seconds
         return
-
-    @csp.cspthread.process
-    def read_guard(self, guard, cout, _process=None):
-        alt = csp.cspthread.Alt(guard)
-        t0 = guard.read()
-        alt.select()
-        t1 = guard.read()
-        duration = t1 - t0
-        cout.write(duration)
-        return
     
     def runTest(self):
         guard = csp.cspthread.TimerGuard()
-        chan = csp.cspthread.Channel()
-        reader = self.read_guard(guard, chan)
         guard.set_alarm(self.timeout)
-        reader.start()
-        duration = chan.read()
+        alt = csp.cspthread.Alt(guard)
+        t0 = guard.read()
+        alt.select()
+        duration = guard.read() - t0
         self.assertAlmostEqual(duration, self.timeout, 1) # Equal to 1 d.p.
         return
 
