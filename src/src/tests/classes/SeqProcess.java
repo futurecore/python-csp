@@ -19,6 +19,7 @@ public class SeqProcess extends JavaCspProcess {
 
 	public void target() {
 		this.chnl.write(Integer.valueOf(this.y).toString());
+		System.out.println("Has Written " + y);
 	}
 
 }

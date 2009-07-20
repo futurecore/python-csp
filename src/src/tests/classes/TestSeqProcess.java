@@ -18,11 +18,11 @@ public class TestSeqProcess extends Thread{
 	}
 
 	public void run() {
-		SeqProcess t0 = new SeqProcess(this.chnl[0],0);
-		SeqProcess t1 = new SeqProcess(this.chnl[1],1);
-		SeqProcess t2 = new SeqProcess(this.chnl[2],2);
-		
-		new Seq(t0,t1,t2).start();
+		SeqProcess[] t = new SeqProcess[this.chnl.length];
+		for(int i = 0; i<this.chnl.length; i++){
+			t[i] = new SeqProcess(this.chnl[i],i);
+		}
+		new Par(t).start();
 	}
 
 }

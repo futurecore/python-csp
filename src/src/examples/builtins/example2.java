@@ -1,6 +1,7 @@
 package examples.builtins;
 
 import JyCSP.JavaCspChannel;
+import JyCSP.builtins.Fibonacci;
 import JyCSP.builtins.Succ;
 
 public class example2 {
@@ -9,10 +10,13 @@ public class example2 {
 	 */
 	public static void main(String[] args) {
 		JavaCspChannel c1 = new JavaCspChannel();
-		JavaCspChannel c2 = new JavaCspChannel();
-		JavaCspChannel c3 = new JavaCspChannel();
+
+		Fibonacci f = new Fibonacci(c1);
+		f.start();
+		for(int i = 0; i<10; i++)
+			System.out.println(c1.read());
 		
-		c1.read();
+		System.exit(0);
 		
 	}
 }

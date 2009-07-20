@@ -11,7 +11,6 @@ public class example1 {
 	public static void main(String[] args) {
 		JavaCspChannel c1 = new JavaCspChannel();
 		JavaCspChannel c2 = new JavaCspChannel();
-		JavaCspChannel c3 = new JavaCspChannel();
 		
 		Succ s = new Succ(c1,c2);
 		s.start();
@@ -19,6 +18,10 @@ public class example1 {
 		while(true){
 			int i = (Integer) c2.read();
 			System.out.println(i);
+			if(i == 10000){
+				System.exit(0);
+			}
+
 			c1.write(i);
 		}
 		
