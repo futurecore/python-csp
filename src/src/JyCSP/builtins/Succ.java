@@ -18,7 +18,7 @@ public class Succ extends JavaCspProcess{
 	@Override
 	public void target() {
 		while(true){
-			this.cout.write(((Integer)cin.read()) + 1);
+			this.cout.write(((Integer)this.cin.read()) + 1);
 		}
 	}
 }

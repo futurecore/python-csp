@@ -49,17 +49,6 @@ public abstract class JavaCspProcess extends PyObject implements JavaCspProcessI
 	}
 	
 	/**
-	 * Straight through method call to Jython method
-	 * JyCspProcess.run()
-	 * 
-	 * unknown behaviour (inherited method)
-	 */
-	public void run(){
-		this.jcpi.run();
-	}
-
-	
-	/**
 	 * Straight through method call
 	 * 
 	 * Gets a unique name

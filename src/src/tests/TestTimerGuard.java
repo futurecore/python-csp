@@ -1,6 +1,7 @@
 package tests;
 
 import JyCSP.Alt;
+import JyCSP.JavaCspChannel;
 import JyCSP.TimerGuard;
 import tests.classes.TestProcess;
 import junit.framework.TestCase;
@@ -42,6 +43,8 @@ public class TestTimerGuard extends TestCase  {
 	public void testSetAlarm() {
 		TimerGuard guard = new TimerGuard();
 	    guard.set_alarm(5); // 5 seconds
+
+	    
         Alt alt = new Alt(guard);
         long t0 = guard.read();
         alt.select();

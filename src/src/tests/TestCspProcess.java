@@ -33,15 +33,11 @@ public class TestCspProcess extends TestCase {
 	public void testStart() {
 
 		this.t.start();
+		String str = (String) this.t.chnl.read();
 		while (this.t.getState() != Thread.State.TERMINATED) {
 
 		}
-		assertTrue(this.t.chnl.read() instanceof String);
-	}
-
-	public void testRun() {
-		this.t.run();
-		assertTrue(this.t.chnl.read() instanceof String);
+		assertTrue(str instanceof String);
 	}
 
 	public void testGetPid() {
