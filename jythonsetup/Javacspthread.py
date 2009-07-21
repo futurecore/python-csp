@@ -78,6 +78,7 @@ import JyCSP.JyCspSeqInterface as JyCspSeqInterface
 import JyCSP.JyCspChannelInterface as JyCspChannelInterface
 import JyCSP.JyCspAltInterface as JyCspAltInterface
 import JyCSP.JyCspTimerGuardInterface as JyCspTimerGuardInterface
+import JyCSP.JyCspSkipGuardInterface as JyCspSkipGuardInterface
 import java.io.ObjectOutputStream as ObjectOutputStream
 import java.io.ObjectInputStream as ObjectInputStream
 import java.io.ByteArrayOutputStream as ByteArrayOutputStream
@@ -1080,7 +1081,7 @@ def _is_csp_type(name):
             return True
     return False
 
-class Skip(Guard):
+class Skip(Guard,JyCspSkipGuardInterface):
     """Guard which will always return C{True}. Useful in L{Alt}s where
     the programmer wants to ensure that L{Alt.select} will always
     synchronise with at least one guard.
