@@ -117,7 +117,7 @@ public class CspFactory {
 	}
 	
 	/**
-	 * Gets a handle to a Jython Channel Object
+	 * Gets a handle to a Jython TimerGuard Object
 	 * 
 	 * @return JyCspChannelInterface
 	 */
@@ -127,6 +127,21 @@ public class CspFactory {
 		PyObject JCSPObj = jyCspTimerGuard.__call__();
 		return (JyCspTimerGuardInterface) JCSPObj
 				.__tojava__(JyCspTimerGuardInterface.class);
+	}
+	
+	
+	
+	/**
+	 * Gets a handle to a Jython SkipGuard Object
+	 * 
+	 * @return JyCspChannelInterface
+	 */
+	public static JyCspSkipGuardInterface createJavaCspSkipGuard(){
+		PyObject jyCspSkipGuard;
+		jyCspSkipGuard = interpreter.get("Skip");
+		PyObject JCSPObj = jyCspSkipGuard.__call__();
+		return (JyCspSkipGuardInterface) JCSPObj
+				.__tojava__(JyCspSkipGuardInterface.class);
 	}
 
 }
