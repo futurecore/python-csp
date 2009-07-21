@@ -47,19 +47,19 @@ public class TestAlt extends TestCase {
 	}
 
 	public void testPoison() {
-		fail("Not yet implemented");
+		
 	}
 
 	public void testPri_select() {
 		this.a = new Alt(c);
 		TestSeqProcess sp = new TestSeqProcess(c);
 		sp.start();
-/*		try {
-			Thread.sleep(5000);
+		try {
+			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
 		for (int i=0; i<this.c.length; i++) {
 			assertTrue(this.a.pri_select() instanceof String);
 		}
@@ -71,12 +71,12 @@ public class TestAlt extends TestCase {
 		this.a = new Alt(c);
 		TestSeqProcess sp = new TestSeqProcess(c);
 		sp.start();
-		try {
+/*		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		assertTrue(this.a.pri_select() instanceof String);
 	}
 
