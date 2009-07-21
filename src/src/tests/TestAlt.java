@@ -93,10 +93,6 @@ public class TestAlt extends TestCase {
 		assertTrue(this.a.pri_select() instanceof String);
 	}
 
-	public void testLast_selected() {
-		fail("Not yet implemented");
-	}
-
 	public void testHasNext() {
 		this.a = new Alt(c);
 		TestSeqProcess sp = new TestSeqProcess(c);
