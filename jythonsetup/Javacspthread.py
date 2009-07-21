@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'June 2009'
 
-#DEBUG = True
-DEBUG = False
+DEBUG = True
+#DEBUG = False
 
 
 def _debug(*args):
@@ -73,7 +73,6 @@ from java.util.concurrent import Semaphore as Semaphore
 from java.lang import Long as Long
 import java.lang.Thread.State
 import JyCSP.JyCspProcessInterface as JyCspProcessInterface
-import JyCSP.ProcessStore as ProcessStore
 import JyCSP.JyCspParInterface as JyCspParInterface
 import JyCSP.JyCspSeqInterface as JyCspSeqInterface
 import JyCSP.JyCspChannelInterface as JyCspChannelInterface
@@ -87,7 +86,9 @@ import java.lang.String as String
 import java.lang.Byte as Byte
 import java.lang.System as System
 import java.lang.Integer as Integer
+import java.lang.Boolean as Boolean
 import JyCSP.Serializer as serializer
+import java.util.concurrent.TimeUnit as TimeUnit
 
 #try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
 #    import cPickle as mypickle # Faster pickle
@@ -306,10 +307,7 @@ class CSPProcess(Jthread, CSPOpMixin,JyCspProcessInterface):
 class JCSPProcess(CSPProcess):
     def __init__(self,refname): # target : java.lang.Object
         self.tar = refname
-        #ProcessStore.store.remove(refname)
         CSPProcess.__init__(self, self.tar.target)
-        #print 'Got object'
-        #print 'Object name ', self.tar
         return
 
     def start(self):
@@ -318,14 +316,14 @@ class JCSPProcess(CSPProcess):
             Jthread.start(self)
     
     def sleep(self,t):
-        Jthread.sleep(t);
+        Jthread.sleep(t)
         
 
     def run(self): #, event=None):
         """Called automatically when the L{start} methods is called.
         """ 
         try:
-            self.tar.target();
+            self.tar.target()
         except ChannelPoison:
             if self.enclosing:
                 self.enclosing._terminate()
@@ -494,8 +492,8 @@ class Channel(Guard,JyCspChannelInterface):
         self._wlock = RLock()	# Write lock.
         self._rlock = RLock()	# Read lock.
         self._store = serializer()
-        self._available = Semaphore(Integer.MAX_VALUE)
-        self._taken = Semaphore(Integer.MAX_VALUE)
+        self._available = Semaphore(0,Boolean.TRUE)
+        self._taken = Semaphore(0,Boolean.TRUE)
         # Process-safe synchronisation for CSP Select / Occam Alt.
         self._is_alting = False
         self._is_selectable = False
@@ -621,10 +619,11 @@ class Channel(Guard,JyCspChannelInterface):
         self._is_alting = True
         self._rlock.lock()
             # Attempt to acquire _available.
-        time.sleep(0.00001) # Won't work without this -- why?
-        retval = self._available.tryAcquire()
+        #time.sleep(0.00001) # Won't work without this -- why?
+        retval = self._available.tryAcquire(500,TimeUnit.MICROSECONDS)
         self._rlock.unlock()    
         if retval:
+            _debug('Just acquired _available. WTF?')
             self._is_selectable = True
         else:
             self._is_selectable = False
@@ -830,7 +829,7 @@ class Alt(CSPOpMixin,JyCspAltInterface):
             self.last_selected = self.guards[0]
             self.guards[0].enable()
             while not self.guards[0].is_selectable():
-                time.sleep(0.01)
+                Jthread.sleep(200)
             return self.guards[0].select()
         return None
 
@@ -844,7 +843,7 @@ class Alt(CSPOpMixin,JyCspAltInterface):
         _debug('Alt enabled all guards')
         ready = [guard for guard in self.guards if guard.is_selectable()]
         while len(ready) == 0:
-            time.sleep(0.01) # Not sure about this.
+            Jthread.sleep(200) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
             _debug('Alt got no items to choose from')
         _debug('Alt got %i items to choose from' % len(ready))
@@ -867,7 +866,7 @@ class Alt(CSPOpMixin,JyCspAltInterface):
         _debug('Alt enabled all guards')
         ready = [guard for guard in self.guards if guard.is_selectable()]
         while len(ready) == 0:
-            time.sleep(0.1) # Not sure about this.
+            Jthread.sleep(200) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
         _debug('Alt got %i items to choose from' % len(ready))
         selected = None
@@ -893,7 +892,7 @@ class Alt(CSPOpMixin,JyCspAltInterface):
         _debug('Alt enabled all guards')
         ready = [guard for guard in self.guards if guard.is_selectable()]
         while len(ready) == 0:
-            time.sleep(0.01) # Not sure about this.
+            Jthread.sleep(200) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
         _debug('Alt got %i items to choose from' % len(ready))
         self.last_selected = ready[0]
