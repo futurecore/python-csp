@@ -5,7 +5,7 @@ import JyCSP.JavaCspChannel;
 public class example3 {
 
 	/**
-	 * @param args
+	 *Example to show JavaCspChannels are blocking
 	 */
 	public static void main(String[] args) {
 		JavaCspChannel c = new JavaCspChannel();
