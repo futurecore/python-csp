@@ -2,6 +2,9 @@ package JyCSP;
 
 import org.python.core.PyObject;
 
+import JyCSP.Interfaces.JyCspSkipGuardInterface;
+import JyCSP.util.CspFactory;
+
 public class JavaCspSkipGuard extends PyObject implements JyCspSkipGuardInterface{
 	
 	/**

@@ -1,7 +1,9 @@
 package JyCSP;
 
 import org.python.core.*;
-import org.python.core.PyObject;
+
+import JyCSP.Interfaces.JyCspChannelInterface;
+import JyCSP.util.CspFactory;
 
 /**
  * 

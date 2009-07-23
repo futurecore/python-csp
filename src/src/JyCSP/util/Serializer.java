@@ -1,4 +1,4 @@
-package JyCSP;
+package JyCSP.util;
 
 import java.io.*;
 

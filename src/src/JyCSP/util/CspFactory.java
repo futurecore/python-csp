@@ -1,10 +1,20 @@
-package JyCSP;
+package JyCSP.util;
 
 import org.python.core.PyObject;
 import org.python.core.PyString;
 import org.python.core.PyInteger;
 import org.python.core.PyType;
 import org.python.util.PythonInterpreter;
+
+import JyCSP.JavaCspProcess;
+import JyCSP.Interfaces.JavaCspProcessInterface;
+import JyCSP.Interfaces.JyCspAltInterface;
+import JyCSP.Interfaces.JyCspChannelInterface;
+import JyCSP.Interfaces.JyCspParInterface;
+import JyCSP.Interfaces.JyCspProcessInterface;
+import JyCSP.Interfaces.JyCspSeqInterface;
+import JyCSP.Interfaces.JyCspSkipGuardInterface;
+import JyCSP.Interfaces.JyCspTimerGuardInterface;
 
 public class CspFactory {
 

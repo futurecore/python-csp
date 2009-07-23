@@ -2,6 +2,9 @@ package JyCSP;
 
 import org.python.core.PyObject;
 
+import JyCSP.Interfaces.JyCspTimerGuardInterface;
+import JyCSP.util.CspFactory;
+
 public class TimerGuard extends PyObject implements JyCspTimerGuardInterface{
 
 	/**

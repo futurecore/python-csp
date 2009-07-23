@@ -1,4 +1,4 @@
-package JyCSP;
+package JyCSP.Interfaces;
 
 public interface JyCspAltInterface {
 

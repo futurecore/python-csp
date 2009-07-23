@@ -2,6 +2,10 @@ package JyCSP;
 
 import org.python.core.*;
 
+import JyCSP.Interfaces.JavaCspProcessInterface;
+import JyCSP.Interfaces.JyCspProcessInterface;
+import JyCSP.util.CspFactory;
+
 /**
  * 
  * @author Sam Wilson, Sarah Mount

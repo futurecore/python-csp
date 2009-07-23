@@ -1,6 +1,9 @@
 package JyCSP;
 
 import org.python.core.*;
+
+import JyCSP.Interfaces.JyCspParInterface;
+import JyCSP.util.CspFactory;
 /**
  * 
  * @author Sam Wilson, Sarah Mount

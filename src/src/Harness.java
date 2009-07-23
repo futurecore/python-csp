@@ -1,5 +1,6 @@
-import JyCSP.CspFactory;
 import JyCSP.*;
+import JyCSP.util.CspFactory;
+
 import org.python.core.*;
 
 

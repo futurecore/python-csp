@@ -2,6 +2,9 @@ package JyCSP;
 
 import org.python.core.*;
 
+import JyCSP.Interfaces.JyCspSeqInterface;
+import JyCSP.util.CspFactory;
+
 /**
  * 
  * @author Sam Wilson, Sarah Mount
