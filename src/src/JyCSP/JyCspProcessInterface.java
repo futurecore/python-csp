@@ -8,4 +8,5 @@ public interface JyCspProcessInterface {
 	public long getPid();
 	public Thread.State getState();
 	public void join();
+	public void join(long duration);
 }

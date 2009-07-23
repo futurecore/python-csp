@@ -66,5 +66,9 @@ public abstract class JavaCspProcess extends PyObject implements JavaCspProcessI
 	public void join(){
 		this.jcpi.join();
 	}
+	
+	public void join(long d){
+		this.jcpi.join(d);
+	}
 
 }
