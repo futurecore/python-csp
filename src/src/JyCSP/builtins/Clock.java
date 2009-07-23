@@ -20,7 +20,7 @@ public class Clock extends JavaCspProcess {
 		while (true) {
 			try {
 				Thread.sleep(res);
-				this.cout.write(null);
+				this.cout.write(new Object());
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
