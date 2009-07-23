@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'June 2009'
 
-DEBUG = True
-#DEBUG = False
+#DEBUG = True
+DEBUG = False
 
 
 def _debug(*args):
@@ -66,19 +66,19 @@ try: # Python optimisation compiler
 except ImportError:
     print 'No available optimisation'
 
-#import threading
+#Import java classes
 from java.lang import Thread as  Jthread
 from java.util.concurrent.locks import ReentrantLock as RLock
 from java.util.concurrent import Semaphore as Semaphore
 from java.lang import Long as Long
 import java.lang.Thread.State
-import JyCSP.JyCspProcessInterface as JyCspProcessInterface
-import JyCSP.JyCspParInterface as JyCspParInterface
-import JyCSP.JyCspSeqInterface as JyCspSeqInterface
-import JyCSP.JyCspChannelInterface as JyCspChannelInterface
-import JyCSP.JyCspAltInterface as JyCspAltInterface
-import JyCSP.JyCspTimerGuardInterface as JyCspTimerGuardInterface
-import JyCSP.JyCspSkipGuardInterface as JyCspSkipGuardInterface
+import JyCSP.Interfaces.JyCspProcessInterface as JyCspProcessInterface
+import JyCSP.Interfaces.JyCspParInterface as JyCspParInterface
+import JyCSP.Interfaces.JyCspSeqInterface as JyCspSeqInterface
+import JyCSP.Interfaces.JyCspChannelInterface as JyCspChannelInterface
+import JyCSP.Interfaces.JyCspAltInterface as JyCspAltInterface
+import JyCSP.Interfaces.JyCspTimerGuardInterface as JyCspTimerGuardInterface
+import JyCSP.Interfaces.JyCspSkipGuardInterface as JyCspSkipGuardInterface
 import java.io.ObjectOutputStream as ObjectOutputStream
 import java.io.ObjectInputStream as ObjectInputStream
 import java.io.ByteArrayOutputStream as ByteArrayOutputStream
@@ -88,13 +88,10 @@ import java.lang.Byte as Byte
 import java.lang.System as System
 import java.lang.Integer as Integer
 import java.lang.Boolean as Boolean
-import JyCSP.Serializer as serializer
+import JyCSP.util.Serializer as serializer
 import java.util.concurrent.TimeUnit as TimeUnit
 
-#try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
-#    import cPickle as mypickle # Faster pickle
-#except ImportError:
-import pickle as mypickle
+
 
 ### CONSTANTS
 
@@ -306,17 +303,25 @@ class CSPProcess(Jthread, CSPOpMixin,JyCspProcessInterface):
 
 
 class JCSPProcess(CSPProcess):
+    """Wrapper for CSPProcess in java
+     
+    """
     def __init__(self,refname): # target : java.lang.Object
         self.tar = refname
         CSPProcess.__init__(self, self.tar.target)
         return
 
+   
     def start(self):
-        #blah#
+        """ starts the CSPProcess if it has not be started before
+        """
         if self.getState() is java.lang.Thread.State.NEW:
             Jthread.start(self)
     
+   
     def sleep(self,t):
+        """Causes the CSPProcess to sleep for the duration specified by the parameter
+        """
         Jthread.sleep(t)
         
 
@@ -340,14 +345,22 @@ class JCSPProcess(CSPProcess):
         return
     
     def getState(self):
+        """Gets the java state of the CSPProcess
+        """
         return Jthread.getState(self)
     
     
     def join(self,t):
+        """Causes the CSPProcess to wait for a specified amount of time for the 
+        CSPProcess to terminate
+        """
         Jthread.join(t);
         return 
     
     def join(self):
+        """Causes the CSPProcess to wait until
+        CSPProcess to terminate
+        """
         Jthread.join();
         return
         
@@ -928,6 +941,9 @@ class Alt(CSPOpMixin,JyCspAltInterface):
 
 class AltFactory(Alt):
     
+    """NOT TO BE USED!!!
+    this is a factory class used by the Java class CspFactory
+    """
     def __init__(self,*refs):
         Alt.__init__(self,*refs)
         return
@@ -994,7 +1010,9 @@ class Par(Jthread, CSPOpMixin,JyCspParInterface):
         return
     
 class ParFactory(Par):
-    
+    """NOT TO BE USED!!!
+    this is a factory class used by the Java class CspFactory
+    """
     def __init__(self,*refs):
     
         Par.__init__(self,*refs)
@@ -1050,7 +1068,9 @@ class Seq(Jthread, CSPOpMixin,JyCspSeqInterface):
 ### Function decorators
 
 class SeqFactory(Seq):
-    
+    """NOT TO BE USED!!!
+    this is a factory class used by the Java class CspFactory
+    """
     def __init__(self,*refs):
 
         Seq.__init__(self,*refs)
