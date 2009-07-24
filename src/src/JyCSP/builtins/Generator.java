@@ -6,7 +6,7 @@ public class Generator extends JavaCspProcess {
 
 	private JavaCspChannel cout;
 
-	public Generator(JavaCspChannel cin, JavaCspChannel cout) {
+	public Generator(JavaCspChannel cout) {
 		super();
 		this.cout = cout;
 

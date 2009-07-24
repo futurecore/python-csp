@@ -15,6 +15,7 @@ public class Fibonacci extends JavaCspProcess {
 	public void target() {
 		int a_int = 1;
 		int b_int = 1;
+		cout.write(0);
 		    while(true){
 		        cout.write(a_int);
 		        int c = a_int;
