@@ -23,7 +23,7 @@ public class Prefix<T> extends JavaCspProcess{
 	public void target() {
 		T pre = this.prefix_item;
 		while(true){
-			this.cout.write(this.prefix_item);
+			this.cout.write(pre);
 			pre = (T) cin.read();
 		}
 	}
