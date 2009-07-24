@@ -55,7 +55,7 @@ public class TestAlt extends TestCase {
 		TestSeqProcess sp = new TestSeqProcess(c);
 		sp.start();
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(10);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,12 +84,12 @@ public class TestAlt extends TestCase {
 		this.a = new Alt(c);
 		TestSeqProcess sp = new TestSeqProcess(c);
 		sp.start();
-		try {
+/*		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		assertTrue(this.a.pri_select() instanceof String);
 	}
 
@@ -97,12 +97,12 @@ public class TestAlt extends TestCase {
 		this.a = new Alt(c);
 		TestSeqProcess sp = new TestSeqProcess(c);
 		sp.start();
-		try {
+/*		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		assertTrue(this.a.pri_select() instanceof String);
 		assertTrue(this.a.hasNext());
 	}
