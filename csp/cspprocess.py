@@ -1105,6 +1105,13 @@ def Mux2(cin1, cin2, cout, _process=None):
         cout.write(guard.read())
     return
 
+@process
+def Multiply(cin0,cin1,cout0,_process=None):
+    
+    while True:
+        cout0.write(cin0.read() * cin1.read())
+    return
+
 
 @process
 def Clock(cout, resolution=1, _process=None):

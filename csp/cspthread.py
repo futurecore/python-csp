@@ -1123,6 +1123,13 @@ def Mult(cin, cout, scale, _process=None):
         cout.write(cin.read() * scale)
     return
 
+@process
+def Multiply(cin0,cin1,cout0,_process=None):
+    
+    while True:
+        cout0.write(cin0.read() * cin1.read())
+    return
+
 
 @process
 def Generate(cout, _process=None):
