@@ -117,13 +117,14 @@ def consume(IMSIZE, filename, cins, _process=None):
     pygame.display.set_caption('python-csp Mandelbrot fractal example.')
     # Wait on channel events
     t0 = time.time()
-    alt = Alt(*cins)
+#    alt = Alt(*cins)
+    gen = len(cins) * Alt(*cins)
     logging.debug('Consumer about to begin ALT loop')
     for i in range(len(cins)):
 #        print 'Alt has %i guards' % len(alt.guards)
-        xcoord, column = alt.select()
+        xcoord, column = gen.next() #alt.select()
         logging.debug('Consumer got some data for column %i' % xcoord)
-        alt.poison() # Remove last selected guard and associated processes.
+#        alt.poison() # Remove last selected guard and associated processes.
         # Update column of blit buffer
         pixmap[xcoord] = column
 	# Update image on screen.
