@@ -78,7 +78,7 @@ except ImportError:
     raise ImportError('No library available for multiprocessing.\n'+
                       'csp.cspprocess is only compatible with Python 2. 6 and above.')
 
-try: ### DON'T UNCOMMENT THIS IT CAUSES A BUG IN CHANNEL SYNCHRONISATION!
+try:
     import cPickle as mypickle # Faster pickle
 except ImportError:
     import pickle as mypickle
@@ -206,7 +206,7 @@ class CSPOpMixin(object):
         Requires timeout with a small value to ensure
         parallelism. Otherwise a long sequence of '&' operators will
         run in sequence (because of left-to-right evaluation and
-        orders of precedence.
+        orders of precedence).
         """
         assert _is_csp_type(other)
         par = Par(other, self, timeout = 0.1)
@@ -257,16 +257,30 @@ class CSPProcess(processing.Process, CSPOpMixin):
         try:
             self._target(*self._args, **self._kwargs)
         except ChannelPoison:
-            if self.enclosing:
-                self.enclosing._terminate()
-            self._terminate()
-            del self
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
-        except Exception:
-            typ, excn, tback = sys.exc_info()
-            sys.excepthook(typ, excn, tback)
+            print self.getPid(), 'got ChannelPoison exception...'
+            for arg in self.__dict__.values():
+#                print 'foo'
+                if arg is self or arg is None: continue
+                if isinstance(arg, Channel):
+                    print 'Poisoning', str(arg)
+                    arg.poison()
+#                elif (hasattr(arg, '__getitem__') or
+#                      hasattr(arg, '__iter__')) and not isinstance(arg, basestring):
+#                    map(kill, arg)
+            print self.getPid(), 'closing now.'
+            return
+#        except ProcessSuspend:
+#            raise NotImplementedError('Process suspension not yet implemented')
+#        except Exception:
+#            typ, excn, tback = sys.exc_info()
+#            sys.excepthook(typ, excn, tback)
         return
+
+
+def kill(walking_dead):
+    if isinstance(walking_dead, Channel):
+        print 'Poisoning', str(walking_dead)
+        walking_dead.poison()
 
 
 class Guard(object):
@@ -400,6 +414,7 @@ class Channel(Guard):
         self._has_selected = None  # True if already been committed to select.
         self._itemr, self._itemw = os.pipe()
         self._setup()
+        self.is_poisoned = False
         super(Channel, self).__init__()
         return
 
@@ -483,11 +498,15 @@ class Channel(Guard):
         """
         _debug('Alt THINKS _is_selectable IS: ' +
                str(self._is_selectable.value == Channel.TRUE))
+        if self.is_poisoned: raise ChannelPoison()
+
         return self._is_selectable.value == Channel.TRUE
 
     def write(self, obj):
         """Write a Python object to this channel.
         """
+        if self.is_poisoned: raise ChannelPoison()
+
         _debug('+++ Write on Channel %s started.' % self.name)
         with self._wlock: # Protect from races between multiple writers.
             # If this channel has already been selected by an Alt then
@@ -513,6 +532,8 @@ class Channel(Guard):
         # FIXME: These assertions sometimes fail...why?
 #        assert self._is_alting.value == Channel.FALSE
 #        assert self._is_selectable.value == Channel.FALSE
+        if self.is_poisoned: raise ChannelPoison()
+
         _debug('+++ Read on Channel %s started.' % self.name)
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
@@ -529,6 +550,7 @@ class Channel(Guard):
             self._taken.release()
         _debug('+++ Read on Channel %s finished.' % self.name)
         if obj == _POISON:
+            self.is_poisoned = True
             raise ChannelPoison()
         return obj
 
@@ -537,6 +559,8 @@ class Channel(Guard):
 
         MUST be called before L{select()} or L{is_selectable()}.
         """
+        if self.is_poisoned: raise ChannelPoison()
+
         # Prevent re-synchronization.
         if (self._has_selected.value == Channel.TRUE or
             self._is_selectable.value == Channel.TRUE):
@@ -560,6 +584,8 @@ class Channel(Guard):
 
         MUST be called after L{enable} if this channel is not selected.
         """
+        if self.is_poisoned: raise ChannelPoison()
+
         self._is_alting.value = Channel.FALSE
         if self._is_selectable.value == Channel.TRUE:
             with self._rlock:
@@ -572,6 +598,8 @@ class Channel(Guard):
         """
         _debug('channel select starting')
         assert self._is_selectable.value == Channel.TRUE
+        if self.is_poisoned: raise ChannelPoison()
+
         with self._rlock:
             _debug('got read lock on channel',
                    self.name, '_available: ',
@@ -597,7 +625,7 @@ class Channel(Guard):
     def poison(self):
         """Poison a channel causing all processes using it to terminate.
         """
-        raise ChannelPoison()
+        self.is_poisoned = True
 
     def suspend(self):
         """Suspend this mobile channel before migrating between processes.
@@ -708,6 +736,84 @@ class FileChannel(Channel):
         raise NotImplementedError('Suspend / resume not implemented')
 
 
+class NetworkChannel(Channel):
+    """Network channels ...
+    """
+    
+    def __init__(self):
+        self.name = Channel.NAMEFACTORY.name()
+        self._wlock = None	# Write lock.
+        self._rlock = None	# Read lock.
+        self._available = None
+        self._taken = None
+        self._is_alting = None
+        self._is_selectable = None
+        self._has_selected = None
+        # Process-safe store.
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._setup()
+        return
+
+    def __getstate__(self):
+        """Return state required for pickling."""
+        state = [mypickle.dumps(self._available, protocol=1),
+                 mypickle.dumps(self._taken, protocol=1),
+                 mypickle.dumps(self._is_alting, protocol=1),
+                 mypickle.dumps(self._is_selectable, protocol=1),
+                 mypickle.dumps(self._has_selected, protocol=1),
+                 self._fname]
+        if self._available.get_value() > 0:
+            obj = self.get()
+        else:
+            obj = None
+        state.append(obj)
+        return state
+
+    def __setstate__(self, state):
+        """Restore object state after unpickling."""
+        self._wlock = processing.RLock()	# Write lock.
+        self._rlock = processing.RLock()	# Read lock.
+        self._available = mypickle.loads(state[0])
+        self._taken = mypickle.loads(state[1])
+        self._is_alting = mypickle.loads(state[2])
+        self._is_selectable = mypickle.loads(state[3])
+        self._has_selected = mypickle.loads(state[4])
+        if state[5] is not None:
+            self.put(state[5])
+        return
+
+    def put(self, item):
+        """Put C{item} on a process-safe store.
+        """
+        self.sock.sendto(mypickle.dumps(item, protocol=1),
+                         (_HOST, _CHANNEL_PORT))
+        return
+
+    def get(self):
+        """Get a Python object from a process-safe store.
+        """
+        data = self.sock.recv(_BUFFSIZE)
+        obj = mypickle.loads(data)
+        return obj
+
+    def __del__(self):
+        self.sock.close()
+        del self
+        return
+    
+    def __str__(self):
+        return 'Channel using sockets for IPC.'
+
+    def suspend(self):
+        """Suspend this mobile channel before migrating between processes.
+        """
+        raise NotImplementedError('Suspend / resume not implemented')
+
+    def resume(self):
+        """Suspend this mobile channel after migrating between processes.
+        """
+        raise NotImplementedError('Suspend / resume not implemented')
+    
 ### CSP combinators -- Par, Alt, Seq, ...
 
 class Alt(CSPOpMixin):
@@ -1365,4 +1471,3 @@ Is = _applybinop(lambda x, y: x is y,
 Is_Not = _applybinop(lambda x, y: not (x is y),
                    """Writes True if two input events are not the same (is).
 """)
-

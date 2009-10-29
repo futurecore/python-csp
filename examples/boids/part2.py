@@ -48,6 +48,7 @@ class Boid(object):
         if self.centre[1]<0: self.centre[1] += SIZE[1]
         elif self.centre[1]>SIZE[1]: self.centre[1] -= SIZE[1]
         return
+    @process
     def simulate(self, _process=None):
         while True:
             self.centre = [self.centre[0] + self.velocity[0],
@@ -82,7 +83,8 @@ def drawboids(screen, poschans, _process=None):
                 print 'Saving boids in:', FILENAME        
     return
 
-def main():
+@process
+def main(_process=None):
     pygame.init()
     screen = pygame.display.set_mode((SIZE[0], SIZE[1]), 0)
     pygame.display.set_caption(CAPTION)
@@ -92,11 +94,11 @@ def main():
     # Draw channel for the drawboids process.
     drawchan = Channel()
     # Generate a list of all processes in the simulation.
-    procs = [CSPProcess(boids[i].simulate) for i in range(NUMBOIDS)]
+    procs = [boids[i].simulate() for i in range(NUMBOIDS)]
     procs.append(drawboids(screen, poschans)) # Drawing process.
     simulation = Par(*procs)                  # Start simulation.
     simulation.start()
     return
 
 if __name__ == '__main__':
-    main()
+    main().start()

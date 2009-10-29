@@ -96,7 +96,8 @@ def mandelbrot(xcoord, (width, height), cout,
 #    logging.debug('process %g sending column for x=%i' %
 #                  (_process.getPid(), xcoord))
     cout.write((xcoord, imgcolumn))
-    return
+    _process._terminate()
+#    return
 
 
 @process
@@ -129,6 +130,14 @@ def consume(IMSIZE, filename, cins, _process=None):
 	# Update image on screen.
         pygame.surfarray.blit_array(screen, pixmap)
         pygame.display.update(xcoord, 0, 1, IMSIZE[1])        
+        for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				for channel in cins:
+					channel.poison()
+				pygame.time.wait(1000)
+				pygame.quit()
+			elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+				pygame.image.save(screen, filename)
     print 'TIME TAKEN:', time.time() - t0, 'seconds.'
     logging.debug('Consumer drawing image on screen')
     # With ALT poisoning 320 cols: 211.819334984 seconds
@@ -147,8 +156,9 @@ def consume(IMSIZE, filename, cins, _process=None):
                 pygame.image.save(screen, filename)
                 print 'Saving fractal image in:', filename
 
-    
-def main(IMSIZE, filename, level='info'):
+
+@process
+def main(IMSIZE, filename, level='info', _process=None):
     """Manage all processes and channels required to generate fractal.
 
     @type IMSIZE: C{tuple}
@@ -203,7 +213,7 @@ if __name__ == '__main__':
 #         csptracer.start_trace()
 #     except Exception, e:
 #         pass
-    main(IMSIZE, filename, level='info')
+    main(IMSIZE, filename, level='info').start()
 #     try:
 #         csptracer.write_png()
 #     except Exception, e:

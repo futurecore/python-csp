@@ -1,7 +1,8 @@
 """
 Boids simulation using python-csp and pygame.
 
-Part4 -- Adding full flocking behaviour.
+Part5 -- Adding obstacles.
+Debug version with sliders.
 
 Copyright (C) Sarah Mount, 2009.
 
@@ -29,9 +30,12 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'October 2009'
 
 NUMBOIDS = 100                # Number of boids in simulation.
+NUMOBS = 5                    # Number of obstacles.
 FILENAME = 'boids.png'        # Screenshot file.
 FGCOL = (137, 192, 210, 100)  # Foreground colour.
 BGCOL = pygame.Color('black') # Background colour.
+OBCOL = (120, 224, 120, 100)  # Obstacle colour.
+TXTCOL = pygame.Color('white')# Text colour.
 FPS = 60                      # Maximum frames per second.
 SIZE = (800, 600)             # Screen size.
 CAPTION = 'python-csp example: Boids'
@@ -107,10 +111,29 @@ class Boid(object):
             self.wrap_screen()
         return
 
+class MovingObstacle(object):
+    def __init__(self):
+        self.centre = (random.randint(0, SIZE[0]), random.randint(0, SIZE[1]))
+        self.velocity = scale(dot_minus(self.centre, (100.0, 100.0)), 0.01)
+        return
+    def wrap_screen(self):
+        if self.centre[0]<0: self.centre[0] += SIZE[0]
+        elif self.centre[0]>SIZE[0]: self.centre[0] -= SIZE[0]
+        if self.centre[1]<0: self.centre[1] += SIZE[1]
+        elif self.centre[1]>SIZE[1]: self.centre[1] -= SIZE[1]
+        return
+    def simulate(self, _process=None):
+        while True:
+            self.centre = dot_add(self.centre, self.velocity)
+            self.wrap_screen()
+        return
+    
 class FlockManager(object):
-    def __init__(self, channels, drawchan):
+    def __init__(self, channels, obschans, drawchan_boids, drawchan_obs):
         self.channels = channels
-        self.drawchan = drawchan
+        self.obschans = obschans
+        self.drawchan_boids = drawchan_boids
+        self.drawchan_obs = drawchan_obs
         return
     def nearby(self, (pos1, vel1), (pos2, vel2)):
         if pos1 == pos2 and vel1 == vel2: return False
@@ -118,36 +141,92 @@ class FlockManager(object):
     @process
     def manage_flock(self, _process=None):
         info = [(0,0) for i in range(len(self.channels))]
-        relify = lambda ((x,y), vel): ([x-info[i][0][0], y-info[i][0][1]], vel)
+        relify = lambda ((x,y), vel): ([x - info[i][0][0], y - info[i][0][1]], vel)
         while True:
             for i in range(NUMBOIDS): info[i] = self.channels[i].read()
-            self.drawchan.write(info)
+            self.drawchan_boids.write(info)
             for i in range(NUMBOIDS):
                 near = filter(lambda posvel: self.nearby(info[i], posvel), info)
                 rel = map(relify, near)
                 self.channels[i].write(rel)
         return
 
+class Slider(object):
+    # Based on a demo by PyMike.
+    def __init__(self, pos, name, value=0):
+        self.pos = pos
+        self.bar = pygame.Surface((120, 15))
+        self.bar.fill((200, 200, 200))
+        self.slider = pygame.Surface((20, 15))
+        self.slider.fill((230, 230, 230))
+        pygame.draw.rect(self.bar, (0, 0, 0), (0, 0, 120, 15), 2)
+        pygame.draw.rect(self.slider, (0, 0, 0), (-1, -1, 20, 15), 2)
+        self.slider.set_at((19, 14), (0, 0, 0))
+        self.brect = self.bar.get_rect(topleft = pos)
+        self.srect = self.slider.get_rect(topleft = pos)
+        self.srect.left = (value * 100.0) + pos[0]
+        self.clicked = False
+        self.value = value
+        self.name = name
+        self.label = self.name + ' %.3g' % self.value
+        return
+    def update(self):
+        mousebutton = pygame.mouse.get_pressed()
+        cursor = Rect(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], 1, 1)
+        if cursor.colliderect(self.brect):
+            if mousebutton[0]: self.clicked = True
+            else: self.clicked = False
+        if not mousebutton[0]: self.clicked = False
+        if self.clicked: self.srect.center = cursor.center
+        self.srect.clamp_ip(self.brect)
+        if self.srect.left - self.brect.left == 0.0: self.value = 0.0
+        else: self.value = (self.srect.left - self.brect.left) / 100.0
+        self.label = self.name + ' %.3f' % self.value
+        return
+    def render(self, surface):
+        surface.blit(self.bar, self.brect)
+        surface.blit(self.slider, self.srect)
+        return
+
 @process
-def drawboids(screen, drawchan, _process=None):
+def drawboids(screen, boidchan, obschan, _process=None):
     global SIZE, COHESION, AVOIDANCE, ALIGNMENT, ACCEL
     clock = pygame.time.Clock()
     dirty, last = [], []
+    font = pygame.font.SysFont('Times New Roman', 16)
+    sliders = [Slider((120, SIZE[1] - 100), 'Cohesion', value=COHESION),
+               Slider((120, SIZE[1] - 75), 'Avoidance', value=AVOIDANCE),
+               Slider((120, SIZE[1] - 50), 'Alignment', value=ALIGNMENT),
+               Slider((120, SIZE[1] - 25), 'Acceleration', value=ACCEL)]
     while True:
         ms_elapsed = clock.tick(FPS)
 #        print ms_elapsed
         dirty = last
         for rect in last: screen.fill(BGCOL, rect)
         last = []
-        positions, vels = zip(*drawchan.read())
+        positions, vels = zip(*boidchan.read())
+        obstacles = obschan.read()
         for (x, y) in positions:
             rect = pygame.draw.circle(screen, FGCOL, (int(x), int(y)), 2, 0)
             dirty.append(rect)
             last.append(rect)
+        for slider in sliders:
+            dirty.append(slider.srect)
+            dirty.append(slider.brect)
+            slider.update()
+            slider.render(screen)
+            txt = font.render(slider.label, 1, TXTCOL, background=BGCOL)
+            screen.fill(BGCOL, Rect(5, slider.pos[1], txt.get_rect().width, txt.get_rect().height))
+            dirty.append(screen.blit(txt, (5, slider.pos[1])))            
+            dirty.append(slider.srect)
+            dirty.append(slider.brect)
+        COHESION, AVOIDANCE, ALIGNMENT, ACCEL = \
+            sliders[0].value, sliders[1].value, sliders[2].value, sliders[3].value
         pygame.display.update(dirty)     # Update dirty rects.
         for event in pygame.event.get(): # Process events.
             if event.type == pygame.QUIT:
-                drawchan.poison()
+                boidchan.poison()
+                obschan.poison()
                 pygame.quit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, FILENAME)
@@ -161,13 +240,16 @@ def main(_process=None):
     pygame.display.set_caption(CAPTION)
     # Set up channels for reporting boid positions / velocities.
     poschans = [Channel() for i in range(NUMBOIDS)]
+    obschans = [Channel() for i in range(NumOBS)]
     boids = [Boid(poschans[i]) for i in range(NUMBOIDS)]
-    drawchan = Channel()                      # Draw channel.
-    fm = FlockManager(poschans, drawchan)     # Cell object.
+    obstacles = [Obstacle() for i in range(NUMOBS)]
+    boid_drawchan, obs_drawchan = Channel(), Channel()  # Draw channels.
+    fm = FlockManager(poschans, obschans, drawchan)     # Cell object.
     # Generate a list of all processes in the simulation.
     procs = [boids[i].simulate() for i in range(NUMBOIDS)]
+    for obs in obstacles: procs.append(obs.simulate)
     procs.append(fm.manage_flock())           # Manager process.
-    procs.append(drawboids(screen, drawchan)) # Drawing process.
+    procs.append(drawboids(screen, boid_drawchan, obs_drawchan))
     simulation = Par(*procs)                  # Start simulation.
     simulation.start()
     return

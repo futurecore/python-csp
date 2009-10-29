@@ -21,15 +21,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
 from csp.cspprocess import *
-import logging, math, Numeric, pygame, time
+import logging
+import math
+import Numeric
+import pygame
+import time
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
 
 MAXITER = 100
-"""@var: Number of iterations used to determine each pixel of the fractal image.
+"""@var: Number of iterations used to determine each pixel of the
+fractal image.
 @see: L{mandelbrot}
 """
+
 
 def get_colour(mag, cmin=0, cmax=100):
     """Given a float, returns an RGB triple.
@@ -46,9 +52,9 @@ def get_colour(mag, cmin=0, cmax=100):
     """
     assert cmin != cmax
     a = float(mag-cmin)/(cmax-cmin)
-    blue = min((max((4*(0.75-a),0.)),1.))
-    red = min((max((4*(a-0.25),0.)),1.))
-    green = min((max((4*math.fabs(a-0.5)-1.,0)),1.))
+    blue = min((max((4*(0.75-a), 0.)), 1.))
+    red = min((max((4*(a-0.25), 0.)), 1.))
+    green = min((max((4*math.fabs(a-0.5)-1., 0)), 1.))
     return int(255*red), int(255*green), int(255*blue)
 
 
@@ -85,10 +91,11 @@ def mandelbrot(xcoord, (width, height), cout,
         for i in range(MAXITER):
             z = complex(z.real**2 - z.imag**2 + c.real,
                         2*z.real*z.imag + c.imag)
-            if abs(z)**2 > 4: break
+            if abs(z)**2 > 4:
+                break
         if i == MAXITER - 1:
             # Point lies inside the Mandelbrot set.
-            colour = (0,0,0)
+            colour = (0, 0, 0)
         else:
             # Point lies outside the Mandelbrot set.
             colour = get_colour(nu(z, i), cmax=MAXITER)
@@ -111,6 +118,7 @@ def consume(IMSIZE, filename, cins, _process=None):
     @param cins: Input channels from which image columns will be read.
     """
     # Create initial pixel data
+    print 'I am process...', _process.getPid()
     pixmap = Numeric.zeros((IMSIZE[0], IMSIZE[1], 3))
     pygame.init()
     screen = pygame.display.set_mode((IMSIZE[0], IMSIZE[1]), 0)
@@ -121,15 +129,21 @@ def consume(IMSIZE, filename, cins, _process=None):
     gen = len(cins) * Alt(*cins)
     logging.debug('Consumer about to begin ALT loop')
     for i in range(len(cins)):
-#        print 'Alt has %i guards' % len(alt.guards)
         xcoord, column = gen.next() #alt.select()
         logging.debug('Consumer got some data for column %i' % xcoord)
-#        alt.poison() # Remove last selected guard and associated processes.
         # Update column of blit buffer
         pixmap[xcoord] = column
-	# Update image on screen.
+        # Update image on screen.
         pygame.surfarray.blit_array(screen, pixmap)
-        pygame.display.update(xcoord, 0, 1, IMSIZE[1])        
+        pygame.display.update(xcoord, 0, 1, IMSIZE[1])
+        for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				for channel in cins:
+					channel.poison()
+				pygame.time.wait(1000)
+				pygame.quit()
+			elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+				pygame.image.save(screen, filename)
     print 'TIME TAKEN:', time.time() - t0, 'seconds.'
     logging.debug('Consumer drawing image on screen')
     # With ALT poisoning 320 cols: 211.819334984 seconds
@@ -139,17 +153,20 @@ def consume(IMSIZE, filename, cins, _process=None):
     pygame.image.save(screen, filename)
     logging.info('Consumer finished processing image data')
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                _process._terminate()
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				for channel in cins: channel.poison()
                 return
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-                pygame.image.save(screen, filename)
-                print 'Saving fractal image in:', filename
+#			elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+#				pygame.image.save(screen, filename)
+#    return
 
-    
-def main(IMSIZE, filename, level='info'):
+#				pygame.time.wait(1000)
+#				pygame.quit()
+
+
+@process
+def main(IMSIZE, filename, level='info', _process=None):
     """Manage all processes and channels required to generate fractal.
 
     @type IMSIZE: C{tuple}
@@ -204,7 +221,7 @@ if __name__ == '__main__':
 #         csptracer.start_trace()
 #     except Exception, e:
 #         pass
-    main(IMSIZE, filename, level='info')
+    main(IMSIZE, filename, level='info').start()
 #     try:
 #         csptracer.write_png()
 #     except Exception, e:

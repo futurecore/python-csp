@@ -164,6 +164,19 @@ class TestFileChannelSingleProc(__TestChannelProc):
         return
 
 
+class TestNetworkChannelSingleProc(__TestChannelProc):
+
+    def runTest(self):
+        """Test single reader, single writer on C{Channel} objects.
+        """
+        c1 = csp.cspprocess.NetworkChannel()
+        c2 = csp.cspprocess.NetworkChannel()
+        self.write(100, c1) & self.read_ret(c1, c2)
+        val = c2.read()
+        self.assertEquals(val, 100)
+        return
+
+
 class TestChannelMultipleProc(__TestChannelProc):
 
     def runTest(self):
@@ -194,6 +207,30 @@ class TestFileChannelMultipleProc(__TestChannelProc):
         objects.
         """
         c1, c2 = csp.cspprocess.FileChannel(), csp.cspprocess.FileChannel()
+        out = []
+        def gen():
+            for i in xrange(10):
+                yield self.write(i, c1)
+                yield self.read_ret(c1, c2)
+        procs = list(gen())
+        par = csp.cspprocess.Par(*procs)
+        par.start()
+        par._join()
+        for i in xrange(10):
+            out.append(c2.read())
+        out.sort()
+        self.assertEquals(out, range(10))
+        return
+
+
+class TestNetworkChannelMultipleProc(__TestChannelProc):
+
+    def runTest(self):
+        """Test multiple readers, multiple writers on C{FileChannel}
+        objects.
+        """
+        c1 = csp.cspprocess.NetworkChannel()
+        c2 = csp.cspprocess.NetworkChannel()
         out = []
         def gen():
             for i in xrange(10):
@@ -255,6 +292,19 @@ class TestFileChannelSingleThread(__TestChannelThread):
         return
 
 
+class TestNetworkChannelSingleThread(__TestChannelThread):
+
+    def runTest(self):
+        """Test single reader, single writer on C{FileChannel}
+        objects.
+        """
+        c1, c2 = csp.cspthread.NetworkChannel(), csp.cspthread.NetworkChannel()
+        self.write(100, c1) & self.read_ret(c1, c2)
+        val = c2.read()
+        self.assertEquals(val, 100)
+        return
+
+
 class TestChannelMultipleThread(__TestChannelThread):
 
     def runTest(self):
@@ -285,6 +335,30 @@ class TestFileChannelMultipleThread(__TestChannelThread):
         objects.
         """
         c1, c2 = csp.cspthread.FileChannel(), csp.cspthread.FileChannel()
+        out = []
+        def gen():
+            for i in xrange(10):
+                yield self.write(i, c1)
+                yield self.read_ret(c1, c2)
+        procs = list(gen())
+        par = csp.cspthread.Par(*procs)
+        par.start()
+        par._join()
+        for i in xrange(10):
+            out.append(c2.read())
+        out.sort()
+        self.assertEquals(out, range(10))
+        return
+
+
+class TestNetworkChannelMultipleThread(__TestChannelThread):
+
+    def runTest(self):
+        """Test multiple readers, multiple writers on C{FileChannel}
+        objects.
+        """
+        c1 = csp.cspthread.NetworkChannel()
+        c2 = csp.cspthread.NetworkChannel()
         out = []
         def gen():
             for i in xrange(10):
@@ -564,8 +638,10 @@ if __name__ == '__main__':
                  (TestSleepProc(), unittest.TestResult()),
                  (TestChannelSingleProc(), unittest.TestResult()),
                  (TestFileChannelSingleProc(), unittest.TestResult()),
+                 (TestNetworkChannelSingleProc(), unittest.TestResult()),
                  (TestChannelMultipleProc(), unittest.TestResult()),
-                 (TestFileChannelMultipleProc(), unittest.TestResult())]
+                 (TestFileChannelMultipleProc(), unittest.TestResult()),
+                 (TestNetworkChannelMultipleProc(), unittest.TestResult())]
 
     threadtests = [(TestSeqOperatorThread(), unittest.TestResult()),
                  (TestSeqObjectsThread(), unittest.TestResult()),
@@ -574,8 +650,10 @@ if __name__ == '__main__':
                  (TestSleepThread(), unittest.TestResult()),
                  (TestChannelSingleThread(), unittest.TestResult()),
                  (TestFileChannelSingleThread(), unittest.TestResult()),
+                 (TestNetworkChannelSingleThread(), unittest.TestResult()),
                  (TestChannelMultipleThread(), unittest.TestResult()),
-                 (TestFileChannelMultipleThread(), unittest.TestResult())]
+                 (TestFileChannelMultipleThread(), unittest.TestResult()),
+                 (TestNetworkChannelMultipleThread(), unittest.TestResult())]
 
 
     print

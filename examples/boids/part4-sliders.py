@@ -1,7 +1,7 @@
 """
 Boids simulation using python-csp and pygame.
 
-Part4 -- Adding fullt flocking behaviour.
+Part4 -- Adding full flocking behaviour.
 Debug version with sliders.
 
 Copyright (C) Sarah Mount, 2009.
@@ -91,6 +91,7 @@ class Boid(object):
         if self.centre[1]<0: self.centre[1] += SIZE[1]
         elif self.centre[1]>SIZE[1]: self.centre[1] -= SIZE[1]
         return
+    @process
     def simulate(self, _process=None):
         while True:
             self.infochan.write((self.centre, self.velocity))
@@ -116,6 +117,7 @@ class FlockManager(object):
     def nearby(self, (pos1, vel1), (pos2, vel2)):
         if pos1 == pos2 and vel1 == vel2: return False
         return distance(pos1, pos2) <= NEARBY
+    @process
     def manage_flock(self, _process=None):
         info = [(0,0) for i in range(len(self.channels))]
         relify = lambda ((x,y), vel): ([x - info[i][0][0], y - info[i][0][1]], vel)
@@ -192,9 +194,8 @@ def drawboids(screen, drawchan, _process=None):
             dirty.append(slider.brect)
             slider.update()
             slider.render(screen)
-            txt = font.render(slider.label, 1, TXTCOL)
+            txt = font.render(slider.label, 1, TXTCOL, BGCOL)
             screen.fill(BGCOL, Rect(5, slider.pos[1], txt.get_rect().width, txt.get_rect().height))
-            pygame.display.update(Rect(5, slider.pos[1], txt.get_rect().width, txt.get_rect().height))
             dirty.append(screen.blit(txt, (5, slider.pos[1])))            
             dirty.append(slider.srect)
             dirty.append(slider.brect)
@@ -210,7 +211,8 @@ def drawboids(screen, drawchan, _process=None):
                 print 'Saving boids in:', FILENAME        
     return
 
-def main():
+@process
+def main(_process=None):
     pygame.init()
     screen = pygame.display.set_mode((SIZE[0], SIZE[1]), 0)
     pygame.display.set_caption(CAPTION)
@@ -218,14 +220,14 @@ def main():
     poschans = [Channel() for i in range(NUMBOIDS)]
     boids = [Boid(poschans[i]) for i in range(NUMBOIDS)]
     drawchan = Channel()                      # Draw channel.
-    fm = FlockManager(poschans, drawchan)           # Cell object.
+    fm = FlockManager(poschans, drawchan)     # Cell object.
     # Generate a list of all processes in the simulation.
-    procs = [CSPProcess(boids[i].simulate) for i in range(NUMBOIDS)]
-    procs.append(CSPProcess(fm.manage_flock)) # Manager process.
+    procs = [boids[i].simulate() for i in range(NUMBOIDS)]
+    procs.append(fm.manage_flock())           # Manager process.
     procs.append(drawboids(screen, drawchan)) # Drawing process.
     simulation = Par(*procs)                  # Start simulation.
     simulation.start()
     return
 
 if __name__ == '__main__':
-    main()
+    main().start()
