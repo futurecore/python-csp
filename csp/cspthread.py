@@ -45,6 +45,7 @@ def _debug(*args):
 from functools import wraps # Easy decorators
 
 import gc
+import inspect
 import operator
 import os
 import random
@@ -188,6 +189,29 @@ class CSPOpMixin(object):
         if self._Thread__started.is_set():
             self.join(timeout)
 
+    def referent_visitor(self, referents):
+#        print type(referents), 'is the type of the referents',
+#        try:
+#            print len(referents), 'members'
+#        except:
+#            pass
+        for obj in referents:
+#            print type(obj)
+            if obj is self or obj is None:
+                continue
+            if isinstance(obj, Channel):
+#                print 'Poisoning', str(obj)
+                obj.poison()
+            elif ((hasattr(obj, '__getitem__') or hasattr(obj, '__iter__')) and
+                  not isinstance(obj, basestring)):
+#                print 'recursing over %s with %i members' %  (type(obj), len(obj))
+                self.referent_visitor(obj)
+#            elif isinstance(obj, CSPProcess):
+#                self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
+            elif hasattr(obj, '__dict__'):
+                self.referent_visitor(obj.__dict__.values())
+		return
+
     def _terminate(self):
         """Terminate only if self is running.
 
@@ -228,14 +252,17 @@ class CSPProcess(threading.Thread, CSPOpMixin):
                                   target=func,
                                   args=(args),
                                   kwargs=kwargs)
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
         CSPOpMixin.__init__(self)
         assert callable(func)
-        for arg in list(self._Thread__args) + self._Thread__kwargs.values():
+        for arg in list(self.args) + self.kwargs.values():
             if _is_csp_type(arg):
                 arg.enclosing = self
         # Add a ref to this process so _target can access the
         # underlying operating system process.
-        self._Thread__kwargs['_process'] = self
+        self.kwargs['_process'] = self
         self.enclosing = None
         return
 
@@ -255,33 +282,20 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         """Called automatically when the L{start} methods is called.
         """
         try:
-            self._Thread__target(*self._Thread__args,
-                                  **self._Thread__kwargs)
+            self._Thread__target(*self.args, **self.kwargs)
         except ChannelPoison:
-            print self.getPid(), 'got ChannelPoison exception'
-            for arg in self.__dict__.values():
-                if arg is self or arg is None: continue
-                if isinstance(arg, Channel):
-                    print 'Poisoning', str(arg)
-                    arg.poison()
-#                elif (hasattr(arg, '__getitem__') or
-#                      hasattr(arg, '__iter__')) and not isinstance(arg, basestring):
-#                    map(kill, arg)
-#                print 'foo4'
-            print self.getPid(), 'closing now.'
+            print self.func.__name__, 'in', self.getPid(), 'got ChannelPoison exception'
+            self.referent_visitor(self.args + tuple(self.kwargs.values()))
+#            return
+#            for obj in self.args + tuple(self.kwargs.values()):
+#                print type(obj)
             self._terminate()
-#        except ProcessSuspend:
-#            raise NotImplementedError('Process suspension not yet implemented')
-#        except Exception:
-#            typ, excn, tback = sys.exc_info()
-#            sys.excepthook(typ, excn, tback)
-#        self._terminate()
+        except ProcessSuspend:
+            raise NotImplementedError('Process suspension not yet implemented')
+        except Exception:
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
 
-def kill(walking_dead):
-    print 'Examining', walking_dead
-    if isinstance(walking_dead, Channel):
-        print 'Poisoning', str(walking_dead)
-        walking_dead.poison()
 
 class Guard(object):
     """Abstract class to represent CSP guards.
@@ -463,11 +477,13 @@ class Channel(Guard):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
+        if self.is_poisoned: raise ChannelPoison()
         self._store = mypickle.dumps(item, protocol=1)
 
     def get(self):
         """Get a Python object from a process-safe store.
         """
+        if self.is_poisoned: raise ChannelPoison()
         item = mypickle.loads(self._store)
         self._store = None
         return item
@@ -478,7 +494,6 @@ class Channel(Guard):
         _debug('Alt THINKS _is_selectable IS: ' +
                str(self._is_selectable))
         if self.is_poisoned: raise ChannelPoison()
-
         return self._is_selectable
 
     def write(self, obj):
@@ -486,7 +501,6 @@ class Channel(Guard):
         """
         _debug('+++ Write on Channel %s started.' % self.name)
         if self.is_poisoned: raise ChannelPoison()
-
         with self._wlock: # Protect from races between multiple writers.
             # If this channel has already been selected by an Alt then
             # _has_selected will be True, blocking other readers. If a
@@ -512,8 +526,7 @@ class Channel(Guard):
 #        assert self._is_alting.value == Channel.FALSE
 #        assert self._is_selectable.value == Channel.FALSE
         _debug('+++ Read on Channel %s started.' % self.name)
-#        if self.is_poisoned: raise ChannelPoison()
-
+        if self.is_poisoned: raise ChannelPoison()
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
             _debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
@@ -539,7 +552,6 @@ class Channel(Guard):
         MUST be called before L{select()} or L{is_selectable()}.
         """
         if self.is_poisoned: raise ChannelPoison()
-
         # Prevent re-synchronization.
         if (self._has_selected or self._is_selectable):
             return
@@ -563,7 +575,6 @@ class Channel(Guard):
         MUST be called after L{enable} if this channel is not selected.
         """
         if self.is_poisoned: raise ChannelPoison()
-
         self._is_alting = False
         if self._is_selectable:
             with self._rlock:
@@ -577,7 +588,6 @@ class Channel(Guard):
         _debug('channel select starting')
         assert self._is_selectable == True
         if self.is_poisoned: raise ChannelPoison()
-
         with self._rlock:
             _debug('got read lock on channel',
                    self.name, '_available: ',
@@ -605,7 +615,6 @@ class Channel(Guard):
         """Poison a channel causing all processes using it to terminate.
         """
         self.is_poisoned = True
-#        raise ChannelPoison()
 
     def suspend(self):
         """Suspend this mobile channel before migrating between processes.
@@ -676,6 +685,7 @@ class FileChannel(Channel):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
+        if self.is_poisoned: raise ChannelPoison()
         file_d = file(self._fname, 'w')
         file_d.write(mypickle.dumps(item, protocol=1))
         file_d.flush()
@@ -685,6 +695,7 @@ class FileChannel(Channel):
     def get(self):
         """Get a Python object from a process-safe store.
         """
+        if self.is_poisoned: raise ChannelPoison()
         stored = ''
         while stored == '':
             file_d = file(self._fname, 'r')
@@ -764,6 +775,7 @@ class NetworkChannel(Channel):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
+        if self.is_poisoned: raise ChannelPoison()
         self.sock.sendto(mypickle.dumps(item, protocol=1),
                          (_HOST, _CHANNEL_PORT))
         return
@@ -771,6 +783,7 @@ class NetworkChannel(Channel):
     def get(self):
         """Get a Python object from a process-safe store.
         """
+        if self.is_poisoned: raise ChannelPoison()
         data = self.sock.recv(_BUFFSIZE)
         obj = mypickle.loads(data)
         return obj
@@ -940,7 +953,17 @@ class Par(threading.Thread, CSPOpMixin):
         return
 
     def __str__(self):
-        return 'CSP Par running in process %i.' % self.getPid()
+        return 'CSP Par'
+#        return 'CSP Par running in process %i.' % self.getPid()
+
+    def getPid(self):
+        """Return thread ident.
+
+        The name of this method ensures that the CSPProcess interface
+        in this module is identical to the one defined in
+        cspprocess.py.
+        """
+        return self.ident
 
     def run(self):
         """Run this process. Analogue of L{CSPProcess.run}.
@@ -965,7 +988,12 @@ class Par(threading.Thread, CSPOpMixin):
             for proc in self.procs:
                 proc._join(self.timeout)
         except ChannelPoison:
-            self._terminate()
+#            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
+            self.referent_visitor(self.args + tuple(self.kwargs.values()))
+            for obj in self.args + tuple(self.kwargs.values()):
+                print type(obj)
+            return
+#            self._terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -1010,7 +1038,12 @@ class Seq(threading.Thread, CSPOpMixin):
                 proc._start()
                 proc._join()
         except ChannelPoison:
-            self._terminate()
+            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
+            self.referent_visitor(self.args + tuple(self.kwargs.values()))
+            for obj in self.args + tuple(self.kwargs.values()):
+                print type(obj)
+            return
+#            self._terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:

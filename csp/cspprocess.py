@@ -44,6 +44,7 @@ def _debug(*args):
 
 from functools import wraps # Easy decorators
 
+import inspect
 import operator
 import os
 import random
@@ -195,6 +196,29 @@ class CSPOpMixin(object):
         if self._popen:
             self.join(timeout)
 
+    def referent_visitor(self, referents):
+#        print type(referents), 'is the type of the referents',
+#        try:
+#            print len(referents), 'members'
+#        except:
+#            pass
+        for obj in referents:
+#            print type(obj)
+            if obj is self or obj is None:
+                continue
+            if isinstance(obj, Channel):
+#                print 'Poisoning', str(obj)
+                obj.poison()
+            elif ((hasattr(obj, '__getitem__') or hasattr(obj, '__iter__')) and
+                  not isinstance(obj, basestring)):
+#                print 'recursing over %s with %i members' %  (type(obj), len(obj))
+                self.referent_visitor(obj)
+#            elif isinstance(obj, CSPProcess):
+#                self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
+            elif hasattr(obj, '__dict__'):
+                self.referent_visitor(obj.__dict__.values())
+		return
+
     def _terminate(self):
         """Terminate only if self is running."""
         if self._popen:
@@ -257,30 +281,17 @@ class CSPProcess(processing.Process, CSPOpMixin):
         try:
             self._target(*self._args, **self._kwargs)
         except ChannelPoison:
-            print self.getPid(), 'got ChannelPoison exception...'
-            for arg in self.__dict__.values():
-#                print 'foo'
-                if arg is self or arg is None: continue
-                if isinstance(arg, Channel):
-                    print 'Poisoning', str(arg)
-                    arg.poison()
-#                elif (hasattr(arg, '__getitem__') or
-#                      hasattr(arg, '__iter__')) and not isinstance(arg, basestring):
-#                    map(kill, arg)
-            print self.getPid(), 'closing now.'
-            return
-#        except ProcessSuspend:
-#            raise NotImplementedError('Process suspension not yet implemented')
-#        except Exception:
-#            typ, excn, tback = sys.exc_info()
-#            sys.excepthook(typ, excn, tback)
+            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
+            self.referent_visitor(self.args + tuple(self.kwargs.values()))
+#            for obj in self.args + tuple(self.kwargs.values()):
+#                print type(obj)
+            self._terminate()
+        except ProcessSuspend:
+            raise NotImplementedError('Process suspension not yet implemented')
+        except Exception:
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
         return
-
-
-def kill(walking_dead):
-    if isinstance(walking_dead, Channel):
-        print 'Poisoning', str(walking_dead)
-        walking_dead.poison()
 
 
 class Guard(object):
@@ -435,6 +446,7 @@ class Channel(Guard):
         # from being re-enabled). If values were really process safe
         # we could just have writers set _is_selectable and read that.
         self._has_selected = processing.Value('h', Channel.FALSE)
+		# Is this channel poisoned?
         self._poisoned = processing.Value('h', Channel.FALSE)
 
     def __getstate__(self):
@@ -617,6 +629,7 @@ class Channel(Guard):
             self._has_selected.value = Channel.TRUE
             _debug('reset bools')
         if obj == _POISON:
+            self.poison()
             raise ChannelPoison()
         return obj
 
@@ -990,6 +1003,10 @@ class Par(processing.Process, CSPOpMixin):
             for proc in self.procs:
                 proc._join(self.timeout)
         except ChannelPoison:
+            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
+            self.referent_visitor(self.args + tuple(self.kwargs.values()))
+#            for obj in self.args + tuple(self.kwargs.values()):
+#                print type(obj)
             self._terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
@@ -1035,6 +1052,10 @@ class Seq(processing.Process, CSPOpMixin):
                 proc._start()
                 proc._join()
         except ChannelPoison:
+            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
+            self.referent_visitor(self.args + tuple(self.kwargs.values()))
+#            for obj in self.args + tuple(self.kwargs.values()):
+#                print type(obj)
             self._terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
