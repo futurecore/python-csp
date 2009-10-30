@@ -405,16 +405,16 @@ class Channel(Guard):
 
     def __init__(self):
         self.name = Channel.NAMEFACTORY.name()
-        self._wlock = None	   # Write lock protects from races between writers.
-        self._rlock = None	   # Read lock protects from races between readers.
+        self._wlock = None       # Write lock protects from races between writers.
+        self._rlock = None       # Read lock protects from races between readers.
         self._available = None     # Released if writer has made data available.
         self._taken = None         # Released if reader has taken data.
         self._is_alting = None     # True if engaged in an Alt synchronisation.
         self._is_selectable = None # True if can be selected by an Alt.
         self._has_selected = None  # True if already been committed to select.
         self._itemr, self._itemw = os.pipe()
+        self._poisoned = None
         self._setup()
-        self.is_poisoned = False
         super(Channel, self).__init__()
         return
 
@@ -424,8 +424,8 @@ class Channel(Guard):
         MUST be called in __init__ of this class and all subclasses.
         """
         # Process-safe synchronisation.
-        self._wlock = processing.RLock()	# Write lock.
-        self._rlock = processing.RLock()	# Read lock.
+        self._wlock = processing.RLock()    # Write lock.
+        self._rlock = processing.RLock()    # Read lock.
         self._available = processing.Semaphore(0)
         self._taken = processing.Semaphore(0)
         # Process-safe synchronisation for CSP Select / Occam Alt.
@@ -435,6 +435,7 @@ class Channel(Guard):
         # from being re-enabled). If values were really process safe
         # we could just have writers set _is_selectable and read that.
         self._has_selected = processing.Value('h', Channel.FALSE)
+        self._poisoned = processing.Value('h', Channel.FALSE)
 
     def __getstate__(self):
         """Return state required for pickling."""
@@ -452,8 +453,8 @@ class Channel(Guard):
 
     def __setstate__(self, state):
         """Restore object state after unpickling."""
-        self._wlock = processing.RLock()	# Write lock.
-        self._rlock = processing.RLock()	# Read lock.
+        self._wlock = processing.RLock()    # Write lock.
+        self._rlock = processing.RLock()    # Read lock.
         self._itemr, self._itemw = os.pipe()
         self._available = processing.Semaphore(state[0])
         self._taken = processing.Semaphore(state[1])
@@ -498,14 +499,14 @@ class Channel(Guard):
         """
         _debug('Alt THINKS _is_selectable IS: ' +
                str(self._is_selectable.value == Channel.TRUE))
-        if self.is_poisoned: raise ChannelPoison()
+        if self.is_poisoned(): raise ChannelPoison()
 
         return self._is_selectable.value == Channel.TRUE
 
     def write(self, obj):
         """Write a Python object to this channel.
         """
-        if self.is_poisoned: raise ChannelPoison()
+        if self.is_poisoned(): raise ChannelPoison()
 
         _debug('+++ Write on Channel %s started.' % self.name)
         with self._wlock: # Protect from races between multiple writers.
@@ -532,7 +533,7 @@ class Channel(Guard):
         # FIXME: These assertions sometimes fail...why?
 #        assert self._is_alting.value == Channel.FALSE
 #        assert self._is_selectable.value == Channel.FALSE
-        if self.is_poisoned: raise ChannelPoison()
+        if self.is_poisoned(): raise ChannelPoison()
 
         _debug('+++ Read on Channel %s started.' % self.name)
         with self._rlock: # Protect from races between multiple readers.
@@ -559,7 +560,7 @@ class Channel(Guard):
 
         MUST be called before L{select()} or L{is_selectable()}.
         """
-        if self.is_poisoned: raise ChannelPoison()
+        if self.is_poisoned(): raise ChannelPoison()
 
         # Prevent re-synchronization.
         if (self._has_selected.value == Channel.TRUE or
@@ -584,7 +585,7 @@ class Channel(Guard):
 
         MUST be called after L{enable} if this channel is not selected.
         """
-        if self.is_poisoned: raise ChannelPoison()
+        if self.is_poisoned(): raise ChannelPoison()
 
         self._is_alting.value = Channel.FALSE
         if self._is_selectable.value == Channel.TRUE:
@@ -598,7 +599,7 @@ class Channel(Guard):
         """
         _debug('channel select starting')
         assert self._is_selectable.value == Channel.TRUE
-        if self.is_poisoned: raise ChannelPoison()
+        if self.is_poisoned(): raise ChannelPoison()
 
         with self._rlock:
             _debug('got read lock on channel',
@@ -622,10 +623,13 @@ class Channel(Guard):
     def __str__(self):
         return 'Channel using OS pipe for IPC.'
 
+    def is_poisoned(self):
+        return self._poisoned.value == Channel.TRUE
+
     def poison(self):
         """Poison a channel causing all processes using it to terminate.
         """
-        self.is_poisoned = True
+        self._poisoned = processing.Value('h', Channel.TRUE)
 
     def suspend(self):
         """Suspend this mobile channel before migrating between processes.
