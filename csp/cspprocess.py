@@ -44,6 +44,7 @@ def _debug(*args):
 
 from functools import wraps # Easy decorators
 
+import copy
 import inspect
 import operator
 import os
@@ -52,6 +53,7 @@ import socket
 import sys
 import tempfile
 import time
+import uuid
 
 # Are we sending secure messages?
 try:
@@ -186,15 +188,15 @@ class CSPOpMixin(object):
     def __init__(self):
         return
 
-    def _start(self):
+    def start(self):
         """Start only if self is not running."""
         if not self._popen:
-            self.start()
+            processing.Process.start(self)
 
-    def _join(self, timeout=None):
+    def join(self, timeout=None):
         """Join only if self is running and impose a timeout."""
         if self._popen:
-            self.join(timeout)
+            processing.Process.join(self, timeout)
 
     def referent_visitor(self, referents):
 #        print type(referents), 'is the type of the referents',
@@ -219,10 +221,10 @@ class CSPOpMixin(object):
                 self.referent_visitor(obj.__dict__.values())
 		return
 
-    def _terminate(self):
+    def terminate(self):
         """Terminate only if self is running."""
         if self._popen:
-            self.terminate()
+            processing.Process.terminate(self)
 
     def __and__(self, other):
         """Implementation of CSP Par.
@@ -244,6 +246,26 @@ class CSPOpMixin(object):
         seq.start()
         return seq
 
+    def __mul__(self, n):
+        assert n > 0
+        clone = None
+        for i in xrange(n):
+            clone = copy.copy(self)
+            clone.start()
+            clone.join()
+            clone.terminate()
+        return
+
+    def __rmul__(self, n):
+        assert n > 0
+        clone = None
+        for i in xrange(n):
+            clone = copy.copy(self)
+            clone.start()
+            clone.join()
+            clone.terminate()
+        return
+
 
 class CSPProcess(processing.Process, CSPOpMixin):
     """Implementation of CSP processes.
@@ -255,8 +277,10 @@ class CSPProcess(processing.Process, CSPOpMixin):
                                     target=func,
                                     args=(args),
                                     kwargs=kwargs)        
+        assert inspect.isfunction(func) # Check we aren't using objects
+        assert not inspect.ismethod(func) # Check we aren't using objects
+
         CSPOpMixin.__init__(self)
-        assert callable(func)
         for arg in list(self._args) + self._kwargs.values():
             if _is_csp_type(arg):
                 arg.enclosing = self
@@ -285,7 +309,7 @@ class CSPProcess(processing.Process, CSPOpMixin):
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
 #            for obj in self.args + tuple(self.kwargs.values()):
 #                print type(obj)
-            self._terminate()
+            self.terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -337,60 +361,6 @@ class Guard(object):
         return Alt(self, other).select()
     
 
-class _PortFactory(object):
-    """Singleton factory class, generating unique (per-host) port numbers.
-    """
-    __instance = None
-
-    def __new__(cls, *args, **kargs):
-        """Create a new instance of this class, ensuring conformance
-        to the singleton pattern.
-
-        See U{http://en.wikipedia.org/wiki/Singleton_pattern#Python}
-        """
-        if cls.__instance is None:
-            cls.__instance = object.__new__(cls, *args, **kargs)
-        return cls.__instance
-
-    def __init__(self):
-        self.portnum = 27899
-        return
-
-    def port(self):
-        """Return a new port number which is unique on this host.
-        """
-        port = self.portnum
-        self.portnum += 1
-        return port
-
-
-class _NameFactory(object):
-    """Singleton factory class, generating unique (per-network) channel names.
-    """
-    __instance = None
-
-    def __new__(cls, *args, **kargs):
-        """Create a new instance of this class, ensuring conformance
-        to the singleton pattern.
-
-        See U{http://en.wikipedia.org/wiki/Singleton_pattern#Python}
-        """
-        if cls.__instance is None:
-            cls.__instance = object.__new__(cls, *args, **kargs)
-        return cls.__instance
-
-    def __init__(self):
-        self.i = ~sys.maxint
-        return
-
-    def name(self):
-        """Return a new channel name which is unique within this network.
-        """
-        name = _HOST + ':' + str(os.getpid()) + ':'+ str(self.i)
-        self.i += 1
-        return name
-
-
 class Channel(Guard):
     """CSP Channel objects.
 
@@ -410,12 +380,11 @@ class Channel(Guard):
     pickling.
     """
 
-    NAMEFACTORY = _NameFactory()
     TRUE = 1
     FALSE = 0
 
     def __init__(self):
-        self.name = Channel.NAMEFACTORY.name()
+        self.name = uuid.uuid1()
         self._wlock = None       # Write lock protects from races between writers.
         self._rlock = None       # Read lock protects from races between readers.
         self._available = None     # Released if writer has made data available.
@@ -989,7 +958,7 @@ class Par(processing.Process, CSPOpMixin):
         """Terminate the execution of this process.
         """
         for proc in self.procs:
-            proc._terminate()
+            proc.terminate()
         if self._popen:
             self.terminate()
 
@@ -1007,7 +976,7 @@ class Par(processing.Process, CSPOpMixin):
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
 #            for obj in self.args + tuple(self.kwargs.values()):
 #                print type(obj)
-            self._terminate()
+            self.terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -1056,7 +1025,7 @@ class Seq(processing.Process, CSPOpMixin):
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
 #            for obj in self.args + tuple(self.kwargs.values()):
 #                print type(obj)
-            self._terminate()
+            self.terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -1164,7 +1133,6 @@ class TimerGuard(Guard):
 
     def select(self):
         return
-
 
 @process
 def Zeroes(cout, _process=None):

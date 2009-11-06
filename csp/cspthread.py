@@ -44,7 +44,6 @@ def _debug(*args):
 
 from functools import wraps # Easy decorators
 
-import gc
 import inspect
 import operator
 import os
@@ -52,7 +51,9 @@ import random
 import socket
 import sys
 import tempfile
+import threading
 import time
+import uuid
 
 # Are we sending secure messages?
 try:
@@ -69,8 +70,6 @@ try: # Python optimisation compiler
     psyco.full()
 except ImportError:
     print 'No available optimisation'
-
-import threading
 
 try:
     import cPickle as mypickle # Faster pickle
@@ -179,47 +178,39 @@ class CSPOpMixin(object):
     def __init__(self):
         return
 
-    def _start(self):
+    def start(self):
         """Start only if self is not running."""
         if not self._Thread__started.is_set():
-            self.start()
+            threading.Thread.start(self)
 
-    def _join(self, timeout=None):
+    def join(self, timeout=None):
         """Join only if self is running and impose a timeout."""
         if self._Thread__started.is_set():
-            self.join(timeout)
+            threading.Thread.join(self, timeout)
 
     def referent_visitor(self, referents):
-#        print type(referents), 'is the type of the referents',
-#        try:
-#            print len(referents), 'members'
-#        except:
-#            pass
         for obj in referents:
-#            print type(obj)
             if obj is self or obj is None:
                 continue
             if isinstance(obj, Channel):
-#                print 'Poisoning', str(obj)
                 obj.poison()
             elif ((hasattr(obj, '__getitem__') or hasattr(obj, '__iter__')) and
                   not isinstance(obj, basestring)):
-#                print 'recursing over %s with %i members' %  (type(obj), len(obj))
                 self.referent_visitor(obj)
-#            elif isinstance(obj, CSPProcess):
-#                self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
+            elif isinstance(obj, CSPProcess):
+                self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
             elif hasattr(obj, '__dict__'):
                 self.referent_visitor(obj.__dict__.values())
 		return
 
-    def _terminate(self):
+    def terminate(self):
         """Terminate only if self is running.
 
         FIXME: This doesn't work yet...
         """
         if self._Thread__started.is_set():
             _debug(str(self.getName()), 'terminating now...')
-            self._Thread__stop()
+            threading.Thread._Thread__stop(self)
 
     def __and__(self, other):
         """Implementation of CSP Par.
@@ -241,6 +232,26 @@ class CSPOpMixin(object):
         seq.start()
         return seq
 
+    def __mul__(self, n):
+        assert n > 0
+        clone = None
+        for i in xrange(n):
+            clone = copy.copy(self)
+            clone.start()
+            clone.join()
+            clone.terminate()
+        return
+
+    def __rmul__(self, n):
+        assert n > 0
+        clone = None
+        for i in xrange(n):
+            clone = copy.copy(self)
+            clone.start()
+            clone.join()
+            clone.terminate()
+        return
+
 
 class CSPProcess(threading.Thread, CSPOpMixin):
     """Implementation of CSP processes.
@@ -252,11 +263,14 @@ class CSPProcess(threading.Thread, CSPOpMixin):
                                   target=func,
                                   args=(args),
                                   kwargs=kwargs)
+        assert inspect.isfunction(func) # Check we aren't using objects
+        assert not inspect.ismethod(func) # Check we aren't using objects
+        
         self.func = func
         self.args = args
         self.kwargs = kwargs
         CSPOpMixin.__init__(self)
-        assert callable(func)
+
         for arg in list(self.args) + self.kwargs.values():
             if _is_csp_type(arg):
                 arg.enclosing = self
@@ -285,11 +299,10 @@ class CSPProcess(threading.Thread, CSPOpMixin):
             self._Thread__target(*self.args, **self.kwargs)
         except ChannelPoison:
             print self.func.__name__, 'in', self.getPid(), 'got ChannelPoison exception'
+#            self.referent_visitor(self.__dict__.values())
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
+            self.terminate()
 #            return
-#            for obj in self.args + tuple(self.kwargs.values()):
-#                print type(obj)
-            self._terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -340,60 +353,6 @@ class Guard(object):
         return Alt(self, other).select()
 
 
-class _PortFactory(object):
-    """Singleton factory class, generating unique (per-host) port numbers.
-    """
-    __instance = None
-
-    def __new__(cls, *args, **kargs):
-        """Create a new instance of this class, ensuring conformance
-        to the singleton pattern.
-
-        See U{http://en.wikipedia.org/wiki/Singleton_pattern#Python}
-        """
-        if cls.__instance is None:
-            cls.__instance = object.__new__(cls, *args, **kargs)
-        return cls.__instance
-
-    def __init__(self):
-        self.portnum = 27899
-        return
-
-    def port(self):
-        """Return a new port number which is unique on this host.
-        """
-        port = self.portnum
-        self.portnum += 1
-        return port
-
-
-class _NameFactory(object):
-    """Singleton factory class, generating unique (per-network) channel names.
-    """
-    __instance = None
-
-    def __new__(cls, *args, **kargs):
-        """Create a new instance of this class, ensuring conformance
-        to the singleton pattern.
-
-        See U{http://en.wikipedia.org/wiki/Singleton_pattern#Python}
-        """
-        if cls.__instance is None:
-            cls.__instance = object.__new__(cls, *args, **kargs)
-        return cls.__instance
-
-    def __init__(self):
-        self.i = ~sys.maxint
-        return
-
-    def name(self):
-        """Return a new channel name which is unique within this network.
-        """
-        name = _HOST + ':' + str(os.getpid()) + ':'+ str(self.i)
-        self.i += 1
-        return name
-
-
 class Channel(Guard):
     """CSP Channel objects.
 
@@ -412,10 +371,9 @@ class Channel(Guard):
     L{__getstate__} and L{__setstate__}, the latter two methods for
     pickling.
     """
-    NAMEFACTORY = _NameFactory()
 
     def __init__(self):
-        self.name = Channel.NAMEFACTORY.name()
+        self.name = uuid.uuid1()
         self._wlock = None	   # Write lock protects from races between writers.
         self._rlock = None	   # Read lock protects from races between readers.
         self._available = None     # Released if writer has made data available.
@@ -970,13 +928,17 @@ class Par(threading.Thread, CSPOpMixin):
         """
         self.start()
 
-    def _terminate(self):
+    def terminate(self):
         """Terminate the execution of this process.
         """
         for proc in self.procs:
-            proc._terminate()
+            proc.terminate()
         if self._Thread__started.is_set():
-            self._Thread__stop()
+            Thread._Thread__stop(self)
+
+    def join(self):
+        for proc in self.procs:
+            proc.join()
 
     def start(self):
         """Start then synchronize with the execution of parallel processes.
@@ -984,16 +946,16 @@ class Par(threading.Thread, CSPOpMixin):
         """
         try:
             for proc in self.procs:
-                proc._start()
+                proc.start()
             for proc in self.procs:
-                proc._join(self.timeout)
+                proc.join(self.timeout)
         except ChannelPoison:
 #            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
             for obj in self.args + tuple(self.kwargs.values()):
                 print type(obj)
-            return
-#            self._terminate()
+#            return
+            self.terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -1022,28 +984,32 @@ class Seq(threading.Thread, CSPOpMixin):
     def __str__(self):
         return 'CSP Seq running in process %i.' % self.getPid()
 
-    def stop(self):
+    def join(self):
+        for proc in self.procs:
+            proc.join()
+
+    def terminate(self):
         """Terminate the execution of this process.
         """
         for proc in self.procs:
-            proc._terminate()
+            proc.terminate()
         if self._Thread__started.is_set():
-            self._Thread__stop()
+            Thread._Thread__stop(self)
 
     def start(self):
         """Start this process running.
         """
         try:
             for proc in self.procs:
-                proc._start()
-                proc._join()
+                proc.start()
+                proc.join()
         except ChannelPoison:
             print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
             for obj in self.args + tuple(self.kwargs.values()):
                 print type(obj)
-            return
-#            self._terminate()
+#            return
+            self.terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -1151,7 +1117,6 @@ class TimerGuard(Guard):
     def select(self):
         return
 
-
 @process
 def Zeroes(cout, _process=None):
     """Writes out a stream of zeroes."""
@@ -1222,6 +1187,13 @@ def Mux2(cin1, cin2, cout, _process=None):
         cout.write(guard.read())
     return
 
+@process
+def Multiply(cin0,cin1,cout0,_process=None):
+    
+    while True:
+        cout0.write(cin0.read() * cin1.read())
+    return
+
 
 @process
 def Clock(cout, resolution=1, _process=None):
@@ -1261,13 +1233,6 @@ def Mult(cin, cout, scale, _process=None):
     """
     while True:
         cout.write(cin.read() * scale)
-    return
-
-@process
-def Multiply(cin0,cin1,cout0,_process=None):
-    
-    while True:
-        cout0.write(cin0.read() * cin1.read())
     return
 
 
@@ -1482,4 +1447,3 @@ Is = _applybinop(lambda x, y: x is y,
 Is_Not = _applybinop(lambda x, y: not (x is y),
                    """Writes True if two input events are not the same (is).
 """)
-

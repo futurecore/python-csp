@@ -103,7 +103,7 @@ def drawboids(screen, drawchan, _process=None):
     dirty, last = [], []
     while True:
         ms_elapsed = clock.tick(FPS)
-#        print ms_elapsed
+        print ms_elapsed
         dirty = last
         for rect in last: screen.fill(BGCOL, rect)
         last = []

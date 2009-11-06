@@ -54,7 +54,7 @@ def drawboids(screen, poschans, _process=None):
     chansize = len(poschans)
     while True:
         ms_elapsed = clock.tick(FPS)
-#        print ms_elapsed
+        print ms_elapsed
         dirty = last
         for rect in last: screen.fill(BGCOL, rect)
         last = []
