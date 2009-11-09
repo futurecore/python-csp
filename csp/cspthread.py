@@ -298,7 +298,7 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         try:
             self._Thread__target(*self.args, **self.kwargs)
         except ChannelPoison:
-            print self.func.__name__, 'in', self.getPid(), 'got ChannelPoison exception'
+#            print self.func.__name__, 'in', self.getPid(), 'got ChannelPoison exception'
 #            self.referent_visitor(self.__dict__.values())
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
             self.terminate()
@@ -953,7 +953,7 @@ class Par(threading.Thread, CSPOpMixin):
 #            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
             for obj in self.args + tuple(self.kwargs.values()):
-                print type(obj)
+#                print type(obj)
 #            return
             self.terminate()
         except ProcessSuspend:

@@ -215,8 +215,8 @@ class CSPOpMixin(object):
                   not isinstance(obj, basestring)):
 #                print 'recursing over %s with %i members' %  (type(obj), len(obj))
                 self.referent_visitor(obj)
-#            elif isinstance(obj, CSPProcess):
-#                self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
+            elif isinstance(obj, CSPProcess):
+                self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
             elif hasattr(obj, '__dict__'):
                 self.referent_visitor(obj.__dict__.values())
 		return
@@ -279,6 +279,8 @@ class CSPProcess(processing.Process, CSPOpMixin):
                                     kwargs=kwargs)        
         assert inspect.isfunction(func) # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
+        print inspect.ismethod(func)
+        print type(func)
 
         CSPOpMixin.__init__(self)
         for arg in list(self._args) + self._kwargs.values():
@@ -968,14 +970,12 @@ class Par(processing.Process, CSPOpMixin):
         """
         try:
             for proc in self.procs:
-                proc._start()
+                proc.start()
             for proc in self.procs:
-                proc._join(self.timeout)
+                proc.join(self.timeout)
         except ChannelPoison:
             print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
-#            for obj in self.args + tuple(self.kwargs.values()):
-#                print type(obj)
             self.terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
@@ -1018,13 +1018,11 @@ class Seq(processing.Process, CSPOpMixin):
         """
         try:
             for proc in self.procs:
-                proc._start()
-                proc._join()
+                proc.start()
+                proc.join()
         except ChannelPoison:
             print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
-#            for obj in self.args + tuple(self.kwargs.values()):
-#                print type(obj)
             self.terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
@@ -1059,6 +1057,21 @@ def _is_csp_type(name):
         if isinstance(name, typ):
             return True
     return False
+
+# Design patterns
+
+class TokenRing(Par):
+    def __init__(self, func, size, numtoks=1, _process=None):
+        self.chans = [Channel() for channel in xrange(size)]
+        self.procs = [func(index=i,
+                           tokens=numtoks,
+                           numnodes=size,
+                           inchan=chans[i-1],
+                           outchan=chans[i]) for i in xrange(size)]
+        super(TokenRing, self).__init__(procs) 
+    return
+
+# PlugNPlay guards and processes
 
 class Skip(Guard):
     """Guard which will always return C{True}. Useful in L{Alt}s where
