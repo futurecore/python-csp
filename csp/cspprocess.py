@@ -279,8 +279,8 @@ class CSPProcess(processing.Process, CSPOpMixin):
                                     kwargs=kwargs)        
         assert inspect.isfunction(func) # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
-        print inspect.ismethod(func)
-        print type(func)
+#        print inspect.ismethod(func)
+#        print type(func)
 
         CSPOpMixin.__init__(self)
         for arg in list(self._args) + self._kwargs.values():
@@ -1066,10 +1066,10 @@ class TokenRing(Par):
         self.procs = [func(index=i,
                            tokens=numtoks,
                            numnodes=size,
-                           inchan=chans[i-1],
-                           outchan=chans[i]) for i in xrange(size)]
-        super(TokenRing, self).__init__(procs) 
-    return
+                           inchan=self.chans[i-1],
+                           outchan=self.chans[i]) for i in xrange(size)]
+        super(TokenRing, self).__init__(*self.procs) 
+        return
 
 # PlugNPlay guards and processes
 

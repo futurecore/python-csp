@@ -53,17 +53,6 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None, _process
         print 'Channel communication time: %f microseconds' %  micros
     return
 
-@process
-def tokenring(size, numtoks=1, _process=None):
-    chans = [Channel() for channel in xrange(size)]
-    procs = [ringproc(index=i,
-                      tokens=numtoks,
-					  numnodes=size,
-                      inchan=chans[i-1],
-                      outchan=chans[i]) for i in xrange(size)]
-    Par(*procs).start()
-    return
-
 if __name__ == '__main__':
     from optparse import OptionParser
 
@@ -80,5 +69,5 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    tokenring(options.nodes, numtoks=options.tokens).start()
+    TokenRing(ringproc, options.nodes, numtoks=options.tokens).start()
 

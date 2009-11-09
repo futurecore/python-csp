@@ -965,6 +965,21 @@ def _is_csp_type(name):
             return True
     return False
 
+# Design patterns
+
+class TokenRing(Par):
+    def __init__(self, func, size, numtoks=1, _process=None):
+        self.chans = [Channel() for channel in xrange(size)]
+        self.procs = [func(index=i,
+                           tokens=numtoks,
+                           numnodes=size,
+                           inchan=self.chans[i-1],
+                           outchan=self.chans[i]) for i in xrange(size)]
+        super(TokenRing, self).__init__(*self.procs) 
+        return
+
+# PlugNPlay guards and processes
+
 class Skip(Guard):
     """Guard which will always return C{True}. Useful in L{Alt}s where
     the programmer wants to ensure that L{Alt.select} will always

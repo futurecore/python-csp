@@ -952,7 +952,7 @@ class Par(threading.Thread, CSPOpMixin):
         except ChannelPoison:
 #            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
-            for obj in self.args + tuple(self.kwargs.values()):
+#            for obj in self.args + tuple(self.kwargs.values()):
 #                print type(obj)
 #            return
             self.terminate()
@@ -1042,6 +1042,21 @@ def _is_csp_type(name):
         if isinstance(name, typ):
             return True
     return False
+
+# Design patterns
+
+class TokenRing(Par):
+    def __init__(self, func, size, numtoks=1, _process=None):
+        self.chans = [Channel() for channel in xrange(size)]
+        self.procs = [func(index=i,
+                           tokens=numtoks,
+                           numnodes=size,
+                           inchan=self.chans[i-1],
+                           outchan=self.chans[i]) for i in xrange(size)]
+        super(TokenRing, self).__init__(*self.procs) 
+        return
+
+# PlugNPlay guards and processes
 
 class Skip(Guard):
     """Guard which will always return C{True}. Useful in L{Alt}s where
