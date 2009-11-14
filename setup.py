@@ -72,7 +72,7 @@ dist = setup(name = "csp",
       url = "http://code.google.com/p/python-csp/",
       long_description = """python-csp adds communicating sequential processes to Python""",
 
-      packages = ['csp'],
+      packages = ['csp', 'bsp'],
       data_files = (files +
 		    [(makeabs('share/applications/'),
 			       ['applications/python-csp.desktop'])] +

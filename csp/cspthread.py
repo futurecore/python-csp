@@ -44,6 +44,9 @@ def _debug(*args):
 
 from functools import wraps # Easy decorators
 
+# Import barrier from bulk synchronous processing library
+from bsp.bsp import BarrierThreading as Barrier
+
 import inspect
 import operator
 import os

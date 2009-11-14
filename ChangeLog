@@ -1,3 +1,7 @@
+9 Nov 2009:
+	Added token ring example to benchmark/ directory.  Added bsp
+	package containing barriers. These are automatically imported into
+	csp modules.
 26 Oct 2009:
 	Added Boids demo to the examples/ directory.
 28 June 2009:
