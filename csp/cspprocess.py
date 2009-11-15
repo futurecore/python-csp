@@ -191,10 +191,18 @@ class CSPOpMixin(object):
     def __init__(self):
         return
 
-    def start(self):
+    def spawn(self):
         """Start only if self is not running."""
         if not self._popen:
             processing.Process.start(self)
+        return
+
+    def start(self, timeout=None):
+        """Start only if self is not running."""
+        if not self._popen:
+            processing.Process.start(self)
+            processing.Process.join(self, timeout)
+        return
 
     def join(self, timeout=None):
         """Join only if self is running and impose a timeout."""
@@ -222,7 +230,7 @@ class CSPOpMixin(object):
                 self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
             elif hasattr(obj, '__dict__'):
                 self.referent_visitor(obj.__dict__.values())
-		return
+        return
 
     def terminate(self):
         """Terminate only if self is running."""
@@ -255,8 +263,6 @@ class CSPOpMixin(object):
         for i in xrange(n):
             clone = copy.copy(self)
             clone.start()
-            clone.join()
-            clone.terminate()
         return
 
     def __rmul__(self, n):
@@ -265,8 +271,6 @@ class CSPOpMixin(object):
         for i in xrange(n):
             clone = copy.copy(self)
             clone.start()
-            clone.join()
-            clone.terminate()
         return
 
 
@@ -938,7 +942,7 @@ class Par(processing.Process, CSPOpMixin):
         if 'timeout' in kwargs:
             self.timeout = kwargs['timeout']
         else:
-            self.timeout = 0.5
+            self.timeout = 0.1
         self.procs = []
         for proc in procs:
             # FIXME: only catches shallow nesting.
@@ -954,11 +958,6 @@ class Par(processing.Process, CSPOpMixin):
     def __str__(self):
         return 'CSP Par running in process %i.' % self.getPid()
 
-    def run(self):
-        """Run this process. Analogue of L{CSPProcess.run}.
-        """
-        self.start()
-
     def _terminate(self):
         """Terminate the execution of this process.
         """
@@ -967,15 +966,19 @@ class Par(processing.Process, CSPOpMixin):
         if self._popen:
             self.terminate()
 
+    def join(self):
+        for proc in self.procs:
+            proc.join()
+
     def start(self):
         """Start then synchronize with the execution of parallel processes.
         Return when all parallel processes have returned.
         """
         try:
             for proc in self.procs:
-                proc.start()
+                proc.spawn()
             for proc in self.procs:
-                proc.join(self.timeout)
+                proc.join() #self.timeout)
         except ChannelPoison:
             print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
@@ -1010,6 +1013,8 @@ class Seq(processing.Process, CSPOpMixin):
 
     def stop(self):
         """Terminate the execution of this process.
+
+		FIXME: Remove this method.
         """
         for proc in self.procs:
             proc._terminate()

@@ -181,10 +181,17 @@ class CSPOpMixin(object):
     def __init__(self):
         return
 
-    def start(self):
+    def spawn(self):
         """Start only if self is not running."""
         if not self._Thread__started.is_set():
             threading.Thread.start(self)
+        return
+
+    def start(self, timeout=None):
+        """Start only if self is not running."""
+        if not self._Thread__started.is_set():
+            threading.Thread.start(self)
+            threading.Thread.join(self, timeout)
 
     def join(self, timeout=None):
         """Join only if self is running and impose a timeout."""
@@ -241,8 +248,6 @@ class CSPOpMixin(object):
         for i in xrange(n):
             clone = copy.copy(self)
             clone.start()
-            clone.join()
-            clone.terminate()
         return
 
     def __rmul__(self, n):
@@ -251,8 +256,6 @@ class CSPOpMixin(object):
         for i in xrange(n):
             clone = copy.copy(self)
             clone.start()
-            clone.join()
-            clone.terminate()
         return
 
 
@@ -900,7 +903,7 @@ class Par(threading.Thread, CSPOpMixin):
         if 'timeout' in kwargs:
             self.timeout = kwargs['timeout']
         else:
-            self.timeout = 0.5
+            self.timeout = 0.1
         self.procs = []
         for proc in procs:
             # FIXME: only catches shallow nesting.
@@ -917,6 +920,14 @@ class Par(threading.Thread, CSPOpMixin):
         return 'CSP Par'
 #        return 'CSP Par running in process %i.' % self.getPid()
 
+    def terminate(self):
+        """Terminate the execution of this process.
+        """
+        for proc in self.procs:
+            proc.terminate()
+        if self._Thread__started.is_set():
+            Thread._Thread__stop(self)
+
     def getPid(self):
         """Return thread ident.
 
@@ -926,18 +937,10 @@ class Par(threading.Thread, CSPOpMixin):
         """
         return self.ident
 
-    def run(self):
+    def start(self):
         """Run this process. Analogue of L{CSPProcess.run}.
         """
         self.start()
-
-    def terminate(self):
-        """Terminate the execution of this process.
-        """
-        for proc in self.procs:
-            proc.terminate()
-        if self._Thread__started.is_set():
-            Thread._Thread__stop(self)
 
     def join(self):
         for proc in self.procs:
@@ -949,9 +952,9 @@ class Par(threading.Thread, CSPOpMixin):
         """
         try:
             for proc in self.procs:
-                proc.start()
+                proc.spawn()
             for proc in self.procs:
-                proc.join(self.timeout)
+                proc.join() #self.timeout)
         except ChannelPoison:
 #            print str(self), 'in', self.getPid(), 'got ChannelPoison exception'
             self.referent_visitor(self.args + tuple(self.kwargs.values()))
