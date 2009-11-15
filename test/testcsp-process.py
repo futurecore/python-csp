@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 @process
 def foo(n, _process=None):
-    time.sleep(random.random()*5)
+    time.sleep(random.random()*2)
     print '%s in PID %g has arg %g' % (_process.getName(), _process.getPid(), n)
     return
 
@@ -115,7 +115,7 @@ def testAlt1(cin, _process=None):
     while numeric < 1:
         print '*** TestAlt1 selecting...'
         val = alt.select()
-        if isinstance(recv, int): numeric += 1 
+        if isinstance(val, int): numeric += 1 
         print '* Got this from Alt:', val
 
 
@@ -179,7 +179,6 @@ def chMobSend(cout, klass=Channel, _process=None):
     if isinstance(chan, FileChannel):
         print 'Using filename:', chan._fname
     cout.write(chan)
-    time.sleep(1)
     chan.write('Yeah, baby, yeah!')
     return
 
@@ -254,8 +253,7 @@ def testOOP():
 def testPoison():
     _printHeader('process termination (by poisoning)')
     chanp = Channel()
-    tpar = Par(send100(chanp), recv100(chanp), testpoison(chanp))
-    tpar.start()
+    Par(send100(chanp), recv100(chanp), testpoison(chanp)).start()
     return
 
 def testAlt():
@@ -263,22 +261,17 @@ def testAlt():
     print 'Alt with 3 SKIPs:'
     ta0 = testAlt0()
     ta0.start()
-    ta0._join()
     print
     print 'Alt with 1 channel read:'
     ch1 = Channel()
-    ta1 = Par(testAlt1(ch1), sendAlt(ch1, 100))
-    ta1.start()
-    ta1._join()
+    Par(testAlt1(ch1), sendAlt(ch1, 100)).start()
     print
     print 'Alt with 1 SKIP, 3 channel reads:'
     ch2, ch3, ch4 = Channel(), Channel(), Channel()
-    ta2 = Par(testAlt2(ch2, ch3, ch4),
-              sendAlt(ch2, 100),
-              sendAlt(ch3, 200),
-              sendAlt(ch4, 300))
-    ta2.start()
-    ta2._join()
+    Par(testAlt2(ch2, ch3, ch4),
+		sendAlt(ch2, 100),
+		sendAlt(ch3, 200),
+		sendAlt(ch4, 300)).start()
     print
     print 'Alt with priSelect on 1 SKIP, 3 channel reads:'
     ch5, ch6, ch7 = Channel(), Channel(), Channel()
@@ -287,16 +280,13 @@ def testAlt():
               sendAlt(ch6, 200),
               sendAlt(ch7, 300))
     ta3.start()
-    ta3._join()
     print
     print 'Alt with fairSelect on 1 SKIP, 3 channel reads:'
     ch8, ch9, ch10 = Channel(), Channel(), Channel()
-    ta4 = Par(testAlt4(ch8, ch9, ch10),
-              sendAlt(ch8, 100),
-              sendAlt(ch9, 200),
-              sendAlt(ch10, 300))
-    ta4.start()
-    ta4._join()
+    Par(testAlt4(ch8, ch9, ch10),
+		sendAlt(ch8, 100),
+		sendAlt(ch9, 200),
+		sendAlt(ch10, 300)).start()
     return
 
 def testChoice():
@@ -330,13 +320,11 @@ def testMobility():
     ch1 = FileChannel()
     par = Par(chMobSend(ch1, klass=FileChannel), chMobRecv(ch1))
     par.start()
-    par._join()
     print 
     print 'Testing mobility of channel objects.'
     ch2 = Channel()
     par2 = Par(chMobSend(ch2, klass=Channel), chMobRecv(ch2))
     par2.start()
-    par2._join()
     return
 
 if __name__ == '__main__':

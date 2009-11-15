@@ -39,6 +39,7 @@ import os
 import socket
 import sys
 import tempfile
+import time
 import uuid
 
 # Multiprocessing libary -- name changed between versions.
@@ -249,9 +250,9 @@ class Channel(Guard):
         self._itemr, self._itemw = os.pipe()
         self._available = processing.Semaphore(state[0])
         self._taken = processing.Semaphore(state[1])
-        self._is_alting = processing.Value('h', state[2])
-        self._is_selectable = processing.Value('h', state[3])
-        self._has_selected = processing.Value('h', state[4])
+        self._is_alting = processing.Value('h', state[2], processing.Lock())
+        self._is_selectable = processing.Value('h', state[3], processing.Lock())
+        self._has_selected = processing.Value('h', state[4], processing.Lock())
         if state[5] is not None:
             self.put(state[5])
         return

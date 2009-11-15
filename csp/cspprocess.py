@@ -176,7 +176,7 @@ class CSPOpMixin(object):
         """Implementation of CSP Seq."""
         assert _is_csp_type(other)
         seq = Seq(self, other)
-        seq.start(timeout = 0.1)
+        seq.start()
         return seq
 
     def __mul__(self, n):
@@ -284,9 +284,8 @@ class Alt(CSPOpMixin):
         elif len(self.guards) == 1:
             _debug('Alt Selecting unique guard:', self.guards[0].name)
             self.last_selected = self.guards[0]
-            self.guards[0].enable()
             while not self.guards[0].is_selectable():
-                time.sleep(0.01)
+                self.guards[0].enable()
             return self.guards[0].select()
         return None
 
@@ -462,7 +461,7 @@ class Seq(processing.Process, CSPOpMixin):
         """
         try:
             for proc in self.procs:
-                proc.start()
+                CSPOpMixin.start(proc)
                 proc.join()
         except ChannelPoison:
             _debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')

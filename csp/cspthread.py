@@ -272,9 +272,8 @@ class Alt(CSPOpMixin):
         elif len(self.guards) == 1:
             _debug('Alt Selecting unique guard:', self.guards[0].name)
             self.last_selected = self.guards[0]
-            self.guards[0].enable()
             while not self.guards[0].is_selectable():
-                time.sleep(0.01)
+                self.guards[0].enable()
             return self.guards[0].select()
         return None
 

@@ -39,6 +39,7 @@ import socket
 import sys
 import tempfile
 import threading
+import time
 import uuid
 
 # Are we sending secure messages?
