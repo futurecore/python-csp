@@ -293,20 +293,20 @@ def testChoice():
     _printHeader('Choice')
     print 'Choice with |:'
     c1, c2 = Channel(), Channel()
-    sendAlt(c1, 100) & sendAlt(c2, 200) & testOr(c1, c2)
+    Par(sendAlt(c1, 100), sendAlt(c2, 200), testOr(c1, c2)).start()
     return
 
 def testRep():
     _printHeader('Repetition')
     print 'Repetition with Alt * int:'
     ch1, ch2, ch3 = Channel(), Channel(), Channel()
-    (sendAlt(ch1, 100) & sendAlt(ch2, 200) & sendAlt(ch3, 300) &
-     testAltRRep(ch1, ch2, ch3))
+    Par(sendAlt(ch1, 100), sendAlt(ch2, 200), sendAlt(ch3, 300),
+        testAltRRep(ch1, ch2, ch3)).start()
     print
     print 'Repetition with Alt * int:'
     ch1, ch2, ch3 = Channel(), Channel(), Channel()
-    (sendAlt(ch1, 100) & sendAlt(ch2, 200) & sendAlt(ch3, 300) &
-     testAltLRep(ch1, ch2, ch3))
+    Par(sendAlt(ch1, 100), sendAlt(ch2, 200), sendAlt(ch3, 300),
+        testAltLRep(ch1, ch2, ch3)).start()
     return
 
 def testDynamicChannel():
