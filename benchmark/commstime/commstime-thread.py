@@ -42,10 +42,10 @@ def CommsTimeBM():
     c = Channel()
     d = Channel()
     print "Running commstime test"
-    Par(Prefix(c, a, prefix_item = 0),  	# initiator
-		Delta2(a, b, d),         		# forwarding to two
-		Succ(b, c),                    	# feeding back to prefix
-		Consumer(d)).start()      		# timing process
+    Par(Prefix(c, a, prefix_item = 0),      # initiator
+        Delta2(a, b, d),                 # forwarding to two
+        Succ(b, c),                        # feeding back to prefix
+        Consumer(d)).start()              # timing process
     print 'Finished run...'
 
     

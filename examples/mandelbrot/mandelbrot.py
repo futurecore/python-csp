@@ -198,7 +198,6 @@ def main(IMSIZE, filename, level='info', _process=None):
     logging.info('Image size: %ix%i' % IMSIZE)
     logging.info('%i producer processes, %i consumer processes' %
                  (len(processes)-1, 1))    
-    mandel._join()
     logging.info('All processes joined.')
     return
 
@@ -206,8 +205,8 @@ def main(IMSIZE, filename, level='info', _process=None):
 if __name__ == '__main__':
 #    IMSIZE = (640,480)		# Can't open enough files for this...
 #    IMSIZE = (480, 320)
-    IMSIZE = (320, 240) # This value causes the pickle bug, not the others.
-#    IMSIZE = (250, 150)
+#    IMSIZE = (320, 240) # This value causes the pickle bug, not the others.
+    IMSIZE = (250, 150)
 
     import sys
     if len(sys.argv) > 1:

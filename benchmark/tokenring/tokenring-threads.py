@@ -87,21 +87,11 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.exp:
-        res_f = tempfile.NamedTemporaryFile()
         print 'All times measured in microseconds.'
-        # Remap STDOUT to a temporary file.
-        sys.stdout = res_f
-        for size in xrange(3):
-            try: TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
+        for size in xrange(2, 10):
+            try:
+                print 'Token ring with %i nodes.' % size
+                TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
             except: continue
-        # Remap STDOUT to the OS provided file descriptor.
-        sys.stdout = sys.__stdout__
-        res_f.flush()
-        res_f.seek(0)
-        results_s = res_f.read()
-        res_f.close()
-        print results_s
-        results = map(lambda x: int(x), results_s.split('\n'))
-        print str(results)
     else:
         TokenRing(ringproc, options.nodes, numtoks=options.tokens).start()
