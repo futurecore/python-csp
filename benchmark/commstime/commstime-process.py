@@ -42,18 +42,11 @@ def CommsTimeBM():
     c = Channel()
     d = Channel()
     print "Running commstime test"
-    p = Par(Prefix(c, a, prefix_item = 0),  	# initiator
-            Delta2(a, b, d),         		# forwarding to two
-            Succ(b, c),                    	# feeding back to prefix
-            Consumer(d))            		# timing process
-    p.start()
+    Par(Prefix(c, a, prefix_item = 0),  	# initiator
+		Delta2(a, b, d),         		# forwarding to two
+		Succ(b, c),                    	# feeding back to prefix
+		Consumer(d)).start()       		# timing process
     print 'Finished run...'
-    
-### PyCSP code:
-#    PAR(PREFIX(c.read, a.write, prefixItem = 0),  # initiator
-#        DELTA2(a.read, b.write, d.write),         # forwarding to two
-#        SUCC(b.read, c.write),                    # feeding back to prefix
-#        Consumer(d.read)).start()                 # timing process
     
 
 if __name__ == '__main__':
@@ -61,12 +54,4 @@ if __name__ == '__main__':
     for i in xrange(N_BM):
         print "----------- run %d/%d -------------" % (i+1, N_BM)
         CommsTimeBM()
-        time.sleep(5) # Wait for each run to finish...
     print "------- Commstime finished ---------"
-
-#    # A bit of a hack, but windows does not have uname()
-#    try:
-#        os.uname()
-#    except:
-#        print "Sleeping for a while to allow windows users to read benchmark results"
-#        time.sleep(15)
