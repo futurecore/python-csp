@@ -219,15 +219,12 @@ def testPar():
     _printHeader('Par')
     print '5 processes with operator overloading...'
     p = foo(1) & foo(2) & foo(3) & foo(4) & foo(5)
-    time.sleep(5)
     print
     print '8 processes with operator overloading...'
     p = foo(1) & foo(2) & foo(3) & foo(4) & foo(5) & foo(6) & foo(7) & foo(8)
-    time.sleep(5)
     print
     print '5 processes with process objects...'
     Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
-    time.sleep(5)
     return
 
 def testChan():
@@ -259,7 +256,6 @@ def testPoison():
     chanp = Channel()
     tpar = Par(send100(chanp), recv100(chanp), testpoison(chanp))
     tpar.start()
-    time.sleep(5)
     return
 
 def testAlt():
