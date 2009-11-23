@@ -310,6 +310,8 @@ class CSPProcess(threading.Thread, CSPOpMixin):
 	    						  tuple(self._Thread__kwargs.values()))
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
+        except KeyboardInterrupt:
+            sys.exit()
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
