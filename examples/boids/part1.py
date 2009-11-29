@@ -20,39 +20,40 @@ along with this program; if not, write to the Free Software
 """
 
 from csp.cspprocess import *
-from pygame.locals import *
-import copy
-import pygame
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'October 2009'
 
-NUMBOIDS = 100                # Number of boids in simulation.
-FILENAME = 'boids.png'        # Screenshot file.
-FGCOL = (137, 192, 210, 100)  # Foreground colour.
-BGCOL = pygame.Color('black') # Background colour.
-FPS = 60                      # Maximum frames per second.
-SIZE = (800, 600)             # Screen size.
-CAPTION = 'python-csp example: Boids'
-
-class Boid(object):
-    def __init__(self, poschan):
-        self.centre = [random.randint(0, SIZE[0]), random.randint(0, SIZE[1])]
-        self.poschan = poschan        
-        return
-    @process
-    def simulate(self, _process=None):
-        while True:
-            self.centre = random.randint(0, SIZE[0]), random.randint(0, SIZE[1])
-            self.poschan.write(self.centre)
-        return
 
 @process
-def drawboids(screen, poschans, _process=None):
+def simulate(poschan, SIZE, _process=None):
+    centre = [random.randint(0, SIZE[0]), random.randint(0, SIZE[1])]
+    while True:
+        centre = random.randint(0, SIZE[0]), random.randint(0, SIZE[1])
+        poschan.write(centre)
+    return
+
+
+@process
+def drawboids(poschans, SIZE, _process=None):
+    import pygame
+
+    FGCOL = (137, 192, 210, 100)  # Foreground colour.
+    BGCOL = pygame.Color('black') # Background colour.
+    FPS = 60                      # Maximum frames per second.
+    CAPTION = 'python-csp example: Boids'
+    FILENAME = 'boids.png'        # Screenshot file.
+    QUIT = False
+    
     clock = pygame.time.Clock()
     dirty, last = [], []
     chansize = len(poschans)
-    while True:
+
+    pygame.init()
+    screen = pygame.display.set_mode((SIZE[0], SIZE[1]), 0)
+    pygame.display.set_caption(CAPTION)
+
+    while not QUIT:
         ms_elapsed = clock.tick(FPS)
         print ms_elapsed
         dirty = last
@@ -66,29 +67,30 @@ def drawboids(screen, poschans, _process=None):
         pygame.display.update(dirty)     # Update dirty rects.
         for event in pygame.event.get(): # Process events.
             if event.type == pygame.QUIT:
-                for chan in poschans: chan.poison()
-                pygame.quit()
+                QUIT = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, FILENAME)
-                print 'Saving boids in:', FILENAME        
+                print 'Saving boids in:', FILENAME
+    for chan in poschans: chan.poison()
+    pygame.quit()
     return
+
 
 @process
 def main(_process=None):
-    pygame.init()
-    screen = pygame.display.set_mode((SIZE[0], SIZE[1]), 0)
-    pygame.display.set_caption(CAPTION)
+    NUMBOIDS = 100                # Number of boids in simulation.
+    SIZE = (800, 600)             # Screen size.
     # Set up channels for reporting boid positions / velocities.
     poschans = [Channel() for i in range(NUMBOIDS)]
-    boids = [Boid(poschans[i]) for i in range(NUMBOIDS)]
     # Draw channel for the drawboids process.
     drawchan = Channel()
     # Generate a list of all processes in the simulation.
-    procs = [boids[i].simulate() for i in range(NUMBOIDS)]
-    procs.append(drawboids(screen, poschans)) # Drawing process.
-    simulation = Par(*procs)                  # Start simulation.
+    procs = [simulate(poschans[i], SIZE) for i in range(NUMBOIDS)]
+    procs.append(drawboids(poschans, SIZE)) # Drawing process.
+    simulation = Par(*procs)          # Start simulation.
     simulation.start()
     return
+
 
 if __name__ == '__main__':
     main().start()
