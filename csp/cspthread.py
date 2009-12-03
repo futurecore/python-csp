@@ -1205,11 +1205,11 @@ def Delta2(cin, cout1, cout2, _process=None):
 def Mux2(cin1, cin2, cout, _process=None):
     """Mux2 provides a fair multiplex between two input channels.
     """
-    alt = Alt(cin1.read, cin2.read)
+    alt = Alt(cin1, cin2)
     while True:
-        guard = alt.pri_select()
-        cout.write(guard.read())
+        cout.write(alt.fair_select())
     return
+
 
 @process
 def Multiply(cin0,cin1,cout0,_process=None):
