@@ -1,0 +1,403 @@
+#!/usr/bin/env python
+
+"""Interactive interpreter for CSP Python, with online help.
+
+Features:
+ * CSP channel server is started automatically.
+ * CSP primatives are imported automatically.
+ * CSP help is built in via. the 'info' command.
+ * History is saved between sessions in C{~/.csp-console-history}.
+ * Tab-completion can be used to complete keywords or variables.
+
+Copyright (C) Sarah Mount, 2009.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have rceeived a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+"""
+try:
+    import readline
+except ImportError:
+    print "Module readline not available."
+else:
+    import rlcompleter
+    readline.parse_and_bind("tab: complete")
+
+import atexit
+import code
+import os
+import sys
+
+__author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
+__date__ = 'December 2008'
+
+class _Printer(object):
+    """Print documentation in twenty-line chunks.
+
+    Based on a class of the same name from the site.py module.
+    """
+    MAXLINES = 20
+    def __init__(self, documentation):
+        self.__lines = documentation.split('\n')
+        self.__linecnt = len(self.__lines)
+        return
+    def __call__(self):
+        prompt = '\n*** Hit Return for more, or q (and Return) to quit: '
+        lineno = 0
+        while True:
+            try:
+                for i in range(lineno, lineno + self.MAXLINES):
+                    print self.__lines[i]
+            except IndexError:
+                break
+            else:
+                lineno += self.MAXLINES
+                key = None
+                while key not in ('', 'q', 'Q'):
+                    key = raw_input(prompt)
+                if key == 'q':
+                    break
+                print 
+
+class TabSafeCompleter(rlcompleter.Completer):
+    """Enable safe use of Tab for either tab completion or nested scope.
+    """
+    def complete(self, text, state):
+        if text == '':
+            return ['\t', None][state]
+        else:
+            return rlcompleter.Completer.complete(self, text, state)
+
+class CSPConsole(code.InteractiveConsole):
+    """python-csp interactive console with REPL.
+
+    Features:
+     * CSP channel server is started automatically.
+     * CSP primatives are imported automatically.
+     * CSP help is built in via. the 'info' command.
+     * History is saved between sessions in C{~/.csp-console-history}.
+     * Tab-completion can be used to complete keywords or variables.
+    """
+    # From the docs of the readline module.
+    def __init__(self, locals=None, filename="<console>",
+                 histfile=os.path.expanduser("~/.csp-console-history")):
+        code.InteractiveConsole.__init__(self)
+        self.init_history(histfile)
+    def init_history(self, histfile):
+	readline.parse_and_bind("tab: complete")
+        delims = ' \t\n`!@#$%^&*()-=+[{]}\\|;:,<>?'
+        readline.set_completer_delims(delims)
+	readline.set_completer(TabSafeCompleter().complete)
+        if hasattr(readline, "read_history_file"):
+            try:
+                readline.read_history_file(histfile)
+            except IOError:
+                pass
+            atexit.register(self.save_history, histfile)
+    def save_history(self, histfile):
+        readline.write_history_file(histfile)
+    def raw_input(self, *args):
+        line = code.InteractiveConsole.raw_input(self, *args)
+        if line == _INFOCSP:
+            _Printer(_cspinfo)()
+            return ''
+        elif line in _INFO:
+            _Printer(_INFO[line][1])()
+            return ''
+        elif line.startswith('info '):
+            print
+            print 'No info available on that topic. Try one of these:'
+            print 
+            print _commands
+            return ''
+        else:
+            return line
+
+def _createBuiltinDocs():
+    """Automatically create documentation for built-in process and guards.
+
+    This function iterates over the documentation strings in the
+    csp.builtins module and produces a larger documentation string
+    describing every name which does not begin with an underscore and
+    is not an imported module or CSP type.
+    """
+    head = "\n*** CSP Python: Info on built-in processes and guards. ***"
+    foot = "\n\n*** For more info, type 'info csp' at the prompt. ***\n"
+    docs = """ """
+    docstrings = {}
+    import csp.cspprocess
+    cspnames = [klass.__name__ for klass in csp.cspprocess._CSPTYPES]
+    # Names imported by builtins
+    imports = ['operator', 'os', 'process', 'random', 'socket', 'sys',
+               'tempfile', 'threading', 'time', 'hmac', 'wraps', 'hashlib',
+               'psyco', 'pickle']
+    exceptions = ['CorruptedData', 'NoGuardInAlt', 'ChannelPoison',
+                  'ChannelAbort', 'ProcessSuspend']
+    baseclasses = ['CSPOpMixin', 'CSPProcess', 'Guard',
+                   'Channel', 'FileChannel', 'process']
+    for name in dir(csp.cspprocess):
+        if (name in cspnames or name.startswith('_') or name in imports
+            or name in exceptions or name in baseclasses or name == 'DEBUG'
+            or name == 'SECURITY_ON'):
+            continue
+        qualname = 'csp.cspprocess' + '.' + name 
+        if eval(qualname+'.__doc__'):
+            docstrings[name] = eval(qualname+'.__doc__')
+    del csp.cspprocess
+    names = docstrings.keys()
+    names.sort()
+    for name in names:
+        docs += '\n' + name + ':\n' + docstrings[name]
+    return head + '\n' + docs + foot
+    
+_INFOCSP = 'info csp'
+
+_proc = """
+*** CSP Python: Info on processes. ***
+
+There are two ways to create a new CSP process. Firstly, you can use
+the @process decorator to convert a function definition into a CSP
+Process. Once the function has been defined, calling it will return a
+new CSPProcess object which can be started manually, or used in an
+expression:
+
+>>> @process
+... def foo(n, _process=None):
+...   print 'PID: %g N: %g' % (_process.getPid(), n)
+...
+>>> foo(100).start()
+PID: 15491, N:, 100
+>>> foo(10) & foo(20) # Run foo(10) and foo(20) in parallel
+PID: 15505, N:, 20
+PID: 15506, N:, 10
+<Par(Process-93, initial)>
+>>> 
+
+Alternatively, you can create a CSPProcess object directly and pass a
+function (and its arguments) to the CSPProcess constructor:
+
+>>> def foo(n, _process=None):
+...     print 'PID: %g N: %g' % (_process.getPid(), n)
+...     return
+... 
+>>> p = CSPProcess(foo, 100)
+>>> p.start()
+>>> 
+
+Note that the target function of a CSPProcess object always takes a
+special keyword argument _process. At runtime, CSP Python binds a
+reference to the underlying operating system process to this
+name. Hence, you can ask the process for its name, PID and other
+information, using the following methods:
+
+getName() 	process name.
+getPid()	process PID.
+getExitCode()	exit code or None if process is running.
+isAlive()	True if the process is alive, False otherwise.
+setName()	set the name of the process.
+
+*** For more info, type 'info csp' at the prompt. ***
+"""
+
+_par = """
+*** CSP Python: Info on Par. ***
+
+There are two ways to run processes in parallel.  Firstly, given two
+(or more) processes you can parallelize them with the & operator, like this:
+
+>>> @process
+... def foo(n, _process=None):
+...   print 'PID: %g N: %g' % (_process.getPid(), n)
+...
+>>> foo(1) & foo(2) & foo(3) 
+PID: 15251, N:, 2
+PID: 15252, N:, 1
+PID: 15253, N:, 3
+<Par(Process-65, initial)>
+>>>
+
+Alternatively, you can create a Par object which is a sort of CSP
+process and start that process manually:
+
+>>> p = Par(foo(1), foo(2), foo(3))
+>>> p.start()
+PID: 15276, N:, 1
+PID: 15278, N:, 3
+PID: 15277, N:, 2
+>>> 
+
+*** For more info, type 'info csp' at the prompt. ***
+"""
+
+_seq = """
+*** CSP Python: Info on Seq. ***
+
+There are two ways to run processes in sequence.  Firstly, given two
+(or more) processes you can sequence them with the > operator, like this:
+
+>>> @process
+... def foo(n, _process=None):
+...   print 'PID: %g N: %g' % (_process.getPid(), n)
+...
+>>> foo(1) > foo(2) > foo(3)
+PID: 15288, N:, 1
+PID: 15289, N:, 2
+PID: 15290, N:, 3
+<CSPProcess(Process-75, stopped)>
+>>> 
+
+Secondly, you can create a Seq object which is a sort of CSP process
+and start that process manually:
+
+>>> s = Seq(foo(1), foo(2), foo(3))
+>>> s.start()
+PID: 16549 N: 1
+PID: 16550 N: 2
+PID: 16551 N: 3
+>>> 
+
+*** For more info, type 'info csp' at the prompt. ***
+"""
+
+_alt = """
+*** CSP Python: Info on Alt. ***
+
+Not yet implemented.
+
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
+
+_channel = """
+*** CSP Python: Info on channels. ***
+
+A CSP channel can be created with the Channel class:
+
+>>> c = Channel()
+>>>
+
+Each Channel object should have a unique name in the network:
+
+>>> c.name
+'127.0.1.1:15976:-21474836
+>>>
+
+The Channel can then be passed as an argument to any CSP process and
+then be used either to read (using the .read() method) or to write
+(using the .write() method). For example:
+
+>>> @process
+... def send(cin, i, _process=None):
+...     cin.write(i)
+...     return
+... 
+>>> @process
+... def recv(cout, _process=None):
+...     data = cout.read()
+...     print 'PID: %g, Read: %g' % (_process.getPid(), data)
+...     return
+... 
+>>> send(c, 100) & recv(c)
+100
+<Par(Process-88, initial)>
+>>> 
+
+*** For more info, type 'info csp' at the prompt. ***
+"""
+
+_poison = """
+*** CSP Python: Info on channel poisoning. ***
+
+A set of communicating processes can be terminated by "poisoning" any
+of the channels used by those processes. This can be achieved by
+calling the poison() method on any channel. For example:
+
+>>> @process
+... def send(cin, _process=None):
+...     for i in xrange(5):
+...             print 'PID: %g sending: %g' % (_process.getPid(), i)
+...             cin.write(i)
+...             time.sleep(random.random()*5)
+...     return
+... 
+>>> @process
+... def recv(cout, _process=None):
+...     for i in xrange(5):
+...             data = cout.read()
+...             print 'PID: %g read: %g' % (_process.getPid(), data)
+...             time.sleep(random.random()*5)
+...     return
+... 
+>>> @process
+... def poison(chan, _process=None):
+...     time.sleep(random.random()*7)
+...     print 'PID: %g poisoning %s' % (_process.getPid(), chan.name)
+...     chan.poison()
+...     return
+... 
+>>> doomed = Channel()
+>>> send(doomed) & recv(doomed) & poison(doomed)
+PID: 16791 sending: 0
+PID: 16790 read: 0
+<Par(Process-6, initial)>
+>>> PID: 16791 sending: 1
+PID: 16792 poisoning 127.0.1.1:16741:-2147483648
+
+>>> 
+
+*** For more info, type 'info csp' at the prompt. ***
+"""
+
+_mobility = """
+*** CSP Python: Info on mobility. ***
+
+Not yet implemented.
+
+*** For more info, type 'info csp' at the prompt. ***
+"""
+
+_builtin = _createBuiltinDocs()
+
+# COMMAND -> (descriptor, docstring)
+_INFO = {'info process':('processes', _proc),
+         'info par':('Parallel', _par),
+         'info seq':('Sequence', _seq),
+         'info alt':('Alternative', _alt),
+         'info channel':('channels', _channel),
+         'info poison':('poisoning', _poison),
+         'info mobility':('mobility', _mobility),
+         'info builtin':('built-ins', _builtin)}
+
+_ban = """\nCSP Python (c) 2008. Licensed under the GPL(v2).
+Type "%s" for more information.
+Press Ctrl-C to close the CSP channel server.
+""" % (_INFOCSP)
+
+_cspinfo = """
+*** CSP Python: general info ***
+
+CSP Python is an implementation of Hoare's Communicating Sequential
+Processes in Python. For specific info on any aspect of CSP, use the
+following:
+
+"""
+_commands = ""
+for key in _INFO:
+    c = "For info on %s, type: \t%s\n" % (_INFO[key][0], key)
+    _commands += c
+_cspinfo += _commands
+
+if __name__ == '__main__':
+    c = CSPConsole(locals=locals())
+    # Don't expect the csp.cspprocess namespace to be available in locals()
+    c.push('from csp.cspprocess import *')
+    c.interact(banner=_ban)

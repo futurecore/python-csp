@@ -1,0 +1,23 @@
+15 Nov 2009:
+	Major poisoning bug fixed. Other bug fixes in test scripts and
+	synchronisation fixed.
+9 Nov 2009:
+	Added token ring example to benchmark/ directory.  Added bsp
+	package containing barriers. These are automatically imported into
+	csp modules.
+26 Oct 2009:
+	Added Boids demo to the examples/ directory.
+28 June 2009:
+	Added unit testing, in addition to test scripts. Sam Wilson added
+	Jython version of the CSP library / DSL.
+20 June 2009:
+	Added threaded version of python-csp. Made main CSP code PEP8
+	compliant.
+24 March 2009:
+	Fixed bug in channel poisoning.
+6 January 2009:
+	Added ALTing to CSP package. Added example parallel programs,
+	including Mandelbrot fractal generator.
+22 December 2008:
+	Added initial version of CSP package. Added python-csp
+	shell. Added .desktop files for GNU/Linux desktop integration.
