@@ -5,3 +5,4 @@ recursive-include applications/
 recursive-include jythonsetup/
 recursive-include csp/
 recursive-include bsp/
+recursive-include reactive/

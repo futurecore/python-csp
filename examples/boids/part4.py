@@ -140,7 +140,7 @@ def drawboids(drawchan, SIZE, _process=None):
 
     while not QUIT:
         ms_elapsed = clock.tick(FPS)
-        print ms_elapsed
+#        print ms_elapsed
         dirty = last
         for rect in last: screen.fill(BGCOL, rect)
         last = []
@@ -163,7 +163,7 @@ def drawboids(drawchan, SIZE, _process=None):
 
 @process
 def main(_process=None):
-    NUMBOIDS = 100                # Number of boids in simulation.
+    NUMBOIDS = 50                # Number of boids in simulation.
     SIZE = (800, 600)             # Screen size.
     # Set up channels for reporting boid positions / velocities.
     infochans = [Channel() for i in range(NUMBOIDS)]
