@@ -46,7 +46,7 @@ def response(code, reason, page):
 
 
 @process
-def server(_process=None):
+def server(host, port, _process=None):
     """Simple CSP based web server.
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
