@@ -1,3 +1,6 @@
+6 Apr 2010:
+	Added packages for bulk synchronous processing and reactive
+	programming. Added directory structure for tutorial examples.
 15 Nov 2009:
 	Major poisoning bug fixed. Other bug fixes in test scripts and
 	synchronisation fixed.
