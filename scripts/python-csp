@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Interactive interpreter for CSP Python, with online help.
+"""Interactive interpreter for python-csp, with online help.
 
 Features:
  * CSP channel server is started automatically.
@@ -131,7 +131,7 @@ def _createBuiltinDocs():
     describing every name which does not begin with an underscore and
     is not an imported module or CSP type.
     """
-    head = "\n*** CSP Python: Info on built-in processes and guards. ***"
+    head = "\n*** python-csp: Info on built-in processes and guards. ***"
     foot = "\n\n*** For more info, type 'info csp' at the prompt. ***\n"
     docs = """ """
     docstrings = {}
@@ -163,7 +163,7 @@ def _createBuiltinDocs():
 _INFOCSP = 'info csp'
 
 _proc = """
-*** CSP Python: Info on processes. ***
+*** python-csp: Info on processes. ***
 
 There are two ways to create a new CSP process. Firstly, you can use
 the @process decorator to convert a function definition into a CSP
@@ -210,7 +210,7 @@ setName()	set the name of the process.
 """
 
 _par = """
-*** CSP Python: Info on Par. ***
+*** python-csp: Info on Par. ***
 
 There are two ways to run processes in parallel.  Firstly, given two
 (or more) processes you can parallelize them with the & operator, like this:
@@ -240,7 +240,7 @@ PID: 15277, N:, 2
 """
 
 _seq = """
-*** CSP Python: Info on Seq. ***
+*** python-csp: Info on Seq. ***
 
 There are two ways to run processes in sequence.  Firstly, given two
 (or more) processes you can sequence them with the > operator, like this:
@@ -270,7 +270,7 @@ PID: 16551 N: 3
 """
 
 _alt = """
-*** CSP Python: Info on Alt. ***
+*** python-csp: Info on Alt. ***
 
 Not yet implemented.
 
@@ -278,7 +278,7 @@ Not yet implemented.
 """ % (_INFOCSP)
 
 _channel = """
-*** CSP Python: Info on channels. ***
+*** python-csp: Info on channels. ***
 
 A CSP channel can be created with the Channel class:
 
@@ -315,7 +315,7 @@ then be used either to read (using the .read() method) or to write
 """
 
 _poison = """
-*** CSP Python: Info on channel poisoning. ***
+*** python-csp: Info on channel poisoning. ***
 
 A set of communicating processes can be terminated by "poisoning" any
 of the channels used by those processes. This can be achieved by
@@ -358,7 +358,7 @@ PID: 16792 poisoning 127.0.1.1:16741:-2147483648
 """
 
 _mobility = """
-*** CSP Python: Info on mobility. ***
+*** python-csp: Info on mobility. ***
 
 Not yet implemented.
 
@@ -377,15 +377,15 @@ _INFO = {'info process':('processes', _proc),
          'info mobility':('mobility', _mobility),
          'info builtin':('built-ins', _builtin)}
 
-_ban = """\nCSP Python (c) 2008. Licensed under the GPL(v2).
+_ban = """\npython-csp (c) 2008. Licensed under the GPL(v2).
 Type "%s" for more information.
 Press Ctrl-C to close the CSP channel server.
 """ % (_INFOCSP)
 
 _cspinfo = """
-*** CSP Python: general info ***
+*** python-csp: general info ***
 
-CSP Python is an implementation of Hoare's Communicating Sequential
+python-csp is an implementation of Hoare's Communicating Sequential
 Processes in Python. For specific info on any aspect of CSP, use the
 following:
 
