@@ -97,12 +97,31 @@ class Channel(CSPModel):
 
     def fdr(self):
         return 'channel ' + self.name + '\n'
-    
 
-class Alt(CSPModel):
 
-    def __init__(self):
-        CSPModel.__init__(self)
+# def write_dotfile(filename='procgraph.dot'):
+#     global nodes
+#     global arcs
+#     dot = "graph pythoncsp {\n  node [shape=ellipse];"
+#     for proc in nodes:
+#         dot += " " + str(proc) + ";"
+#     dot += "\n"
+#     for channel in arcs:
+#         for i in xrange(len(arcs[channel])):
+#             for j in xrange(i+1, len(arcs[channel])):
+#                 dot += (str(arcs[channel][i]) + " -- " +
+#                         str(arcs[channel][j]) +
+#                         "  [ label=" + str(channel) + " ];\n")
+#     dot += '  label = "\\n\\nCSP Process Relationships\\n";\n'
+#     dot += "  fontsize=20;\n}"
+#     fh = open(filename)
+#     fh.write(dot)
+#     fh.close()
+#     return
+
+
+# def write_png(infile='procgraph.dot', outfile='procgraph.png'):
+#     os.system('neato -v -Goverlap=-1 -Gsplines=true -Gsep=.1 -Gstart=-1000 Gepsilon=.0000000001 -Tpng ' + infile + ' -o' + outfile)
 
 
 if __name__ == '__main__':

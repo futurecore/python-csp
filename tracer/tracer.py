@@ -1,7 +1,8 @@
 #!/usr/bin/env python2.6
 
 """
-Tracer for python-csp generating a process graph with graphviz.
+Tracer for python-csp, intended for generating models of a python-csp
+program, including process graphs, CSP traces and FDR2 models.
 
 Some source from pycallgraph.py is used here.  pycallgraph is
 published under the GNU General Public License.
@@ -30,6 +31,7 @@ __date__ = 'June 2009'
 
 import csp.cspprocess
 
+#import icode
 import inspect
 #import linecache
 import os
@@ -37,33 +39,46 @@ import sys
 import types
 
 from distutils import sysconfig
-from stack import Stack
+#from stack import Stack
 
 
 DEBUG = True
 
 tracer = None
 
+# Functions to ignore when tracing.
+#
+# TODO: This is rather brittle and should be replaced, possibly with
+# the sort of "globbing" system that pycallgraph uses.
 ignore = ('tracer.stop_trace',
           'Synchronized.getvalue',
           'Synchronized.setvalue',
+          'csp.cspprocess.process', # Decorator
           'csp.cspprocess._call',
           'csp.cspprocess._debug',
+          'csp.cspprocess._is_csp_type',
           'csp.cspprocess.CSPProcess.__init__',          
+          'csp.cspprocess.CSPProcess.spawn',
+          'csp.cspprocess.CSPProcess.run',
           'csp.cspprocess.Par.__init__',          
           'csp.cspprocess.Seq.__init__',          
           'csp.cspprocess.Alt.__init__',          
+          'csp.cspprocess.Channel._setup',
           'csp.cspprocess.Channel.__del__',
           'csp.cspprocess.Channel.__init__',
           'csp.cspprocess.Channel.put',
           'csp.cspprocess.Channel.get',
           'csp.cspprocess.Channel.enable',
           'csp.cspprocess.Channel.disable',
-          'csp.cspprocess.Channel.checkpoison'
+          'csp.cspprocess.Channel.select',
+          'csp.cspprocess.Channel.is_selectable',
+          'csp.cspprocess.Channel.checkpoison',
+          'csp.cspprocess.Skip.__init__',
+          'csp.cspprocess.Skip.enable',
+          'csp.cspprocess.Skip.disable',
+          'csp.cspprocess.Skip.select',
+          'csp.cspprocess.Skip.is_selectable'
           )
-
-
-processes = Stack()
 
 
 def reset_trace():
@@ -216,7 +231,7 @@ def _pprint_func(func_name, args):
 
 
 @memoized
-def _get_key(value, dictionary):
+def _reverse_lookup(value, dictionary):
     """Reverse lookup for dictionaries.
     Given a value returns the key indexing that value in dictionary, or None.
     """
@@ -226,18 +241,20 @@ def _get_key(value, dictionary):
 
 
 def _find_name_in_outer_scope(bound_value, frame):
-    """Given a name in the current stack frame, find the name of that
+    """Look down the stack to find the original name given to a value.
+
+    Given a name in the current stack frame, find the name of that
     value, where it was defined in an outer scope (or stack frame).
     """
     defined_name = ''
     while frame:
         try:
-            val = _get_key(bound_value, frame.f_locals)
-            if val is not None: defined_name = val
+            val = _reverse_lookup(bound_value, frame.f_locals)
+            if val is not None: defined_name = val           
         except AttributeError:
             pass
         try:
-            val = _get_key(bound_value, frame.f_globals)
+            val = _reverse_lookup(bound_value, frame.f_globals)
             if val is not None: defined_name = val
         except AttributeError:
             pass
@@ -248,10 +265,12 @@ def _find_name_in_outer_scope(bound_value, frame):
 
 
 def _get_arguments(param, frame):
-    """Given a formal parameter name and a stack frame, return the
+    """Get the original name of a value passed as a function argument.
+
+    Given a formal parameter name and a stack frame, return the
     variable name and type of the formal parameter where it was first
-    defined (or, if the argument is a constant, return the constant if
-    it is safe to do so and '' otherwise).
+    defined. If the argument is a constant, return the constant if it
+    is safe to do so and '' otherwise.
     """
     arg, ty = None, None
     code = frame.f_code
@@ -261,8 +280,11 @@ def _get_arguments(param, frame):
     else:
         bound_value = frame.f_globals[param]
 
+    if bound_value is None:
+        arg, ty = (None, type(None))
+
     # Deal separately with core csp classes.
-    if isinstance(bound_value, csp.cspprocess.CSPProcess):
+    elif isinstance(bound_value, csp.cspprocess.CSPProcess):
         arg, ty = (bound_value._target.__name__, type(bound_value))
 
     # Deal with PARallel processes.
@@ -271,32 +293,35 @@ def _get_arguments(param, frame):
         for proc in bound_value.procs:
             targets.append((proc._target.__name__, type(proc)))
         return targets
+
     elif isinstance(bound_value, csp.cspprocess.Seq):
         targets = []
         for proc in bound_value.procs:
             targets.append((proc._target.__name__, type(proc)))
         return targets
+
     elif isinstance(bound_value, csp.cspprocess.Alt):
         targets = []
         for guard in bound_value.guards:
-            targets.append((guard._target.__name__, type(guard)))
+            targets.append((_find_name_in_outer_scope(guard, frame),
+                            type(guard)))
         return targets
 
     # Deal with types defined outside the csp library.
-    elif (bound_value is not None and
-          bound_value in frame.f_locals.values()):
+    elif bound_value in frame.f_locals.values():
         if is_safe_type(type(bound_value)):
             arg, ty = (bound_value, type(bound_value))
         else:
             arg, ty = (_find_name_in_outer_scope(bound_value, frame),
                                 type(bound_value))
-    elif (bound_value is not None and
-          bound_value in frame.f_globals.values()):
+
+    elif bound_value in frame.f_globals.values():
         if is_safe_type(type(bound_value)):
             arg, ty = (bound_value, type(bound_value))
         else:
             arg, ty = (_find_name_in_outer_scope(bound_value, frame),
                        type(bound_value))
+
     else:
         arg, ty = (_find_name_in_outer_scope(bound_value, frame),
                    type(bound_value))
@@ -329,11 +354,6 @@ class Tracer(object):
 
     def trace_exn(self, frame, event, arg):
         """Trace an exception.
-        """
-        pass
-
-    def trace_return(self, frame, event, arg):
-        """Trace a return value from a function.
         """
         pass
 
@@ -399,26 +419,8 @@ class Tracer(object):
 
         return self
 
-# def write_dotfile(filename='procgraph.dot'):
-#     global nodes
-#     global arcs
-#     dot = "graph pythoncsp {\n  node [shape=ellipse];"
-#     for proc in nodes:
-#         dot += " " + str(proc) + ";"
-#     dot += "\n"
-#     for channel in arcs:
-#         for i in xrange(len(arcs[channel])):
-#             for j in xrange(i+1, len(arcs[channel])):
-#                 dot += (str(arcs[channel][i]) + " -- " +
-#                         str(arcs[channel][j]) +
-#                         "  [ label=" + str(channel) + " ];\n")
-#     dot += '  label = "\\n\\nCSP Process Relationships\\n";\n'
-#     dot += "  fontsize=20;\n}"
-#     fh = open(filename)
-#     fh.write(dot)
-#     fh.close()
-#     return
+    def trace_return(self, frame, event, arg):
+        """Trace a return value from a function.
+        """
+        pass
 
-
-# def write_png(infile='procgraph.dot', outfile='procgraph.png'):
-#     os.system('neato -v -Goverlap=-1 -Gsplines=true -Gsep=.1 -Gstart=-1000 Gepsilon=.0000000001 -Tpng ' + infile + ' -o' + outfile)
