@@ -47,6 +47,7 @@ from functools import wraps # Easy decorators
 # Import barrier from bulk synchronous processing library
 from bsp.bsp import BarrierThreading as Barrier
 
+import gc
 import inspect
 import operator
 import os
@@ -315,6 +316,21 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
+
+    def __del__(self):
+        """Run the garbage collector automatically on deletion of this
+        object.
+
+        This prevents the "Winder Bug" found in tests/winder_bug of
+        the distribution, where successive process graphs are created
+        in memory and, when the "outer" CSPProcess object returns from
+        its .start() method the process graph is not garbage
+        collected. This accretion of garbage can cause degenerate
+        behaviour which is difficult to debug, such as a program
+        pausing indefinitely on Channel creation.
+        """
+        gc.collect()
+        return
 
 
 ### CSP combinators -- Par, Alt, Seq, ...
