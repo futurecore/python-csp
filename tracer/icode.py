@@ -15,12 +15,15 @@ GNU General Public License for more details.
 You should have rceeived a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 """
+
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = ''
+
 
 class IcodeNode(object):
     """Abstract base class for all ICODE types.
     """
+
     def __init__(self, lineno, annote):
         """
         @param lineno line number
@@ -29,6 +32,7 @@ class IcodeNode(object):
         self.annote = annote
         self.lineno = lineno
         return
+
     def _annote2xml(self):
         """Convert dict of annotations to xml.
         """
@@ -36,72 +40,91 @@ class IcodeNode(object):
         for key, val in self.annote.itervalues():
             x+= str(key) + '=' + str(val) + ' '
         return x + '/>\n'
+
     def xml(self):
         raise NotImplementedError
 
+    
 class ETA(IcodeNode):
     """Empty node. Can be used to represent None / null, etc.
     """
+
     def __init__(self, lineno, annote):
         super(ETA).__init__(self, lineno, annote)
         return
+
     def xml(self):
         return '<eta>' + self._annote2xml() + '</eta>\n'
 
+    
 class Val(IcodeNode):
     """Literals and other values.
     """
+
     def __init__(self, lineno, val, annote):
         super(Val).__init__(self, lineno, annote)
         self.val = val
         return
+
     def xml(self):
         return '<val>' + str(self.val) + self._annote2xml() + '</val>\n'
 
+    
 class Arith(IcodeNode):
     """Arithmetic expressions.
     """
+
     def __init__(self, lineno, e1, e2, aop, annote):
         super(Arith).__init__(self, lineno, annote)
         self.e1 = e1
         self.e2 = e2
         self.aop = aop
         return
+
     def xml(self):
         raise NotImplementedError
 
+    
 class Bool(IcodeNode):
     """Boolean expressions.
     """
+
     def __init__(self, lineno, e1, e2, bop, annote):
         super(Bool).__init__(self, lineno, annote)
         self.e1 = e1
         self.e2 = e2
         self.bop = bop
         return
+
     def xml(self):
         raise NotImplementedError
 
+    
 class Prim(IcodeNode):
     """Statements...should rename this really.
     """
+
     def __init__(self, lineno, e1, e2, pop, annote):
         super(Prim).__init__(self, lineno, e1, e2, pop, annote)
         self.e1 = e1
         self.e2 = e2
         self.pop = pop
         return
+
     def xml(self):
         raise NotImplementedError
 
+    
 class Assign(IcodeNode):
     """Assignments.
     """
+
     def __init__(self, lineno, lvalue, rvalue, annote):
         super(Assign).__init__(self, lineno, annote)
         self.lvalue = lvalue
         self.rvalue = rvalue
         return
+
     def xml(self):
         icode = '<assign><lvalue>'
         icode += self.lvalue.xml()
@@ -113,66 +136,84 @@ class Assign(IcodeNode):
         icode += '</assign>\n'
         return icode
 
+    
 class Call(IcodeNode):
     """Calls to execute functions, closures, methods, continuations, etc.
     """
+
     def __init__(self, lineno, name, args, annote):
         super(Call).__init__(self, lineno, annote)
         self.name = name
         self.args = args
         return
+
     def xml(self):
         raise NotImplementedError
 
+    
 class Select(IcodeNode):
     """Selection statements.
     """
+
     def __init__(self, lineno, guards, annote):
         super(Select).__init__(self, lineno, annote)
         self.guards = guards
         return
+
     def xml(self):
         raise NotImplementedError
 
+    
 class Iterate(IcodeNode):
     """Iteration.
     """
+
     def __init__(self, lineno, guards, annote):
         super(Iterate).__init__(self, lineno, annote)
         self.guards = guards
         return
+
     def xml(self):
         raise NotImplementedError
 
+    
 class Nu(IcodeNode):
     """Names.
     """
+
     def __init__(self, lineno, n, annote):
         super(Nu).__init__(self, lineno, annote)
         self.n = n
         return
+
     def xml(self):
         return ('<nu>' + str(self.n) + self._annote2xml() + '</nu>\n')
 
+    
 class NameSpace(IcodeNode):
     """Un-paramaterised name spaces.
     """
+
     def __init__(self, lineno, name, space, annote):
         super(NameSpace).__init__(self, lineno, annote)
         self.name = name
         self.space = space # iterable of some sort
         return
+
     def xml(self):
         raise NotImplementedError
 
+    
 class ParamNameSpace(IcodeNode):
     """Paramaterised name spaces.
     """
+
     def __init__(self, lineno, name, args, space, annote):
         super(ParamNameSpace).__init__(self, lineno, annote)
         self.name = name
         self.args = args
         self.space = space # iterable of some sort
         return
+
     def xml(self):
         raise NotImplementedError

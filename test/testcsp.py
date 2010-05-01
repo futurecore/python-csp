@@ -178,27 +178,6 @@ def testAltLRep(cin1, cin2, cin3):
     print gen.next()
     print gen.next()
 
-@process
-def chMobSend(cout, klass=Channel):
-    chan = klass()
-    print 'Sending channel about to write channel to cout.'
-    if isinstance(chan, FileChannel):
-        print 'Using filename:', chan._fname
-    cout.write(chan)
-    chan.write('Yeah, baby, yeah!')
-    return
-
-
-@process
-def chMobRecv(cin):
-    print 'Receiving channel about to read channel.'
-    chan = cin.read()
-    print 'Receiving channel got channel:', type(chan)
-    if isinstance(chan, FileChannel):
-        print 'Using filename:', chan._fname
-    print chan.read()
-    return
-
 
 ########## Top level stuff
 
@@ -315,23 +294,6 @@ def testRep():
         testAltLRep(ch1, ch2, ch3)).start()
     return
 
-def testDynamicChannel():
-    _printHeader('dynamic channel creation')
-    print 'Not implemented yet...'
-    return
-
-def testMobility():
-    _printHeader('mobility')
-    print 'Testing mobility of file channel objects.'
-    ch1 = FileChannel()
-    par = Par(chMobSend(ch1, klass=FileChannel), chMobRecv(ch1))
-    par.start()
-    print 
-    print 'Testing mobility of channel objects.'
-    ch2 = Channel()
-    par2 = Par(chMobSend(ch2, klass=Channel), chMobRecv(ch2))
-    par2.start()
-    return
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -364,9 +326,6 @@ if __name__ == '__main__':
     parser.add_option('-r', '--rep', dest='rep',
                       action='store_true',
                       help='Test syntactic sugar for repetition.')
-    parser.add_option('-m', '--mobility', dest='mobility', 
-                      action='store_true',
-                      help='Test channel and process mobility')
 
     (options, args) = parser.parse_args()
 
@@ -382,8 +341,6 @@ if __name__ == '__main__':
         testAlt()
         testChoice()
         testRep()
-        testDynamicChannel()
-#    	testMobility()
         print _exit
         sys.exit()
     elif options.seq: testSeq()
@@ -394,7 +351,6 @@ if __name__ == '__main__':
     elif options.alt: testAlt()
     elif options.choice: testChoice()
     elif options.rep: testRep()
-    elif options.mobility: testMobility()
     else: parser.print_help()
     print _exit
     sys.exit()
