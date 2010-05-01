@@ -1,3 +1,7 @@
+1 May 2010
+	Removed the _process keyword from CSPProcess objects.
+	Refactored builtin processes to their own library.
+	Updated documentation in the python-csp shell.
 9 Apr 2010:
 	Moved documentation to Sphinx.
 	Added new project logo.
