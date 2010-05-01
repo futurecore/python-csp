@@ -17,7 +17,7 @@ perProcess = 100000
 workers = 320
 
 @process
-def worker(c, _process=None):
+def worker(c):
     count = 0
     i = 0
     while i < perProcess:
@@ -28,7 +28,7 @@ def worker(c, _process=None):
     c.write((Decimal(count)))
     return       
 @process
-def consumer(cins, _process=None):     
+def consumer(cins):     
     alt = Alt(*cins)
     total = Decimal(0)
     for i in range(len(cins)):

@@ -92,8 +92,7 @@ def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
             # Point lies outside the Mandelbrot set.
             colour = get_colour(nu(z, i), cmax=MAXITER)
         imgcolumn[ycoord] = colour
-#    logging.debug('process %g sending column for x=%i' %
-#                  (_process.getPid(), xcoord))
+    logging.debug('sending column for x=%i' % xcoord)
     cout.write((xcoord, imgcolumn))
     return
 

@@ -32,7 +32,7 @@ from csp.cspprocess import *
 from csp.builtins import *
 
 @process
-def Bool1(cout, _process=None):
+def Bool1(cout):
     while True:
         cout.write(1)
         cout.write(1)
@@ -41,7 +41,7 @@ def Bool1(cout, _process=None):
     return
         
 @process
-def Bool2(cout, _process=None):
+def Bool2(cout):
     while True:
         cout.write(1)
         cout.write(0)

@@ -14,10 +14,12 @@ Systems Engineering Series (ISSN 1383-7575).
 """
 
 from csp.cspprocess import *
+from csp.builtins import Prefix, Delta2, Succ
+
 import os
 
 @process
-def Consumer(cin, _process=None):
+def Consumer(cin):
     "Commstime consumer process"
     N = 5000
     ts = time.time
@@ -42,10 +44,10 @@ def CommsTimeBM():
     c = Channel()
     d = Channel()
     print "Running commstime test"
-    Par(Prefix(c, a, prefix_item = 0),  	# initiator
-		Delta2(a, b, d),         		# forwarding to two
-		Succ(b, c),                    	# feeding back to prefix
-		Consumer(d)).start()      		# timing process
+    Par(Prefix(c, a, prefix_item = 0),  	# Initiator
+		Delta2(a, b, d),         	# Forwarding to two
+		Succ(b, c),                    	# Feeding back to prefix
+		Consumer(d)).start()      	# Timing process
     print 'Finished run...'
     
 

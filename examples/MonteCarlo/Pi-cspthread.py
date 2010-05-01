@@ -24,9 +24,10 @@ def worker(c):
             count = count + 1
         i += 1
     c.write((Decimal(count)))
-    return       
+    return
+
 @process
-def consumer(cins, _process=None):     
+def consumer(cins):     
     alt = Alt(*cins)
     total = Decimal(0)
     for i in range(len(cins)):

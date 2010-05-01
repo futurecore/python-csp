@@ -42,7 +42,7 @@ class __TestSeqProc(unittest.TestCase):
     """
 
     @csp.cspprocess.process
-    def write_one(self, obj, filename, _process=None):
+    def write_one(self, obj, filename):
         fd = open(filename, 'a').write(str(obj))
         return
 
@@ -84,7 +84,7 @@ class __TestSeqThread(unittest.TestCase):
     """
 
     @csp.cspthread.process
-    def write_one(self, obj, filename, _process=None):
+    def write_one(self, obj, filename):
         fd = open(filename, 'a').write(str(obj))
         return
 
@@ -129,12 +129,12 @@ class __TestChannelProc(unittest.TestCase):
     """
 
     @csp.cspprocess.process
-    def write(self, obj, chan, _process=None):
+    def write(self, obj, chan):
         chan.write(obj)
         return
 
     @csp.cspprocess.process
-    def read_ret(self, cin, cout, _process=None):
+    def read_ret(self, cin, cout):
         obj = cin.read()
         cout.write(obj)
         return
@@ -257,12 +257,12 @@ class __TestChannelThread(unittest.TestCase):
     """
 
     @csp.cspthread.process
-    def write(self, obj, chan, _process=None):
+    def write(self, obj, chan):
         chan.write(obj)
         return
 
     @csp.cspthread.process
-    def read_ret(self, cin, cout, _process=None):
+    def read_ret(self, cin, cout):
         obj = cin.read()
         cout.write(obj)
         return
@@ -456,7 +456,7 @@ class TestOrProc(unittest.TestCase):
     """
 
     @csp.cspprocess.process
-    def choice(self, cin1, cin2, cout, _process=None):
+    def choice(self, cin1, cin2, cout):
         output = []
         output.append(cin1 | cin2)
         output.append(cin1 | cin2)
@@ -464,7 +464,7 @@ class TestOrProc(unittest.TestCase):
         return
 
     @csp.cspprocess.process
-    def send(self, obj, chan, _process=None):
+    def send(self, obj, chan):
         chan.write(obj)
         return
 
@@ -482,7 +482,7 @@ class TestOrThread(unittest.TestCase):
     """
 
     @csp.cspthread.process
-    def choice(self, cin1, cin2, cout, _process=None):
+    def choice(self, cin1, cin2, cout):
         output = []
         output.append(cin1 | cin2)
         output.append(cin1 | cin2)
@@ -490,7 +490,7 @@ class TestOrThread(unittest.TestCase):
         return
 
     @csp.cspthread.process
-    def send(self, obj, chan, _process=None):
+    def send(self, obj, chan):
         chan.write(obj)
         return
 
@@ -513,12 +513,12 @@ class TestOrThread(unittest.TestCase):
 #     # FIXME: Split into single units
 
 #     @process
-#     def send_one(self, obj, cout, _process=None):
+#     def send_one(self, obj, cout):
 #         cout.write(obj)
 #         return
 
 #     @process
-#     def send_three_par(self, obj, cout1, cout2, cout3, _process=None):
+#     def send_three_par(self, obj, cout1, cout2, cout3):
 #         par = Par(self.send_one(obj, cout1),
 #                   self.send_one(obj, cout2),
 #                   self.send_one(obj, cout3))
@@ -527,7 +527,7 @@ class TestOrThread(unittest.TestCase):
 #         return
 
 #     @process
-#     def alt_three_oplr(self, cin1, cin2, cin3, cout, _process=None):
+#     def alt_three_oplr(self, cin1, cin2, cin3, cout):
 #         gen = 3 * Alt(cin1, cin2, cin3)
 #         out = []
 #         out.append(gen.next())
@@ -537,7 +537,7 @@ class TestOrThread(unittest.TestCase):
 #         return
 
 #     @process
-#     def alt_three_oprl(self, cin1, cin2, cin3, cout, _process=None):
+#     def alt_three_oprl(self, cin1, cin2, cin3, cout):
 #         gen = Alt(cin1, cin2, cin3) * 3
 #         out = []
 #         out.append(gen.next())
@@ -547,7 +547,7 @@ class TestOrThread(unittest.TestCase):
 #         return
 
 #     @process
-#     def alt_three(self, cin1, cin2, cin3, cout, _process=None):
+#     def alt_three(self, cin1, cin2, cin3, cout):
 #         alt = Alt(cin1, cin2, cin3)
 #         out = []
 #         out.append(alt.select())
@@ -628,80 +628,80 @@ def runtests(tests):
 
 if __name__ == '__main__':
 # We could have just done this, if we hand't wanted to mangle the wiki pages:
-#    import sys
-#    unittest.main()
-#    sys.exit()
+    import sys
+    unittest.main()
+    sys.exit()
 
-    proctests = [(TestSeqOperatorProc(), unittest.TestResult()),
-                 (TestSeqObjectsProc(), unittest.TestResult()),
-                 (TestOrProc(), unittest.TestResult()),
-                 (TestTimerGuardProc(), unittest.TestResult()),
-                 (TestSleepProc(), unittest.TestResult()),
-                 (TestChannelSingleProc(), unittest.TestResult()),
-                 (TestFileChannelSingleProc(), unittest.TestResult()),
-                 (TestNetworkChannelSingleProc(), unittest.TestResult()),
-                 (TestChannelMultipleProc(), unittest.TestResult()),
-                 (TestFileChannelMultipleProc(), unittest.TestResult()),
-                 (TestNetworkChannelMultipleProc(), unittest.TestResult())]
+#     proctests = [(TestSeqOperatorProc(), unittest.TestResult()),
+#                  (TestSeqObjectsProc(), unittest.TestResult()),
+#                  (TestOrProc(), unittest.TestResult()),
+#                  (TestTimerGuardProc(), unittest.TestResult()),
+#                  (TestSleepProc(), unittest.TestResult()),
+#                  (TestChannelSingleProc(), unittest.TestResult()),
+#                  (TestFileChannelSingleProc(), unittest.TestResult()),
+#                  (TestNetworkChannelSingleProc(), unittest.TestResult()),
+#                  (TestChannelMultipleProc(), unittest.TestResult()),
+#                  (TestFileChannelMultipleProc(), unittest.TestResult()),
+#                  (TestNetworkChannelMultipleProc(), unittest.TestResult())]
 
-    threadtests = [(TestSeqOperatorThread(), unittest.TestResult()),
-                 (TestSeqObjectsThread(), unittest.TestResult()),
-                 (TestOrThread(), unittest.TestResult()),
-                 (TestTimerGuardThread(), unittest.TestResult()),
-                 (TestSleepThread(), unittest.TestResult()),
-                 (TestChannelSingleThread(), unittest.TestResult()),
-                 (TestFileChannelSingleThread(), unittest.TestResult()),
-                 (TestNetworkChannelSingleThread(), unittest.TestResult()),
-                 (TestChannelMultipleThread(), unittest.TestResult()),
-                 (TestFileChannelMultipleThread(), unittest.TestResult()),
-                 (TestNetworkChannelMultipleThread(), unittest.TestResult())]
+#     threadtests = [(TestSeqOperatorThread(), unittest.TestResult()),
+#                  (TestSeqObjectsThread(), unittest.TestResult()),
+#                  (TestOrThread(), unittest.TestResult()),
+#                  (TestTimerGuardThread(), unittest.TestResult()),
+#                  (TestSleepThread(), unittest.TestResult()),
+#                  (TestChannelSingleThread(), unittest.TestResult()),
+#                  (TestFileChannelSingleThread(), unittest.TestResult()),
+#                  (TestNetworkChannelSingleThread(), unittest.TestResult()),
+#                  (TestChannelMultipleThread(), unittest.TestResult()),
+#                  (TestFileChannelMultipleThread(), unittest.TestResult()),
+#                  (TestNetworkChannelMultipleThread(), unittest.TestResult())]
 
 
-    print
-    print '*** Running unit tests for csp.cspprocess. This may take a while...'
-    print
-    procsucc, procfail, procerr, procmsg = runtests(proctests)
-    print procmsg
-    print
-    print '*** Running unit tests for csp.cspthread. This may take a while...'
-    print
-    threadsucc, threadfail, threaderr, threadmsg = runtests(threadtests)
-    print threadmsg
+#     print
+#     print '*** Running unit tests for csp.cspprocess. This may take a while...'
+#     print
+#     procsucc, procfail, procerr, procmsg = runtests(proctests)
+#     print procmsg
+#     print
+#     print '*** Running unit tests for csp.cspthread. This may take a while...'
+#     print
+#     threadsucc, threadfail, threaderr, threadmsg = runtests(threadtests)
+#     print threadmsg
 
-    # Write results of testing out to wiki page for SVN.
-    wikipage = '../../wiki/UnitTestingStatus.wiki'
+#     # Write results of testing out to wiki page for SVN.
+#     wikipage = '../../wiki/UnitTestingStatus.wiki'
 
-    template = """#summary Current unit testing status
-#labels Phase-QA
+#     template = """#summary Current unit testing status
+# #labels Phase-QA
 
-= Current unit testing status =
+# = Current unit testing status =
 
-== csp.cspprocess summary of results ===
+# == csp.cspprocess summary of results ===
 
-http://chart.apis.google.com/chart?cht=bhg&chs=400x150&chd=t:%i|%i|%i&chco=00cc00,cc0000,0000cc&chm=tPASSED,00cc00,0,0,13|tFAILED,cc0000,1,1,13,-1|tERRORS,0000cc,2,1,13&nonsense=foo.png'
+# http://chart.apis.google.com/chart?cht=bhg&chs=400x150&chd=t:%i|%i|%i&chco=00cc00,cc0000,0000cc&chm=tPASSED,00cc00,0,0,13|tFAILED,cc0000,1,1,13,-1|tERRORS,0000cc,2,1,13&nonsense=foo.png'
 
-== csp.process testing output ==
+# == csp.process testing output ==
 
-{{{
-%s
-}}}
+# {{{
+# %s
+# }}}
 
-== csp.cspthread summary of results ===
+# == csp.cspthread summary of results ===
 
-http://chart.apis.google.com/chart?cht=bhg&chs=400x150&chd=t:%i|%i|%i&chco=00cc00,cc0000,0000cc&chm=tPASSED,00cc00,0,0,13|tFAILED,cc0000,1,1,13,-1|tERRORS,0000cc,2,1,13&nonsense=foo.png'
+# http://chart.apis.google.com/chart?cht=bhg&chs=400x150&chd=t:%i|%i|%i&chco=00cc00,cc0000,0000cc&chm=tPASSED,00cc00,0,0,13|tFAILED,cc0000,1,1,13,-1|tERRORS,0000cc,2,1,13&nonsense=foo.png'
 
-== csp.process testing output ==
+# == csp.process testing output ==
 
-{{{
-%s
-}}}
+# {{{
+# %s
+# }}}
 
-""" % (procsucc, procfail, procerr, procmsg, threadsucc, threadfail, threaderr, threadmsg)
+# """ % (procsucc, procfail, procerr, procmsg, threadsucc, threadfail, threaderr, threadmsg)
 
-    # Write out to wiki page.
-    fd = open(wikipage, 'w')
-    fd.write(template)
-    fd.close()
-    print
-    print 'Written wiki page to working copy of SVN.'
-    print
+#     # Write out to wiki page.
+#     fd = open(wikipage, 'w')
+#     fd.write(template)
+#     fd.close()
+#     print
+#     print 'Written wiki page to working copy of SVN.'
+#     print

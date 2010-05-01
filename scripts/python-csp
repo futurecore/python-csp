@@ -38,8 +38,10 @@ import code
 import os
 import sys
 
+
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
+
 
 class _Printer(object):
     """Print documentation in twenty-line chunks.
@@ -69,6 +71,7 @@ class _Printer(object):
                     break
                 print 
 
+
 class TabSafeCompleter(rlcompleter.Completer):
     """Enable safe use of Tab for either tab completion or nested scope.
     """
@@ -77,6 +80,7 @@ class TabSafeCompleter(rlcompleter.Completer):
             return ['\t', None][state]
         else:
             return rlcompleter.Completer.complete(self, text, state)
+
 
 class CSPConsole(code.InteractiveConsole):
     """python-csp interactive console with REPL.
@@ -88,11 +92,13 @@ class CSPConsole(code.InteractiveConsole):
      * History is saved between sessions in C{~/.csp-console-history}.
      * Tab-completion can be used to complete keywords or variables.
     """
+
     # From the docs of the readline module.
     def __init__(self, locals=None, filename="<console>",
                  histfile=os.path.expanduser("~/.csp-console-history")):
         code.InteractiveConsole.__init__(self)
         self.init_history(histfile)
+
     def init_history(self, histfile):
 	readline.parse_and_bind("tab: complete")
         delims = ' \t\n`!@#$%^&*()-=+[{]}\\|;:,<>?'
@@ -104,8 +110,10 @@ class CSPConsole(code.InteractiveConsole):
             except IOError:
                 pass
             atexit.register(self.save_history, histfile)
+
     def save_history(self, histfile):
         readline.write_history_file(histfile)
+
     def raw_input(self, *args):
         line = code.InteractiveConsole.raw_input(self, *args)
         if line == _INFOCSP:
@@ -123,6 +131,7 @@ class CSPConsole(code.InteractiveConsole):
         else:
             return line
 
+
 def _createBuiltinDocs():
     """Automatically create documentation for built-in process and guards.
 
@@ -132,25 +141,27 @@ def _createBuiltinDocs():
     is not an imported module or CSP type.
     """
     head = "\n*** python-csp: Info on built-in processes and guards. ***"
-    foot = "\n\n*** For more info, type 'info csp' at the prompt. ***\n"
+    foot = "\n\n*** For more info, type 'info' at the prompt. ***\n"
     docs = """ """
     docstrings = {}
-    import csp.cspprocess
-    cspnames = [klass.__name__ for klass in csp.cspprocess._CSPTYPES]
+    import csp.builtins
+    from csp.cspprocess import _CSPTYPES
+    cspnames = [klass.__name__ for klass in _CSPTYPES]
     # Names imported by builtins
-    imports = ['operator', 'os', 'process', 'random', 'socket', 'sys',
-               'tempfile', 'threading', 'time', 'hmac', 'wraps', 'hashlib',
-               'psyco', 'pickle']
+    imports = ['copy', 'gc', 'inspect', 'operator', 'os', 'process', 'random', 
+               'socket', 'sys', 'tempfile', 'threading', 'time', 'hmac', 
+               'wraps', 'hashlib', 'psyco', 'pickle', 'logging', 'uuid',
+               'mypickle']
     exceptions = ['CorruptedData', 'NoGuardInAlt', 'ChannelPoison',
                   'ChannelAbort', 'ProcessSuspend']
     baseclasses = ['CSPOpMixin', 'CSPProcess', 'Guard',
-                   'Channel', 'FileChannel', 'process']
-    for name in dir(csp.cspprocess):
+                   'Channel', 'FileChannel', 'process', 'NetworkChannel']
+    for name in dir(csp.builtins):
         if (name in cspnames or name.startswith('_') or name in imports
             or name in exceptions or name in baseclasses or name == 'DEBUG'
             or name == 'SECURITY_ON'):
             continue
-        qualname = 'csp.cspprocess' + '.' + name 
+        qualname = 'csp.builtins' + '.' + name 
         if eval(qualname+'.__doc__'):
             docstrings[name] = eval(qualname+'.__doc__')
     del csp.cspprocess
@@ -159,8 +170,10 @@ def _createBuiltinDocs():
     for name in names:
         docs += '\n' + name + ':\n' + docstrings[name]
     return head + '\n' + docs + foot
-    
-_INFOCSP = 'info csp'
+
+
+_INFOCSP = 'info'
+
 
 _proc = """
 *** python-csp: Info on processes. ***
@@ -172,42 +185,33 @@ new CSPProcess object which can be started manually, or used in an
 expression:
 
 >>> @process
-... def foo(n, _process=None):
-...   print 'PID: %g N: %g' % (_process.getPid(), n)
-...
+... def foo(n):
+...     print 'n:', n
+... 
 >>> foo(100).start()
-PID: 15491, N:, 100
->>> foo(10) & foo(20) # Run foo(10) and foo(20) in parallel
-PID: 15505, N:, 20
-PID: 15506, N:, 10
-<Par(Process-93, initial)>
+>>> n: 100
+
+>>> foo(10) & foo(20)
+n: 10
+n: 20
+<Par(Par-5, initial)>
 >>> 
 
 Alternatively, you can create a CSPProcess object directly and pass a
 function (and its arguments) to the CSPProcess constructor:
 
->>> def foo(n, _process=None):
-...     print 'PID: %g N: %g' % (_process.getPid(), n)
-...     return
+>>> def foo(n):
+...     print 'n:', n
 ... 
 >>> p = CSPProcess(foo, 100)
 >>> p.start()
+>>> n: 100
+
 >>> 
 
-Note that the target function of a CSPProcess object always takes a
-special keyword argument _process. At runtime, CSP Python binds a
-reference to the underlying operating system process to this
-name. Hence, you can ask the process for its name, PID and other
-information, using the following methods:
-
-getName() 	process name.
-getPid()	process PID.
-getExitCode()	exit code or None if process is running.
-isAlive()	True if the process is alive, False otherwise.
-setName()	set the name of the process.
-
-*** For more info, type 'info csp' at the prompt. ***
+*** For more info, type 'info' at the prompt. ***
 """
+
 
 _par = """
 *** python-csp: Info on Par. ***
@@ -216,28 +220,29 @@ There are two ways to run processes in parallel.  Firstly, given two
 (or more) processes you can parallelize them with the & operator, like this:
 
 >>> @process
-... def foo(n, _process=None):
-...   print 'PID: %g N: %g' % (_process.getPid(), n)
-...
->>> foo(1) & foo(2) & foo(3) 
-PID: 15251, N:, 2
-PID: 15252, N:, 1
-PID: 15253, N:, 3
-<Par(Process-65, initial)>
->>>
+... def foo(n):
+...     print 'n:', n
+... 
+>>> foo(1) & foo(2) & foo(3)
+n: 2
+n: 1
+n: 3
+<Par(Par-5, initial)>
+>>> 
 
 Alternatively, you can create a Par object which is a sort of CSP
 process and start that process manually:
 
->>> p = Par(foo(1), foo(2), foo(3))
+>>> p = Par(foo(100), foo(200), foo(300))
 >>> p.start()
-PID: 15276, N:, 1
-PID: 15278, N:, 3
-PID: 15277, N:, 2
+n: 100
+n: 300
+n: 200
 >>> 
 
-*** For more info, type 'info csp' at the prompt. ***
+*** For more info, type 'info' at the prompt. ***
 """
+
 
 _seq = """
 *** python-csp: Info on Seq. ***
@@ -246,28 +251,29 @@ There are two ways to run processes in sequence.  Firstly, given two
 (or more) processes you can sequence them with the > operator, like this:
 
 >>> @process
-... def foo(n, _process=None):
-...   print 'PID: %g N: %g' % (_process.getPid(), n)
-...
+... def foo(n):
+...     print 'n:', n
+... 
 >>> foo(1) > foo(2) > foo(3)
-PID: 15288, N:, 1
-PID: 15289, N:, 2
-PID: 15290, N:, 3
-<CSPProcess(Process-75, stopped)>
+n: 1
+n: 2
+n: 3
+<Seq(Seq-14, initial)>
 >>> 
 
 Secondly, you can create a Seq object which is a sort of CSP process
 and start that process manually:
 
->>> s = Seq(foo(1), foo(2), foo(3))
+>>> s = Seq(foo(100), foo(200), foo(300))
 >>> s.start()
-PID: 16549 N: 1
-PID: 16550 N: 2
-PID: 16551 N: 3
+n: 100
+n: 200
+n: 300
 >>> 
 
-*** For more info, type 'info csp' at the prompt. ***
+*** For more info, type 'info' at the prompt. ***
 """
+
 
 _alt = """
 *** python-csp: Info on Alt. ***
@@ -276,6 +282,7 @@ Not yet implemented.
 
 *** For more info, type '%s' at the prompt. ***
 """ % (_INFOCSP)
+
 
 _channel = """
 *** python-csp: Info on channels. ***
@@ -287,32 +294,31 @@ A CSP channel can be created with the Channel class:
 
 Each Channel object should have a unique name in the network:
 
->>> c.name
-'127.0.1.1:15976:-21474836
->>>
+>>> print c.name
+1ca98e40-5558-11df-8e5b-002421449824
+>>> 
 
 The Channel can then be passed as an argument to any CSP process and
 then be used either to read (using the .read() method) or to write
 (using the .write() method). For example:
 
 >>> @process
-... def send(cin, i, _process=None):
-...     cin.write(i)
-...     return
+... def send(cout, data):
+...     cout.write(data)
 ... 
 >>> @process
-... def recv(cout, _process=None):
-...     data = cout.read()
-...     print 'PID: %g, Read: %g' % (_process.getPid(), data)
-...     return
+... def recv(cin):
+...     print 'Got:', cin.read()
 ... 
+>>> c = Channel()
 >>> send(c, 100) & recv(c)
-100
-<Par(Process-88, initial)>
+Got: 100
+<Par(Par-3, initial)>
 >>> 
 
-*** For more info, type 'info csp' at the prompt. ***
+*** For more info, type 'info' at the prompt. ***
 """
+
 
 _poison = """
 *** python-csp: Info on channel poisoning. ***
@@ -322,48 +328,47 @@ of the channels used by those processes. This can be achieved by
 calling the poison() method on any channel. For example:
 
 >>> @process
-... def send(cin, _process=None):
+... def send5(cout):
 ...     for i in xrange(5):
-...             print 'PID: %g sending: %g' % (_process.getPid(), i)
-...             cin.write(i)
-...             time.sleep(random.random()*5)
+...             print 'send5 sending:', i
+...             cout.write(i)
+...             time.sleep(random.random() * 5)
 ...     return
 ... 
 >>> @process
-... def recv(cout, _process=None):
+... def recv(cin):
 ...     for i in xrange(5):
-...             data = cout.read()
-...             print 'PID: %g read: %g' % (_process.getPid(), data)
-...             time.sleep(random.random()*5)
+...             data = cin.read()
+...             print 'recv got:', data
+...             time.sleep(random.random() * 5)
 ...     return
 ... 
 >>> @process
-... def poison(chan, _process=None):
-...     time.sleep(random.random()*7)
-...     print 'PID: %g poisoning %s' % (_process.getPid(), chan.name)
+... def interrupt(chan):
+...     time.sleep(random.random() * 7)
+...     print 'Poisoning channel:', chan.name
 ...     chan.poison()
 ...     return
 ... 
 >>> doomed = Channel()
 >>> send(doomed) & recv(doomed) & poison(doomed)
-PID: 16791 sending: 0
-PID: 16790 read: 0
-<Par(Process-6, initial)>
->>> PID: 16791 sending: 1
-PID: 16792 poisoning 127.0.1.1:16741:-2147483648
-
+send5 sending: 0
+recv got: 0
+send5 sending: 1
+recv got: 1
+send5 sending: 2
+recv got: 2
+send5 sending: 3
+recv got: 3
+send5 sending: 4
+recv got: 4
+Poisoning channel: 5c906e38-5559-11df-8503-002421449824
+<Par(Par-5, initial)>
 >>> 
 
-*** For more info, type 'info csp' at the prompt. ***
+*** For more info, type 'info' at the prompt. ***
 """
 
-_mobility = """
-*** python-csp: Info on mobility. ***
-
-Not yet implemented.
-
-*** For more info, type 'info csp' at the prompt. ***
-"""
 
 _builtin = _createBuiltinDocs()
 
@@ -374,13 +379,14 @@ _INFO = {'info process':('processes', _proc),
          'info alt':('Alternative', _alt),
          'info channel':('channels', _channel),
          'info poison':('poisoning', _poison),
-         'info mobility':('mobility', _mobility),
          'info builtin':('built-ins', _builtin)}
+
 
 _ban = """\npython-csp (c) 2008. Licensed under the GPL(v2).
 Type "%s" for more information.
 Press Ctrl-C to close the CSP channel server.
 """ % (_INFOCSP)
+
 
 _cspinfo = """
 *** python-csp: general info ***
@@ -390,11 +396,14 @@ Processes in Python. For specific info on any aspect of CSP, use the
 following:
 
 """
+
 _commands = ""
+
 for key in _INFO:
     c = "For info on %s, type: \t%s\n" % (_INFO[key][0], key)
     _commands += c
 _cspinfo += _commands
+
 
 if __name__ == '__main__':
     c = CSPConsole(locals=locals())

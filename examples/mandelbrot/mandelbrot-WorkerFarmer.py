@@ -106,8 +106,7 @@ def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
         #print '\nhere %d' % xcoord
         xcoord = cout.read()
         if xcoord == -1:       
-            _process._terminate()
-        return
+            return
 
 
 @process

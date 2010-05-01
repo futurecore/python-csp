@@ -36,9 +36,10 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'November 2009'
 
 from csp.cspthread import *
+from csp.patterns import TokenRing
 
 @process
-def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None, _process=None):
+def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
     trials = 10000
     if tokens == 1 and index == 0:
         token = 1
