@@ -1,3 +1,4 @@
+#!/usr/bin/env jython
 
 from Jycspthread import *
 

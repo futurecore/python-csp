@@ -37,8 +37,7 @@ def get_colour(mag, cmin=0, cmax=100):
 
 
 @process
-def mandelbrot(xcoord, (width, height), cout,
-               acorn=-2.0, bcorn=-1.250, _process=None):
+def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
     """Calculate pixel values for a single column of a Mandelbrot set.
 
     Writes an image column to C{cout}. An image column is a list of
@@ -84,7 +83,7 @@ def mandelbrot(xcoord, (width, height), cout,
 
 
 @process
-def consume(IMSIZE, filename, chan, _process=None):
+def consume(IMSIZE, filename, chan):
     """Consumer process to aggregate image data for Mandelbrot fractal.
 
     @type IMSIZE: C{tuple}
@@ -115,7 +114,6 @@ def consume(IMSIZE, filename, chan, _process=None):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                _process._terminate()
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
@@ -155,8 +153,6 @@ def main(IMSIZE, filename, level='info'):
     # Start and join producer processes.
     mandel = Par(*processes)
     mandel.start()
-    mandel._join()
-    con._join()
     logging.info('All processes joined.')
     return
 

@@ -1,8 +1,8 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 
 
 from csp.cspthread import *
-
+from csp.builtins import Fibonacci, Generate, Multiply, Printer
 
 
 if __name__ == '__main__':

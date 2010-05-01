@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-import csp.cspprocess
-import csp.cspthread
-
-import unittest
-import os
-import time
-
 """
 Unit tests for basic python-csp functionality.
 
@@ -25,6 +18,14 @@ GNU General Public License for more details.
 You should have rceeived a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 """
+
+import csp.cspprocess
+import csp.cspthread
+
+import unittest
+import os
+import time
+
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'June 2009'

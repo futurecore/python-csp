@@ -46,7 +46,7 @@ def response(code, reason, page):
 
 
 @process
-def server(host, port, _process=None):
+def server(host, port):
     """Simple CSP based web server.
     """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -63,7 +63,7 @@ def server(host, port, _process=None):
 
 
 @process
-def handler_ok(request, conn_sock, _process=None):
+def handler_ok(request, conn_sock):
     """Handle a single HTTP 200 OK request.
     """
     page = '<h1>My python-csp web server!</h1>'
@@ -75,7 +75,7 @@ def handler_ok(request, conn_sock, _process=None):
 
 
 @process
-def handler_not_found(request, conn_sock, _process=None):
+def handler_not_found(request, conn_sock):
     """Handle a single HTTP 404 Not Found request.
     """
     page = '<h1>Cannot find your file</h1>'

@@ -173,7 +173,7 @@ def create_run(n, level, ss, filename='scene.pgm'):
     return
 
 @process
-def perpixel(ss,n,x,y,scene,chnl,_process=None):
+def perpixel(ss, n, x, y, scene, chnl):
     g = 0.0
     for dx in xrange(0, ss):
         for dy in xrange(0, ss):
@@ -185,7 +185,6 @@ def perpixel(ss,n,x,y,scene,chnl,_process=None):
                            ray, scene)    
     print 'Value ' ,    int(0.5 + 255.0 * g / ss**2), 'writing to:', chnl.name
     chnl.write(int(0.5 + 255.0 * g / ss**2))
-    _process._terminate()
     return
 
 def run(n, scene, ss, filename='scene.pgm'):

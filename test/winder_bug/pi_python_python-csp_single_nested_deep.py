@@ -28,7 +28,7 @@ def execute ( processCount ) :
     processes = [ ] 
     for i in range ( 0 , processCount ) :
         @process
-        def calculator ( _process = None ) :
+        def calculator ( ) :
             sum = 0.0
             for j in xrange ( 1 + i * slice , ( i + 1 ) * slice ) :
                 x = ( j - 0.5 ) * delta

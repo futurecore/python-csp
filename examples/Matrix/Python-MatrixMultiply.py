@@ -1,35 +1,34 @@
+#!/usr/bin/env python
+
+# FIXME: Nowhere near PEP8 compatible :(
+
 from csp.cspthread import  *
 
 
-def calculateRowColumnProduct(self,A,row,B,col):
+def calculateRowColumnProduct(self, A, row, B, col):
     product = 0
     for i in range(len(A[row])):
         product  += A[row][i] * B[i][col]
     return product
 
 @process
-def ParcalculateRowColumnProduct(cout,A,row,B,col, _process=None):
+def ParcalculateRowColumnProduct(cout, A, row, B, col):
     product = 0
     for i in range(len(A[row])):
         product  += A[row][i] * B[i][col]
     cout.write((row,col,product))
         
 class Matrix():
-    
-        def __init__(self,h,k):
-            self.matrix = []
-            for i in range(h):
-                row = []
-                for j in range(k):
-                    row.append(0)
+    def __init__(self, h, k):
+        self.matrix = []
+        for i in range(h):
+            row = []
+            for j in range(k):
+                row.append(0)
                     
-                self.matrix.append(row)
+            self.matrix.append(row)
                     
-        
-
-        
-        def Multiply(self,mb):
-            
+        def Multiply(self, mb):
             b = mb.matrix
             a = self.matrix
             if len(a[0]) != len(b):
@@ -43,8 +42,7 @@ class Matrix():
                              
             return mat
         
-        def ParMultiply(self,mb):
-            
+        def ParMultiply(self, mb):
             b = mb.matrix
             a = self.matrix
             if len(a[0]) != len(b):
@@ -84,17 +82,16 @@ class Matrix():
              
         def printMatrix(self):
             print self.matrix
-            
         
 
 if __name__ == '__main__':
-        i = Matrix(3,3)
-        g = Matrix(3,3)
-        i.createID()
-        g.createID()
-        j = i.Multiply(g)
-        j.printMatrix();
-        j = i.ParMultiply(g)
-        j.printMatrix()
+    i = Matrix(3,3)
+    g = Matrix(3,3)
+    i.createID()
+    g.createID()
+    j = i.Multiply(g)
+    j.printMatrix();
+    j = i.ParMultiply(g)
+    j.printMatrix()
     
-        print ""
+    print ""

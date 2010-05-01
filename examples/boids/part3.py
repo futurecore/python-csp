@@ -43,7 +43,7 @@ def match_neighbour_velocities(near_vel):
 
 
 @process
-def simulate(infochan, SIZE, _process=None):
+def simulate(infochan, SIZE):
     centre = [random.randint(0, SIZE[0]), random.randint(0, SIZE[1])]
     default_velocity = [random.choice((-1.0, 0.0, 1.0)),
                         random.choice((-1.0, 0.0, 1.0))]
@@ -71,7 +71,7 @@ def nearby((pos1, vel1), (pos2, vel2)):
 
 
 @process
-def FlockManager(channels, drawchan, NUMBOIDS, _process=None):
+def FlockManager(channels, drawchan, NUMBOIDS):
     info = [(0,0) for i in range(len(channels))]
     relify = lambda ((x,y), vel): ([info[i][0][0]-x, info[i][0][1]-y], vel)
     while True:
@@ -85,7 +85,7 @@ def FlockManager(channels, drawchan, NUMBOIDS, _process=None):
 
 
 @process
-def drawboids(drawchan, SIZE, _process=None):
+def drawboids(drawchan, SIZE):
     import pygame
 
     FGCOL = (137, 192, 210, 100)  # Foreground colour.
@@ -126,7 +126,7 @@ def drawboids(drawchan, SIZE, _process=None):
 
 
 @process
-def main(_process=None):
+def main():
     NUMBOIDS = 75                # Number of boids in simulation.
     SIZE = (800, 600)             # Screen size.
     # Set up channels for reporting boid positions / velocities.

@@ -17,14 +17,14 @@ def execute ( processCount ) :
     sliceSize = n / processCount
     channels = [ ]
     @process
-    def calculator ( channel , id , _process = None ) :
+    def calculator ( channel , id ) :
         sum = 0.0
         for i in xrange ( 1 + id * sliceSize ,  ( id + 1 ) * sliceSize + 1 ) :
             x = ( i - 0.5 ) * delta
             sum += 1.0 / ( 1.0 + x * x )
         channel.write ( sum )
     @process
-    def accumulator ( _process = None ) :
+    def accumulator ( ) :
         pi = 4.0 * sum ( [ channel.read ( ) for channel in channels ] ) * delta
         elapseTime = time.time ( ) - startTime
         print "==== Python CSP Multiple NestedShallow pi =" , pi
@@ -41,22 +41,10 @@ def execute ( processCount ) :
     Par ( *processes ).start ( )
 
 if __name__ == '__main__' :
-#    import csp.tracer
-#    csp.tracer.start_trace()
-#    import gc
-#    gc.collect()
-#    print 'GC Count:', gc.get_count()
     execute ( 1 )
     print
-#    gc.collect()
-#    print 'GC Count:', gc.get_count()
     execute ( 2 )
     print
-#    gc.collect()
-#    print 'GC Count:', gc.get_count()
     execute ( 8 )
     print
-#    gc.collect()
-#    print 'GC Count:', gc.get_count()
     execute ( 32 )
-#    csp.tracer.stop_trace()

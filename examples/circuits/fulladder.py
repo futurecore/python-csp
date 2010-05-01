@@ -1,4 +1,4 @@
-from csp.cspprocess import *
+#!/usr/bin/env python
 
 """Python CSP full adder.
 
@@ -27,6 +27,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
 
+
+from csp.cspprocess import *
+from csp.builtins import *
+
 @process
 def Bool1(cout, _process=None):
     while True:
@@ -45,7 +49,7 @@ def Bool2(cout, _process=None):
         cout.write(0)
     return
 
-def fulladder(Ain, Bin, Cin, Sum, Carry):
+def fulladder(A_in, B_in, C_in, Sum_in, Carry_in):
     """Full adder implementation.
 
     Based on Bjorndalen, Vinter & Anshus (2007).
@@ -62,15 +66,15 @@ def fulladder(Ain, Bin, Cin, Sum, Carry):
     i2 = Channel()
     i3 = Channel()
 
-    return Par(Delta2(Ain, Aa, Ab),
-               Delta2(Bin, Ba, Bb),
-               Delta2(Cin, Ca, Cb),
+    return Par(Delta2(A_in, Aa, Ab),
+               Delta2(B_in, Ba, Bb),
+               Delta2(C_in, Ca, Cb),
                Delta2(i1, i1a, i1b),
                Xor(Aa, Ba, i1),
-               Xor(i1a, Ca, Sum),
+               Xor(i1a, Ca, Sum_in),
                And(Ab, Bb, i2),
                And(i1b, Cb, i3),
-               Or(i2, i3, Carry))
+               Or(i2, i3, Carry_in))
 
 if __name__ == '__main__':
     print '\nFull adder implemented in Python CSP\n'
