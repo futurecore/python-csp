@@ -24,14 +24,14 @@ Introduction.
   Processes to Python. A brief example:
 
   >>> @process
-  ... def writer(channel, n, _process=None):
+  ... def writer(channel, n):
   ...      for i in xrange(n):
   ...              channel.write(i)
   ...      channel.poison()
   ...      return
   ... 
   >>> @process
-  ... def reader(channel, _process=None):
+  ... def reader(channel):
   ...      while True:
   ...              print channel.read()
   ... 
