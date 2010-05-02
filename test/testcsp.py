@@ -34,7 +34,7 @@ else:
 
 del os
 
-from csp.builtins import Skip
+from csp.guards import Skip
 
 @process
 def foo(n):

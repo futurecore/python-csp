@@ -73,11 +73,11 @@ ignore = ('tracer.stop_trace',
           'csp.cspprocess.Channel.select',
           'csp.cspprocess.Channel.is_selectable',
           'csp.cspprocess.Channel.checkpoison',
-          'csp.cspprocess.Skip.__init__',
-          'csp.cspprocess.Skip.enable',
-          'csp.cspprocess.Skip.disable',
-          'csp.cspprocess.Skip.select',
-          'csp.cspprocess.Skip.is_selectable'
+          'csp.guards.Skip.__init__',
+          'csp.guards.Skip.enable',
+          'csp.guards.Skip.disable',
+          'csp.guards.Skip.select',
+          'csp.guards.Skip.is_selectable'
           )
 
 
