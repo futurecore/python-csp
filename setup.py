@@ -1,5 +1,6 @@
+#!/usr/bin/env python
+
 from setuptools import setup, find_packages
-import sys, os
 
 version = '0.1'
 
@@ -18,7 +19,10 @@ python-csp adds communicating sequential processes to Python""",
       author_email='s.mount@wlv.ac.uk',
       url='http://code.google.com/p/python-csp/',
       license='GPL',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+      packages=find_packages(exclude=['ez_setup', 'examples', 'tests',
+                                      'reactive', 'applications', 'benchmark',
+                                      'jythonsetup', 'logo', 'rst', 'scripts',
+                                      'test', 'tutorial']),
       include_package_data=True,
       zip_safe=True,
 	  scripts=['scripts/python-csp'],

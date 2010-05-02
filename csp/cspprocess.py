@@ -327,9 +327,6 @@ class CSPServer(CSPProcess):
     """
 
     def __init__(self, func, *args, **kwargs):
-        print 'func:', func.__name__
-        print 'args:', args
-        print 'kwargs:', kwargs
         CSPProcess.__init__(self, func, *args, **kwargs)
         return
 
@@ -1103,9 +1100,6 @@ def forever(func):
     @wraps(func)
     def _call(*args, **kwargs):        
         """Call the target function."""
-        print 'wrapper func:', func.__name__
-        print 'wrapper args:', args
-        print 'wrapper kwargs:', kwargs
         return CSPServer(func, *args, **kwargs)
     return _call
 

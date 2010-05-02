@@ -3,7 +3,7 @@
 """Interactive interpreter for python-csp, with online help.
 
 Features:
- * CSP primatives are imported automatically.
+ * CSP primitives are imported automatically.
  * CSP help is built in via. the 'info' command.
  * History is saved between sessions in C{~/.csp-console-history}.
  * Tab-completion can be used to complete keywords or variables.
@@ -20,7 +20,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have rceeived a copy of the GNU General Public License
+You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
@@ -87,7 +87,7 @@ class CSPConsole(code.InteractiveConsole):
 
     Features:
      * CSP channel server is started automatically.
-     * CSP primatives are imported automatically.
+     * CSP primitives are imported automatically.
      * CSP help is built in via. the 'info' command.
      * History is saved between sessions in C{~/.csp-console-history}.
      * Tab-completion can be used to complete keywords or variables.
@@ -209,8 +209,68 @@ function (and its arguments) to the CSPProcess constructor:
 
 >>> 
 
-*** For more info, type 'info' at the prompt. ***
-"""
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
+
+
+_server = """
+*** python-csp: Info on server processes. ***
+
+A server process is one which runs in an infinite loop. You can create
+a "normal" process which runs in an infinite loop, but by using server
+processes you allow the python-csp debugger to correctly generate
+information about your programs.
+
+There are two ways to create a new CSP server process. Firstly, you
+can use the @forever decorator to convert a generator into a CSPServer
+object. Once the function has been defined, calling it will return a
+new CSPServer object which can be started manually, or used in an
+expression:
+
+>>> @forever
+... def integers():
+...     n = 0
+...     while True:
+...             print n
+...             n += 1
+...             yield
+... 
+>>> integers().start()
+>>> 0
+1
+2
+3
+4
+5
+...
+KeyboardInterrupt
+>>>
+
+Alternatively, you can create a CSPServer object directly and pass a
+function (and its arguments) to the CSPServer constructor:
+
+>>> def integers():
+...     n = 0
+...     while True:
+...             print n
+...             n += 1
+...             yield
+... 
+>>> i = CSPServer(integers)
+>>> i.start()
+>>> 0
+1
+2
+3
+4
+5
+...
+KeyboardInterrupt
+>>>
+
+
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
 
 
 _par = """
@@ -240,8 +300,8 @@ n: 300
 n: 200
 >>> 
 
-*** For more info, type 'info' at the prompt. ***
-"""
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
 
 
 _seq = """
@@ -271,14 +331,143 @@ n: 200
 n: 300
 >>> 
 
-*** For more info, type 'info' at the prompt. ***
-"""
+
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
+
+
+_skip = """*** python-csp: Info on Skip. ***
+
+Skip is a built in guard type that can be used with Alt
+objects. Skip() is a default guard which is always ready and has no
+effect. This is useful where you have a loop which calls select(),
+pri_select() or fair_select() on an Alt object repeatedly and you do
+not wish the select statement to block waiting for a channel write, or
+other synchronisation. The following is a trivial example of an Alt
+which uses Skip():
+
+>>> alt = Alt(Skip())
+>>> for i in xrange(5):
+...     print alt.select()
+... 
+Skip
+Skip
+Skip
+Skip
+Skip
+>>> 
+
+Where you have an Alt() object which mixes Skip() with other guard
+types, be sure to complete all necessary channel reads or other
+synchronisations, otherwise your code will hang. 
+
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
+
+
+_timer = """*** python-csp: Info on timer guards. ***
+
+Timer objects are a type of CSP guard, like Channel types and Skip
+guards. Timer objects allow code to wait for a specific period of time
+before synchronising on a timer event. This can be done in a number of
+ways: either by sleeping for a period of time (similar to time.sleep
+in the standard library), or by setting the timer to become selectable
+(by an Alt object) after a specific period of time. For example:
+
+>>> timer = Timer()
+>>> timer.sleep(5) # sleep for 5 seconds
+>>> 
+>>> alt = Alt(timer)
+>>> timer.set_alarm(3) # become selectable 3 seconds from now
+>>> alt.select() # will wait 3 seconds
+>>> 
+
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
 
 
 _alt = """
 *** python-csp: Info on Alt. ***
 
-ALTing (or ALTernating) is to 
+python-csp process will often have access to several different
+channels, or other guard types such as timer guards, and will have to
+choose one of them to read from. For example, in a producer/consumer
+or worker/farmer model, many producer or worker processes will be
+writing values to channels and one consumer or farmer process will be
+aggregating them in some way. It would be inefficient for the consumer
+or farmer to read from each channel in turn, as some channels might
+take longer than others. Instead, python-csp provides support for
+ALTing (or ALTernating), which enables a process to read from the
+first channel (or timer, or other guard) in a list to become ready.
+
+The simplest way to choose between channels (or other guards) is to
+use choice operator: "|", as in the example below:
+
+>>> @process
+... def send_msg(chan, msg):
+...     chan.write(msg)
+... 
+>>> @process
+... def choice(chan1, chan2):
+...     # Choice chooses a channel on which to call read()
+...     print chan1 | chan2
+...     print chan1 | chan2
+... 
+>>> c1, c2 = Channel(), Channel()
+>>> choice(c1, c2) & send_msg(c1, 'yes') & send_msg(c2, 'no')
+yes
+no
+<Par(Par-8, initial)>
+>>>
+
+Secondly, you can create an Alt object explicitly, and call its
+select() method to perform a channel read on the next available
+channel. If more than one channel is available to read from, then an
+available channel is chosen at random (for this reason, ALTing is
+sometimes called "non-deterministic choice":
+
+>>> @process
+... def send_msg(chan, msg):
+...     chan.write(msg)
+... 
+>>> @process
+... def alt_example(chan1, chan2):
+...     alt = Alt(chan1, chan2)
+...     print alt.select()
+...     print alt.select()
+... 
+>>> c1, c2 = Channel(), Channel()
+>>> Par(send_msg(c1, 'yes'), send_msg(c2, 'no'), alt_example(c1, c2)).start()
+yes
+no
+>>>
+
+In addition to the select() method, which chooses an available guard
+at random, Alt provides two similar methods, fair_select() and
+pri_select(). fair_select() will choose not to select the previously
+selected guard, unless it is the only guard available. This ensures
+that no guard will be starved twice in a row. pri_select() will select
+available channels in the order in which they were passed to the Alt()
+constructor, giving a simple implementation of guard priority.
+
+Lastly, Alt() can be used with the repetition operator (*) to create a
+generator:
+
+>>> @process
+... def send_msg(chan, msg):
+...     chan.write(msg)
+... 
+>>> @process
+... def gen_example(chan1, chan2):
+...     gen = Alt(chan1, chan2) * 2
+...     print gen.next()
+...     print gen.next()
+... 
+>>> c1, c2 = Channel(), Channel()
+>>> Par(send_msg(c1, 'yes'), send_msg(c2, 'no'), gen_example(c1, c2)).start()
+yes
+no
+>>> 
 
 *** For more info, type '%s' at the prompt. ***
 """ % (_INFOCSP)
@@ -316,8 +505,8 @@ Got: 100
 <Par(Par-3, initial)>
 >>> 
 
-*** For more info, type 'info' at the prompt. ***
-"""
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
 
 
 _poison = """
@@ -366,17 +555,20 @@ Poisoning channel: 5c906e38-5559-11df-8503-002421449824
 <Par(Par-5, initial)>
 >>> 
 
-*** For more info, type 'info' at the prompt. ***
-"""
+*** For more info, type '%s' at the prompt. ***
+""" % (_INFOCSP)
 
 
 _builtin = _createBuiltinDocs()
 
 # COMMAND -> (descriptor, docstring)
 _INFO = {'info process':('processes', _proc),
+         'info server':('CSPServer', _server),
          'info par':('Parallel', _par),
          'info seq':('Sequence', _seq),
          'info alt':('Alternative', _alt),
+         'info skip':('Skip', _skip),
+         'info timer':('Timer', _timer),
          'info channel':('channels', _channel),
          'info poison':('poisoning', _poison),
          'info builtin':('built-ins', _builtin)}
@@ -407,6 +599,7 @@ _cspinfo += _commands
 
 if __name__ == '__main__':
     c = CSPConsole(locals=locals())
-    # Don't expect the csp.cspprocess namespace to be available in locals()
+    # Don't expect the csp types to be available in locals()
     c.push('from csp.cspprocess import *')
+    c.push('from csp.builtins import *')
     c.interact(banner=_ban)
