@@ -320,6 +320,42 @@ class CSPProcess(processing.Process, CSPOpMixin):
         gc.collect()
         return
 
+
+class CSPServer(CSPProcess):
+    """Implementation of CSP server processes.
+    Not intended to be used in client code. Use @forever instead.
+    """
+
+    def __init__(self, func, *args, **kwargs):
+        print 'func:', func.__name__
+        print 'args:', args
+        print 'kwargs:', kwargs
+        CSPProcess.__init__(self, func, *args, **kwargs)
+        return
+
+    def __str__(self):
+        return 'CSPServer running in PID %s' % self.getPid()
+
+    def run(self): #, event=None):
+        """Called automatically when the L{start} methods is called.
+        """
+        try:
+            func = self._target(*self._args, **self._kwargs)
+            while sys.gettrace() is None:
+                func.next()
+        except ChannelPoison:
+            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
+            self.referent_visitor(self._args + tuple(self._kwargs.values()))
+#            if self._popen is not None: self.terminate()
+        except ProcessSuspend:
+            raise NotImplementedError('Process suspension not yet implemented')
+        except KeyboardInterrupt:
+            sys.exit()
+        except Exception:
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
+        return
+
     
 ### CSP combinators -- Par, Alt, Seq, ...
 
@@ -1053,6 +1089,24 @@ def process(func):
     def _call(*args, **kwargs):
         """Call the target function."""
         return CSPProcess(func, *args, **kwargs)
+    return _call
+
+
+def forever(func):
+    """Decorator to turn a function into a CSP server process.
+
+    It is preferable to use this rather than @process, to enable the
+    CSP tracer to terminate correctly and produce a CSP model, or
+    other debugging information.
+    """
+    
+    @wraps(func)
+    def _call(*args, **kwargs):        
+        """Call the target function."""
+        print 'wrapper func:', func.__name__
+        print 'wrapper args:', args
+        print 'wrapper kwargs:', kwargs
+        return CSPServer(func, *args, **kwargs)
     return _call
 
 

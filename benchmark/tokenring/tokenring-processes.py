@@ -38,31 +38,22 @@ __date__ = 'November 2009'
 from csp.cspprocess import *
 from csp.patterns import TokenRing
 
+
+TRIALS = 10000
+
+
 @process
 def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
-    trials = 10000
     if tokens == 1 and index == 0:
         token = 1
         outchan.write(token)
-#    elif tokens != 1 and index % tokens == 0:
-#        token = 0
-#        outchan.write(token)
-    if index == 0:
-        starttime = time.time()
-        cumtime = 0.0
-    for i in xrange(trials):
+    for i in xrange(TRIALS):
         token = inchan.read()
         token += 1
         outchan.write(token)
     # Avoid deadlock.
-    if index == 1: inchan.read()
-    # Calculate channel communication time.
-    if index == 0:
-        cumtime += (time.time() - starttime)
-        # 1*10^6 micro second == 1 second
-        microsecs = cumtime * 1000000.0 / float((trials * numnodes))
-        print microsecs
-    return
+    if index == 1:
+        inchan.read()
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -89,7 +80,12 @@ if __name__ == '__main__':
         for size in xrange(2, 10):
             try:
                 print 'Token ring with %i nodes.' % size
+                starttime = time.time()
                 TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
-            except: continue
+                elapsed = time.time() - starttime
+                mu = elapsed * 1000000 / float((TRIALS * (2 ** size)))
+                print '%gms' % mu
+            except:
+                continue
     else:
         TokenRing(ringproc, options.nodes, numtoks=options.tokens).start()

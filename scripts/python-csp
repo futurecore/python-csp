@@ -3,7 +3,6 @@
 """Interactive interpreter for python-csp, with online help.
 
 Features:
- * CSP channel server is started automatically.
  * CSP primatives are imported automatically.
  * CSP help is built in via. the 'info' command.
  * History is saved between sessions in C{~/.csp-console-history}.
@@ -25,6 +24,7 @@ You should have rceeived a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
+
 try:
     import readline
 except ImportError:
@@ -278,7 +278,7 @@ n: 300
 _alt = """
 *** python-csp: Info on Alt. ***
 
-Not yet implemented.
+ALTing (or ALTernating) is to 
 
 *** For more info, type '%s' at the prompt. ***
 """ % (_INFOCSP)
