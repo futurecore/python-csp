@@ -73,6 +73,7 @@ except ImportError:
 if DEBUG:
     logging.basicConfig(level=logging.NOTSET,
                         stream=sys.stdout)
+    logging.info("Using threaded version of python-csp")
 else:
     logging.basicConfig(level=logging.CRITICAL,
                         stream=sys.stdout)
@@ -219,7 +220,7 @@ class CSPOpMixin(object):
         FIXME: This doesn't work yet...
         """
         if self._Thread__started.is_set():
-            logging.debug(str(self.getName()), 'terminating now...')
+            logging.debug('%s terminating now...' % self.getName())
             return #threading.Thread._Thread__stop(self) # Sets an event object
 
     def __and__(self, other):
@@ -298,7 +299,8 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         try:
             self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
         except ChannelPoison:
-            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
+            logging.debug('%s in %g got ChannelPoison exception' %
+                          (str(self), self.getPid()))
             self.referent_visitor(self._Thread__args +
                                   tuple(self._Thread__kwargs.values()))
         except ProcessSuspend:
@@ -349,7 +351,8 @@ class CSPServer(CSPProcess):
                 func.next()
                 return
         except ChannelPoison:
-            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
+            logging.debug('%s in %g got ChannelPoison exception' %
+                          (str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
 #            if self._popen is not None: self.terminate()
         except ProcessSuspend:
@@ -383,7 +386,7 @@ class Par(threading.Thread, CSPOpMixin):
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
-        logging.debug('# processes in Par:', len(self.procs))
+        logging.debug('%i processes in Par:' % len(self.procs))
         return
 
     def __str__(self):
@@ -425,8 +428,9 @@ class Par(threading.Thread, CSPOpMixin):
             for proc in self.procs:
                 proc.join() #self.timeout)
         except ChannelPoison:
-            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
-            self.referent_visitor(self.args + tuple(self.kwargs.values()))
+            logging.debug('%s in %g got ChannelPoison exception' %
+                          (str(self), self.getPid()))
+            self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -474,8 +478,9 @@ class Seq(threading.Thread, CSPOpMixin):
                 CSPOpMixin.start(proc)
                 proc.join()
         except ChannelPoison:
-            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
-            self.referent_visitor(self.args + tuple(self.kwargs.values()))
+            logging.debug('%s in %g got ChannelPoison exception' %
+                          (str(self), self.getPid()))
+            self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
@@ -501,11 +506,11 @@ class Alt(CSPOpMixin):
 
         Sets self.last_selected to None.
         """
-        logging.debug(type(self.last_selected))
+        logging.debug(str(type(self.last_selected)))
         self.last_selected.disable() # Just in case
         try:
             self.last_selected.poison()
-        except:
+        except Exception:
             pass
         logging.debug('Poisoned last selected.')
         self.guards.remove(self.last_selected)
@@ -518,7 +523,8 @@ class Alt(CSPOpMixin):
         if len(self.guards) == 0:
             raise NoGuardInAlt()
         elif len(self.guards) == 1:
-            logging.debug('Alt Selecting unique guard:', self.guards[0].name)
+            logging.debug('Alt Selecting unique guard: %s' %
+                          self.guards[0].name)
             self.last_selected = self.guards[0]
             while not self.guards[0].is_selectable():
                 self.guards[0].enable()
@@ -753,8 +759,8 @@ class Channel(Guard):
     def is_selectable(self):
         """Test whether Alt can select this channel.
         """
-        logging.debug('Alt THINKS _is_selectable IS: ' +
-               str(self._is_selectable))
+        logging.debug('Alt THINKS _is_selectable IS: %s' %
+                      str(self._is_selectable))
         self.checkpoison()
         return self._is_selectable
 
@@ -820,9 +826,9 @@ class Channel(Guard):
                 self._is_selectable = True
             else:
                 self._is_selectable = False
-        logging.debug('Enable on guard', self.name, '_is_selectable:',
-               self._is_selectable, '_available:',
-               self._available)
+        logging.debug('Enable on guard %s _is_selectable: %s _available: %s'
+                      % (self.name, str(self._is_selectable),
+                         str(self._available)))
         return
 
     def disable(self):
@@ -845,9 +851,8 @@ class Channel(Guard):
         logging.debug('channel select starting')
         assert self._is_selectable == True
         with self._rlock:
-            logging.debug('got read lock on channel',
-                   self.name, '_available: ',
-                   self._available._Semaphore__value)
+            logging.debug('got read lock on channel %s _available: %s'
+                          % (self.name, str(self._available._Semaphore__value)))
             # Obtain object on Channel.
             obj = self.get()
             logging.debug('Writer got obj')

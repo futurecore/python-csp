@@ -80,6 +80,7 @@ except ImportError:
 if DEBUG:
     logging.basicConfig(level=logging.NOTSET,
                         stream=sys.stdout)
+    logging.info("Using multiprocessing version of python-csp.")
 else:
     logging.basicConfig(level=logging.CRITICAL,
                         stream=sys.stdout)
@@ -217,7 +218,7 @@ class CSPOpMixin(object):
                 self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
             elif hasattr(obj, '__dict__'):
                 self.referent_visitor(obj.__dict__.values())
-		return
+        return
 
     def terminate(self):
         """Terminate only if self is running."""
@@ -387,7 +388,7 @@ class Alt(CSPOpMixin):
         self.last_selected.disable() # Just in case
         try:
             self.last_selected.poison()
-        except:
+        except Exception:
             pass
         logging.debug('Poisoned last selected.')
         self.guards.remove(self.last_selected)
@@ -1011,7 +1012,7 @@ class NetworkChannel(Channel):
     """
     
     def __init__(self):
-        self.name = Channel.NAMEFACTORY.name()
+        self.name = uuid.uuid1()
         self._wlock = None	# Write lock.
         self._rlock = None	# Read lock.
         self._available = None
