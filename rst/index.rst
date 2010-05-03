@@ -14,7 +14,6 @@ Contents:
    cspprocess.rst
    cspthread.rst
    tracer.rst
-   bsp.rst
    reactive.rst
    mandelbrot.rst
 
