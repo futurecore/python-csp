@@ -54,7 +54,7 @@ parser.add_option('-v', '--vcr', dest='vcr',
                   action='store_true',
                   help='Provide a view-centric reasoning trace of PROGRAM')
 
-parser.add_option('-s', '--struct', dest='structural', 
+parser.add_option('-s', '--struct', dest='struct', 
                   action='store_true',
                   help='Provide a structural trace of PROGRAM')
 
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.program:
-        with tracer.csptrace:
+        with tracer.csptrace():
             execfile(options.program)
     else:
         parser.print_help()
