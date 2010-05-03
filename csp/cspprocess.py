@@ -76,15 +76,6 @@ except ImportError:
     import pickle as mypickle
 
 
-# Configure logging.
-if DEBUG:
-    logging.basicConfig(level=logging.NOTSET,
-                        stream=sys.stdout)
-    logging.info("Using multiprocessing version of python-csp.")
-else:
-    logging.basicConfig(level=logging.CRITICAL,
-                        stream=sys.stdout)
-    
 ### Seeded random number generator (16 bytes)
 
 _RANGEN = random.Random(os.urandom(16))
@@ -177,6 +168,18 @@ class ProcessSuspend(Exception):
 
     def __str__(self):
         return 'Process suspend exception.'
+
+
+### DEBUGGING
+
+def set_debug(status):
+    global DEBUG
+    DEBUG = status
+    logging.basicConfig(level=logging.NOTSET,
+                        stream=sys.stdout)
+    logging.info("Using multiprocessing version of python-csp.")
+    return
+
 
 ### Fundamental CSP concepts -- Processes, Channels, Guards
 

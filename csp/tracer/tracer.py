@@ -29,7 +29,7 @@ __credits__ = 'Sarah Mount, Gerald Kaszuba'
 __date__ = 'June 2009'
 
 
-#import icode
+import icode
 import inspect
 #import linecache
 import os
@@ -54,6 +54,8 @@ from contextlib import contextmanager
 DEBUG = True
 
 tracer = None
+
+callgraph = []
 
 # Functions to ignore when tracing.
 #
@@ -448,6 +450,7 @@ class Tracer(object):
             func_args[param] = _get_arguments(param, frame)
 
         if DEBUG: print _pprint_func(full_name, func_args)
+        callgraph.append(icode.Call(frame.lineno, full_name, func_args))
 
         return self
 

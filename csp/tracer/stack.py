@@ -16,6 +16,16 @@ class Stack:
         assert(len(self.__stack) > 0)
         return self.__stack[len(self.__stack) - 1]
 
+    def issubset(self, other):
+        """Determine whether other stack is a subset of this one.
+        Order matters.
+        """
+        size = min(len(self.__stack), len(other))
+        for i in xrange(size):
+            if not self.__stack[i] == other[i]:
+                return False
+        return True
+    
     def __contains__(self, item):
         return item in self.__stack
 
