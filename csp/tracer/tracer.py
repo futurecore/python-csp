@@ -29,8 +29,6 @@ __credits__ = 'Sarah Mount, Gerald Kaszuba'
 __date__ = 'June 2009'
 
 
-import csp.cspprocess
-
 #import icode
 import inspect
 #import linecache
@@ -38,9 +36,20 @@ import os
 import sys
 import types
 
+if os.environ.has_key('CSP'):
+    if os.environ['CSP'] == 'PROCESSES':
+        import csp.cspprocess
+    elif os.environ['CSP'] == 'THREADS':
+        import csp.cspthread
+    else:
+        import csp.cspprocess
+else:
+    import csp.cspprocess 
+
 from distutils import sysconfig
 #from stack import Stack
 
+from contextlib import contextmanager
 
 DEBUG = True
 
@@ -52,6 +61,7 @@ tracer = None
 # the sort of "globbing" system that pycallgraph uses.
 # Or with a list of function calls to notice.
 ignore = ('csp.tracer.tracer.stop_trace',
+          'csp.tracer.tracer.csptrace',
           'Synchronized.getvalue',
           'Synchronized.setvalue',
           'csp.cspprocess.process', # Decorator
@@ -85,6 +95,20 @@ ignore = ('csp.tracer.tracer.stop_trace',
           'csp.guards.Skip.select',
           'csp.guards.Skip.is_selectable'
           )
+
+
+@contextmanager
+def csptrace():
+    """csptrace is a context manager which allows a block of code to
+    be debugged indepentently from the rest of a program. Use
+    csptrace() with the Python "with" statement:
+
+    with csptrace():
+        # Code here will be traced.
+    """
+    start_trace()
+    yield
+    stop_trace()
 
 
 def reset_trace():
@@ -354,8 +378,7 @@ class Tracer(object):
             self.trace_return(frame, event, arg)
         elif event == 'call':
             self.trace_call(frame, event, arg)
-                            
-    
+
     def trace_line(self, frame, event, arg):
         """Trace a line of source code.
         """
@@ -432,4 +455,5 @@ class Tracer(object):
         """Trace a return value from a function.
         """
         pass
+
 

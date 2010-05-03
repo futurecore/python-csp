@@ -25,7 +25,7 @@ python-csp adds communicating sequential processes to Python""",
                                       'test', 'tutorial']),
       include_package_data=True,
       zip_safe=True,
-	  scripts=['scripts/python-csp'],
+	  scripts=['scripts/python-csp', 'scripts/cspdb'],
       install_requires=[
           # -*- Extra requirements: -*-
       ],
