@@ -28,18 +28,12 @@ import os
 if os.environ.has_key('CSP'):
     if os.environ['CSP'] == 'PROCESSES':
         from csp.cspprocess import *
-        Barrier = BarrierProcessing
     elif os.environ['CSP'] == 'THREADS':
         from csp.cspthread import *
-        Barrier = BarrierThreading
     else:
         from csp.cspprocess import *
-        Barrier = BarrierProcessing
 else:
     from csp.cspprocess import *   
-    Barrier = BarrierProcessing
-
-del os
 
 
 class Skip(Guard):
@@ -190,3 +184,12 @@ class BarrierProcessing(AbstractBarrier):
         self.lock = processing.Condition()
         return
 
+if os.environ.has_key('CSP'):
+    if os.environ['CSP'] == 'PROCESSES':
+        Barrier = BarrierProcessing
+    elif os.environ['CSP'] == 'THREADS':
+        Barrier = BarrierThreading
+    else:
+        Barrier = BarrierProcessing
+else:
+    Barrier = BarrierProcessing

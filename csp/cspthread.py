@@ -340,12 +340,16 @@ class CSPServer(CSPProcess):
         """Called automatically when the L{start} methods is called.
         """
         try:
-            func = self._target(*self._args, **self._kwargs)
+            func = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
             while sys.gettrace() is None:
                 func.next()
+            else:
+                # If the tracer is running execute the target only once.
+                func.next()
+                return
         except ChannelPoison:
             logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
-            self.referent_visitor(self._args + tuple(self._kwargs.values()))
+            self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
 #            if self._popen is not None: self.terminate()
         except ProcessSuspend:
             raise NotImplementedError('Process suspension not yet implemented')

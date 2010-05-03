@@ -340,6 +340,10 @@ class CSPServer(CSPProcess):
             func = self._target(*self._args, **self._kwargs)
             while sys.gettrace() is None:
                 func.next()
+            else:
+                # If the tracer is running execute the target only once.
+                func.next()
+                return
         except ChannelPoison:
             logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
