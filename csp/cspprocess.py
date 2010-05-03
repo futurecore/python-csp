@@ -27,6 +27,8 @@ from __future__ import with_statement
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
 
+#DEBUG = True
+DEBUG = False
 
 from functools import wraps # Easy decorators
 
@@ -75,8 +77,12 @@ except ImportError:
 
 
 # Configure logging.
-logging.basicConfig(level=logging.CRITICAL)
-#logging.basicConfig(level=logging.NOTSET)
+if DEBUG:
+    logging.basicConfig(level=logging.NOTSET,
+                        stream=sys.stdout)
+else:
+    logging.basicConfig(level=logging.CRITICAL,
+                        stream=sys.stdout)
     
 ### Seeded random number generator (16 bytes)
 
@@ -290,7 +296,8 @@ class CSPProcess(processing.Process, CSPOpMixin):
         try:
             self._target(*self._args, **self._kwargs)
         except ChannelPoison:
-            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
+            logging.debug('%s got ChannelPoison exception in %g' %
+                          (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
         except ProcessSuspend:
@@ -342,7 +349,8 @@ class CSPServer(CSPProcess):
                 func.next()
                 return
         except ChannelPoison:
-            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
+            logging.debug('%s got ChannelPoison exception in %g' %
+                          (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
         except ProcessSuspend:
@@ -375,7 +383,7 @@ class Alt(CSPOpMixin):
 
         Sets self.last_selected to None.
         """
-        logging.debug(type(self.last_selected))
+        logging.debug(str(type(self.last_selected)))
         self.last_selected.disable() # Just in case
         try:
             self.last_selected.poison()
@@ -392,7 +400,8 @@ class Alt(CSPOpMixin):
         if len(self.guards) == 0:
             raise NoGuardInAlt()
         elif len(self.guards) == 1:
-            logging.debug('Alt Selecting unique guard:', self.guards[0].name)
+            logging.debug('Alt Selecting unique guard: %s' %
+                          self.guards[0].name)
             self.last_selected = self.guards[0]
             while not self.guards[0].is_selectable():
                 self.guards[0].enable()
@@ -403,15 +412,15 @@ class Alt(CSPOpMixin):
         """Randomly select from ready guards."""
         if len(self.guards) < 2:
             return self._preselect()
-        for guard in self.guards:
-            guard.enable()
-        logging.debug('Alt enabled all guards')
-        ready = [guard for guard in self.guards if guard.is_selectable()]
+        ready = []
         while len(ready) == 0:
+            for guard in self.guards:
+                guard.enable()
+                logging.debug('Alt enabled all guards')
             time.sleep(0.01) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-            logging.debug('Alt got no items to choose from')
-        logging.debug('Alt got %i items to choose from' % len(ready))
+            logging.debug('Alt got %i items to choose from out of %i' %
+                          (len(ready), len(self.guards)))
         selected = _RANGEN.choice(ready)
         self.last_selected = selected
         for guard in self.guards:
@@ -426,14 +435,15 @@ class Alt(CSPOpMixin):
         """
         if len(self.guards) < 2:
             return self._preselect()
-        for guard in self.guards:
-            guard.enable()
-        logging.debug('Alt enabled all guards')
-        ready = [guard for guard in self.guards if guard.is_selectable()]
+        ready = []
         while len(ready) == 0:
+            for guard in self.guards:
+                guard.enable()
+                logging.debug('Alt enabled all guards')
             time.sleep(0.1) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-        logging.debug('Alt got %i items to choose from' % len(ready))
+            logging.debug('Alt got %i items to choose from, out of %i' %
+                          (len(ready), len(self.guards)))
         selected = None
         if self.last_selected in ready and len(ready) > 1:
             ready.remove(self.last_selected)
@@ -452,14 +462,15 @@ class Alt(CSPOpMixin):
         """
         if len(self.guards) < 2:
             return self._preselect()
-        for guard in self.guards:
-            guard.enable()
-        logging.debug('Alt enabled all guards')
-        ready = [guard for guard in self.guards if guard.is_selectable()]
+        ready = []
         while len(ready) == 0:
+            for guard in self.guards:
+                guard.enable()
+                logging.debug('Alt enabled all guards')
             time.sleep(0.01) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-        logging.debug('Alt got %i items to choose from' % len(ready))
+            logging.debug('Alt got %i items to choose from, out of %i' %
+                          (len(ready), len(self.guards)))
         self.last_selected = ready[0]
         for guard in ready[1:]:
             guard.disable()
@@ -497,7 +508,7 @@ class Par(processing.Process, CSPOpMixin):
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
-        logging.debug('# processes in Par:', len(self.procs))
+        logging.debug('%i processes in Par:' % len(self.procs))
         return
 
     def __str__(self):
@@ -525,7 +536,8 @@ class Par(processing.Process, CSPOpMixin):
             for proc in self.procs:
                 proc.join() #self.timeout)
         except ChannelPoison:
-            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
+            logging.debug('%s got ChannelPoison exception in %g' %
+                          (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
         except ProcessSuspend:
@@ -574,7 +586,8 @@ class Seq(processing.Process, CSPOpMixin):
                 CSPOpMixin.start(proc)
                 proc.join()
         except ChannelPoison:
-            logging.debug(str(self), 'in', self.getPid(), 'got ChannelPoison exception')
+            logging.debug('%s got ChannelPoison exception in %g' %
+                          (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
             if self._popen is not None: self.terminate()
         except ProcessSuspend:
@@ -665,7 +678,7 @@ class Channel(Guard):
         self._poisoned = None
         self._setup()
         super(Channel, self).__init__()
-        logging.debug('Channel created:', self.name)
+        logging.debug('Channel created: %s' % self.name)
         return
 
     def _setup(self):
@@ -742,7 +755,7 @@ class Channel(Guard):
             if len(sval) < _BUFFSIZE:
                 break
         logging.debug('Left read loop')
-        logging.debug('About to unmarshall this data:', ''.join(data)) 
+        logging.debug('About to unmarshall this data: %s' % ''.join(data)) 
         obj = None if data == [] else mypickle.loads(''.join(data))
         logging.debug('mypickle library has unmarshalled data.')
         return obj
@@ -755,8 +768,8 @@ class Channel(Guard):
     def is_selectable(self):
         """Test whether Alt can select this channel.
         """
-        logging.debug('Alt THINKS _is_selectable IS: ' +
-               str(self._is_selectable.value == Channel.TRUE))
+        logging.debug('Alt THINKS _is_selectable IS: %s' %
+                      str(self._is_selectable.value == Channel.TRUE))
         self.checkpoison()
         return self._is_selectable.value == Channel.TRUE
 
@@ -776,8 +789,8 @@ class Channel(Guard):
             # Announce the object has been released to the reader.
             self._available.release()
             logging.debug('++++ Writer on Channel %s: _available: %i _taken: %i. ' %
-                   (self.name, self._available.get_value(),
-                    self._taken.get_value()))
+                          (self.name, self._available.get_value(),
+                           self._taken.get_value()))
             # Block until the object has been read.
             self._taken.acquire()
             # Remove the object from the channel.
@@ -795,8 +808,8 @@ class Channel(Guard):
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
             logging.debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
-                   (self.name, self._available.get_value(),
-                    self._taken.get_value()))
+                          (self.name, self._available.get_value(),
+                           self._taken.get_value()))
             self._available.acquire()
             # Get the item.
             obj = self.get()
@@ -819,14 +832,13 @@ class Channel(Guard):
         with self._rlock:
             # Attempt to acquire _available.
             time.sleep(0.00001) # Won't work without this -- why?
-            retval = self._available.acquire(block=False)
-        if retval:
-            self._is_selectable.value = Channel.TRUE
-        else:
-            self._is_selectable.value = Channel.FALSE
-        logging.debug('Enable on guard', self.name, '_is_selectable:',
-               self._is_selectable.value, '_available:',
-               self._available.get_value())
+            if self._available.acquire(block=False):
+                self._is_selectable.value = Channel.TRUE
+            else:
+                self._is_selectable.value = Channel.FALSE
+        logging.debug('Enable on guard %s _is_selectable: %s _available: %s' %
+                      (self.name, str(self._is_selectable.value),
+                       str(self._available.get_value())))
         return
 
     def disable(self):
@@ -849,9 +861,8 @@ class Channel(Guard):
         logging.debug('channel select starting')
         assert self._is_selectable.value == Channel.TRUE
         with self._rlock:
-            logging.debug('got read lock on channel',
-                   self.name, '_available: ',
-                   self._available.get_value())
+            logging.debug('got read lock on channel %s _available: %s' %
+                          (self.name, str(self._available.get_value())))
             # Obtain object on Channel.
             obj = self.get()
             logging.debug('got obj')
@@ -874,7 +885,7 @@ class Channel(Guard):
     def checkpoison(self):
         with self._plock:
             if self._poisoned.value == Channel.TRUE:
-                logging.debug(self.name, 'is poisoned. Raising ChannelPoison()')
+                logging.debug('%s is poisoned. Raising ChannelPoison()' % self.name)
                 raise ChannelPoison()
 
     def poison(self):

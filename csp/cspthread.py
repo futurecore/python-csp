@@ -28,7 +28,7 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'June 2009'
 
 #DEBUG = True
-#DEBUG = False
+DEBUG = False
 
 from functools import wraps # Easy decorators
 
@@ -70,8 +70,12 @@ except ImportError:
 
 
 # Configure logging.
-logging.basicConfig(level=logging.CRITICAL)
-#logging.basicConfig(level=logging.NOTSET)
+if DEBUG:
+    logging.basicConfig(level=logging.NOTSET,
+                        stream=sys.stdout)
+else:
+    logging.basicConfig(level=logging.CRITICAL,
+                        stream=sys.stdout)
 
 
 ### Seeded random number generator (16 bytes)
@@ -525,15 +529,15 @@ class Alt(CSPOpMixin):
         """Randomly select from ready guards."""
         if len(self.guards) < 2:
             return self._preselect()
-        for guard in self.guards:
-            guard.enable()
-        logging.debug('Alt enabled all guards')
-        ready = [guard for guard in self.guards if guard.is_selectable()]
+        ready = []
         while len(ready) == 0:
+            for guard in self.guards:
+                guard.enable()
+                logging.debug('Alt enabled all guards')
             time.sleep(0.01) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-            logging.debug('Alt got no items to choose from')
-        logging.debug('Alt got %i items to choose from' % len(ready))
+            logging.debug('Alt got %i items to choose from, out of %i' %
+                          (len(ready), len(self.guards)))
         selected = _RANGEN.choice(ready)
         self.last_selected = selected
         for guard in self.guards:
@@ -548,14 +552,15 @@ class Alt(CSPOpMixin):
         """
         if len(self.guards) < 2:
             return self._preselect()
-        for guard in self.guards:
-            guard.enable()
-        logging.debug('Alt enabled all guards')
-        ready = [guard for guard in self.guards if guard.is_selectable()]
+        ready = []
         while len(ready) == 0:
+            for guard in self.guards:
+                guard.enable()
+                logging.debug('Alt enabled all guards')
             time.sleep(0.1) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-        logging.debug('Alt got %i items to choose from' % len(ready))
+            logging.debug('Alt got %i items to choose from, out of %i' %
+                          (len(ready), len(self.guards)))
         selected = None
         if self.last_selected in ready and len(ready) > 1:
             ready.remove(self.last_selected)
@@ -574,14 +579,15 @@ class Alt(CSPOpMixin):
         """
         if len(self.guards) < 2:
             return self._preselect()
-        for guard in self.guards:
-            guard.enable()
-        logging.debug('Alt enabled all guards')
-        ready = [guard for guard in self.guards if guard.is_selectable()]
+        ready = []
         while len(ready) == 0:
+            for guard in self.guards:
+                guard.enable()
+                logging.debug('Alt enabled all guards')
             time.sleep(0.01) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-        logging.debug('Alt got %i items to choose from' % len(ready))
+            logging.debug('Alt got %i items to choose from, out of %i' %
+                          (len(ready), len(self.guards)))
         self.last_selected = ready[0]
         for guard in ready[1:]:
             guard.disable()
@@ -810,11 +816,10 @@ class Channel(Guard):
         with self._rlock:
             # Attempt to acquire _available.
             time.sleep(0.00001) # Won't work without this -- why?
-            retval = self._available.acquire(blocking=False)
-        if retval:
-            self._is_selectable = True
-        else:
-            self._is_selectable = False
+            if  self._available.acquire(blocking=False):
+                self._is_selectable = True
+            else:
+                self._is_selectable = False
         logging.debug('Enable on guard', self.name, '_is_selectable:',
                self._is_selectable, '_available:',
                self._available)

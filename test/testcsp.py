@@ -34,7 +34,7 @@ else:
 
 del os
 
-from csp.guards import Skip
+from csp.guards import Skip, Timer
 
 @process
 def foo(n):
@@ -107,6 +107,8 @@ def testpoison(chan):
 
 @process
 def sendAlt(cout, num):
+    t = Timer()
+    t.sleep(1)
     cout.write(num)
     return
 
