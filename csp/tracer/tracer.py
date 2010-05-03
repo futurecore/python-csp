@@ -51,7 +51,7 @@ tracer = None
 # TODO: This is rather brittle and should be replaced, possibly with
 # the sort of "globbing" system that pycallgraph uses.
 # Or with a list of function calls to notice.
-ignore = ('tracer.tracer.stop_trace',
+ignore = ('csp.tracer.tracer.stop_trace',
           'Synchronized.getvalue',
           'Synchronized.setvalue',
           'csp.cspprocess.process', # Decorator
@@ -61,6 +61,11 @@ ignore = ('tracer.tracer.stop_trace',
           'csp.cspprocess.CSPProcess.__init__',          
           'csp.cspprocess.CSPProcess.spawn',
           'csp.cspprocess.CSPProcess.run',
+          'csp.cspprocess.CSPProcess.__del__',
+          'csp.cspprocess.CSPServer.__init__',          
+          'csp.cspprocess.CSPServer.spawn',
+          'csp.cspprocess.CSPServer.run',
+          'csp.cspprocess.CSPServer.__del__',
           'csp.cspprocess.Par.__init__',          
           'csp.cspprocess.Seq.__init__',          
           'csp.cspprocess.Alt.__init__',          
@@ -286,8 +291,7 @@ def _get_arguments(param, frame):
 
     # Deal separately with core csp classes.
     elif isinstance(bound_value, csp.cspprocess.CSPServer):
-        print dir(bound_value)
-        #arg, ty = (bound_value._target.__name__, type(bound_value))
+        arg, ty = (bound_value._target.__name__, type(bound_value))
 
     elif isinstance(bound_value, csp.cspprocess.CSPProcess):
         arg, ty = (bound_value._target.__name__, type(bound_value))

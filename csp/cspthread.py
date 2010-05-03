@@ -348,7 +348,8 @@ class CSPServer(CSPProcess):
                 func.next()
             else:
                 # If the tracer is running execute the target only once.
-                func.next()
+                generator.next()
+                logging.info('Server process detected a tracer running.')
                 return
         except ChannelPoison:
             logging.debug('%s in %g got ChannelPoison exception' %

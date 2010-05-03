@@ -342,12 +342,13 @@ class CSPServer(CSPProcess):
         """Called automatically when the L{start} methods is called.
         """
         try:
-            func = self._target(*self._args, **self._kwargs)
+            generator = self._target(*self._args, **self._kwargs)
             while sys.gettrace() is None:
-                func.next()
+                generator.next()
             else:
                 # If the tracer is running execute the target only once.
-                func.next()
+                generator.next()
+                logging.info('Server process detected a tracer running.')
                 return
         except ChannelPoison:
             logging.debug('%s got ChannelPoison exception in %g' %
