@@ -184,6 +184,7 @@ class BarrierProcessing(AbstractBarrier):
         self.lock = processing.Condition()
         return
 
+
 if os.environ.has_key('CSP'):
     if os.environ['CSP'] == 'PROCESSES':
         Barrier = BarrierProcessing

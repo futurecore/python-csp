@@ -79,25 +79,30 @@ class TestOOP(object):
     
     def __init__(self):
         self.chan = Channel()
+        return
 
     @process
     def send(self, msg):
         self.chan.write(msg)
+        return
 
     @process
     def recv(self):
         print self.chan.read()
+        return
 
 
 def testoop():
     f = TestOOP()
     Par(f.send('hello world'), f.recv()).start()
+    return
 
 
 @process
 def testpoison(chan):
     print 'Sending termination event...'
-    chan.poison()    
+    chan.poison()
+    return
 
 
 @process
@@ -112,6 +117,7 @@ def testAlt0():
         print '*** TestAlt0 selecting...'
         val = alt.select()
         print '* Got this from Alt:', val
+    return
 
 
 @process
@@ -123,6 +129,7 @@ def testAlt1(cin):
         val = alt.select()
         if isinstance(val, int): numeric += 1 
         print '* Got this from Alt:', val
+    return
 
 
 @process
@@ -134,6 +141,7 @@ def testAlt2(cin1, cin2, cin3):
         val = alt.select()
         if isinstance(val, int): numeric +=1
         print '* Got this from Alt:', val
+    return
 
 
 @process
@@ -146,6 +154,7 @@ def testAlt3(cin1, cin2, cin3):
         val = alt.pri_select()
         if isinstance(val, int): numeric +=1
         print '* Got this from Alt:', val
+    return
 
 
 @process
@@ -157,6 +166,7 @@ def testAlt4(cin1, cin2, cin3):
         val = alt.fair_select()
         if isinstance(val, int): numeric +=1
         print '* Got this from Alt:', val
+    return
 
 @process
 def testOr(cin1, cin2):
@@ -170,6 +180,7 @@ def testAltRRep(cin1, cin2, cin3):
     print gen.next()
     print gen.next()
     print gen.next()
+    return
 
 @process
 def testAltLRep(cin1, cin2, cin3):
@@ -177,6 +188,7 @@ def testAltLRep(cin1, cin2, cin3):
     print gen.next()
     print gen.next()
     print gen.next()
+    return
 
 
 ########## Top level stuff
@@ -234,6 +246,7 @@ def testChan():
 def testOOP():
     _printHeader('channel read/write using object methods...')
     testoop()
+    return
 
 def testPoison():
     _printHeader('process termination (by poisoning)')

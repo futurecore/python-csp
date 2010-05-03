@@ -30,9 +30,6 @@ __date__ = 'December 2008'
 
 from functools import wraps # Easy decorators
 
-# Import barrier from bulk synchronous processing library
-from bsp.bsp import BarrierProcessing as Barrier
-
 import copy
 import gc
 import inspect
