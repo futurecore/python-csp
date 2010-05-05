@@ -450,7 +450,7 @@ class Tracer(object):
             func_args[param] = _get_arguments(param, frame)
 
         if DEBUG: print _pprint_func(full_name, func_args)
-        callgraph.append(icode.Call(frame.lineno, full_name, func_args))
+        callgraph.append(icode.Call(frame.f_lineno, full_name, func_args, []))
 
         return self
 

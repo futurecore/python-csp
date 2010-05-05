@@ -25,22 +25,9 @@ class AST2ICODEVisitor(ast.NodeTransformer):
         super(AST2ICODEVisitor, self)
         self.icode = '' # BAH
 
-    def visit_Const(self, node):
-        self.generic_visit(node)
-        return IcodeConst(node.value, lineno=node.lineno)
-
-    def visit_Assign(self, node):
-        print 'ASSIGN'
-        for key,val in node.__dict__.items():
-            print key, val
-        print 'END'
-        self.generic_visit(node)
-        return IcodeAssign(node.nodes, node.expr, lineno=node.lineno)
-
-    def visit_Import(self, node):
-        self.generic_visit(node)
-        return IcodeImport(node.names)
-
+    def vist_Function(self, node):
+        
+        
 #    def default(self, node):
 #        """Gives debug info in place of unwritten visit methods."""
 #        self.generic_visit(node)
@@ -86,3 +73,24 @@ if __name__ == '__main__':
 #            self.icode += '\t\t__dict__:' + str(i.__dict__) + '\n'
 #            self.dispatch(i)
 #        self.icode += "\tEND CHILD NODES\n"
+
+
+
+############# SCRATCH
+    # def visit_Const(self, node):
+    #     self.generic_visit(node)
+    #     return IcodeConst(node.value, lineno=node.lineno)
+
+    # def visit_Assign(self, node):
+    #     print 'ASSIGN'
+    #     for key,val in node.__dict__.items():
+    #         print key, val
+    #     print 'END'
+    #     self.generic_visit(node)
+    #     return IcodeAssign(node.nodes, node.expr, lineno=node.lineno)
+
+    # def visit_Import(self, node):
+    #     self.generic_visit(node)
+    #     return IcodeImport(node.names)
+
+    

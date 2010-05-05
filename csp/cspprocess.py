@@ -230,15 +230,13 @@ class CSPOpMixin(object):
 
     def __and__(self, other):
         """Implementation of CSP Par.
-
-        Requires timeout with a small value to ensure
-        parallelism. Otherwise a long sequence of '&' operators will
-        run in sequence (because of left-to-right evaluation and
-        orders of precedence).
         """
         assert _is_csp_type(other)
         par = Par(other, self, timeout = 0.1)
-        par.start()
+        print 'TYPES IN PAR:',  type(self), type(other)
+        print self._target.__name__, other._target.__name__
+        if isinstance(other, CSPProcess):
+            par.start()
         return par
 
     def __gt__(self, other):
