@@ -46,6 +46,10 @@ def test_builtins():
 
 @forever
 def fact(outchan):
+    """
+    readset = flibble
+    writeset = outchan
+    """
     n = 1
     f = 1
     while True:

@@ -26,6 +26,7 @@ class AST2ICODEVisitor(ast.NodeTransformer):
         self.icode = '' # BAH
 
     def vist_Function(self, node):
+        pass
         
         
 #    def default(self, node):
@@ -36,6 +37,7 @@ class AST2ICODEVisitor(ast.NodeTransformer):
 #         self.icode += '\t__repr__:' + node.__repr__() + '\n'
 #         self.icode += '\t__dict__:' + str(node.__dict__) + '\n'
 #         self.icode += "DEBUG: END NODE\n"
+
 
 if __name__ == '__main__':
     if DEBUG: print 'Debugging: ON. Script arguments:', sys.argv

@@ -14,7 +14,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have rceeived a copy of the GNU General Public License
+You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
@@ -38,15 +38,62 @@ class ChannelChecker(visitor.ASTVisitor):
         self.processes = Stack()
         return
 
+    def extract_sets(self, doc):
+        readset = []
+        writeset = []
+        if doc is None:
+            return readset, writeset
+        for line in doc.split('\n'):
+            words = line.strip().split('=')
+            if words is not None:
+                if words[0].strip() == 'readset':
+                    chans = words[1].strip().split(',')
+                    readset = filter(lambda y: y is not '',
+                                     map(lambda x: x.strip(), chans))
+                elif words[0].strip() == 'writeset':
+                    chans = words[1].strip().split(',')
+                    writeset = filter(lambda y: y is not '',
+									  map(lambda x: x.strip(), chans))
+                else:
+                    continue
+        return readset, writeset
+
+    def is_process(self, decorators):
+        for decorator in decorators:
+            if (decorator.name == 'process' or
+                decorator.name == 'forever'):
+                return True
+        return False
+
     def visitFunction(self, node):
-#        print "VISIT FUNCTION!"
-#        print node.__dict__.keys()
-        if node.decorators is not None:
-            for name in node.decorators:
-                if name.name == 'process' or name.name == 'forever':
-#                    self.processes.push(cspmodel.Process(node.name))
-                    print 'Function %s is a CSP process' % node.name
-                else: print 'Function %s is NOT a CSP process' % node.name
+#        print "VISIT FUNCTION!", dir(node)
+#        print node.code.__class__
+        if (node.decorators is None or
+            self.is_process(node.decorators) is None):
+            return
+        print 'Function %s is a CSP process' % node.name
+        readset, writeset = self.extract_sets(node.doc)
+        print node.name, 'has readset:', readset, len(readset)
+        print node.name, 'has writeset:', writeset, len(writeset)
+        for channel in readset:
+            if not channel in node.argnames:
+                print 'ERROR line %i: Channel %s in readset is not a formal parameter to this process' % (node.lineno, channel)
+        for channel in writeset:
+            if not channel in node.argnames:
+                print 'ERROR line %i: Channel %s in writeset is not a formal parameter to this process' % (node.lineno, channel)
+
+        # Ensure that we visit every line of code in this function.
+        for stmt in node.code:
+            self.visit(stmt)
+
+    def visitCallFunc(self, node):
+        callee = node.node
+        if isinstance(callee, ast.Getattr):
+            if not isinstance(callee.expr, ast.Getattr):
+                print 'Visiting anonymous function call %s' % callee.expr.name
+#                print node
+#                print dir(node)
+                print callee.expr.name + '.' + callee.attrname
 
     # def visitAssign(self, node):
     #     print 'VISIT ASSIGN'
@@ -54,23 +101,6 @@ class ChannelChecker(visitor.ASTVisitor):
     #         print 'Expr details:', node.expr.node.__dict__
     #         if node.expr.node.name == 'Channel':
     #             self.channels.push(cspmodel.Channel(node.nodes[0].name))
-
-    def visitCallFunc(self, node):
-        callee = node.node
-        print dir(callee)
-        try:
-            print 'Visiting function call %' % callee.name
-        except:
-            try:
-                print 'Visiting anonymous function call %s' % callee.expr
-            except:
-                pass
- #       print 'CALL:', node.node.attrname
- #       print node.node.expr
-        # CALL: start
-        # CallFunc(Name('Par'), [CallFunc(Name('foo'), [Const(100), Name('mychan')], None, None),
-        #                        CallFunc(Name('bar'), [Name('mychan')], None, None)], None, None)
-        
 
 
 if __name__ == '__main__':
