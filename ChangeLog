@@ -1,3 +1,7 @@
+8 May 2010
+	Introduced documented readsets and writesets. Added lint-like
+	static checker to determine whether readsets and writesets are
+	correctly documented.
 2 May 2010
 	Introduced CSPServer processes and a @forever decorator to easily
 	create them.

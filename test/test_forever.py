@@ -47,8 +47,8 @@ def test_builtins():
 @forever
 def fact(outchan):
     """
-    readset = flibble
-    writeset = outchan
+    readset = flibble, foo
+    writeset = outchan, foo
     """
     n = 1
     f = 1

@@ -47,7 +47,7 @@ else:
     import csp.cspprocess 
 
 from distutils import sysconfig
-#from stack import Stack
+#from exstatic.stack import Stack
 
 from contextlib import contextmanager
 
