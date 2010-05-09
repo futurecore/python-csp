@@ -38,7 +38,6 @@ import inspect
 import logging
 import os
 import random
-import socket
 import sys
 import tempfile
 import threading
@@ -82,8 +81,6 @@ _RANGEN = random.Random(os.urandom(16))
 
 _BUFFSIZE = 1024
 
-_HOST = socket.gethostbyname(socket.gethostname())
-_CHANNEL_PORT = 9890
 
 ### Authentication
 
@@ -929,78 +926,7 @@ class FileChannel(Channel):
         return
 
     def __str__(self):
-        return 'Channel using files for IPC.'
-
-    
-class NetworkChannel(Channel):
-    """Network channels ...
-    """
-    
-    def __init__(self):
-        self.name = Channel.NAMEFACTORY.name()
-        self._wlock = None	# Write lock.
-        self._rlock = None	# Read lock.
-        self._available = None
-        self._taken = None
-        self._is_alting = None
-        self._is_selectable = None
-        self._has_selected = None
-        # Process-safe store.
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._setup()
-        return
-
-    def __getstate__(self):
-        """Return state required for pickling."""
-        state = [mypickle.dumps(self._available, protocol=1),
-                 mypickle.dumps(self._taken, protocol=1),
-                 mypickle.dumps(self._is_alting, protocol=1),
-                 mypickle.dumps(self._is_selectable, protocol=1),
-                 mypickle.dumps(self._has_selected, protocol=1),
-                 self._fname]
-        if self._available.get_value() > 0:
-            obj = self.get()
-        else:
-            obj = None
-        state.append(obj)
-        return state
-
-    def __setstate__(self, state):
-        """Restore object state after unpickling."""
-        self._wlock = processing.RLock()	# Write lock.
-        self._rlock = processing.RLock()	# Read lock.
-        self._available = mypickle.loads(state[0])
-        self._taken = mypickle.loads(state[1])
-        self._is_alting = mypickle.loads(state[2])
-        self._is_selectable = mypickle.loads(state[3])
-        self._has_selected = mypickle.loads(state[4])
-        if state[5] is not None:
-            self.put(state[5])
-        return
-
-    def put(self, item):
-        """Put C{item} on a process-safe store.
-        """
-        if self.is_poisoned: raise ChannelPoison()
-        self.sock.sendto(mypickle.dumps(item, protocol=1),
-                         (_HOST, _CHANNEL_PORT))
-        return
-
-    def get(self):
-        """Get a Python object from a process-safe store.
-        """
-        if self.is_poisoned: raise ChannelPoison()
-        data = self.sock.recv(_BUFFSIZE)
-        obj = mypickle.loads(data)
-        return obj
-
-    def __del__(self):
-        self.sock.close()
-        del self
-        return
-    
-    def __str__(self):
-        return 'Channel using sockets for IPC.'
+        return 'Channel using files for IPC.'    
 
 
 ### Function decorators
