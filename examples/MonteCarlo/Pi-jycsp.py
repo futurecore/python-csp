@@ -18,6 +18,10 @@ workers = 320
 
 @process
 def worker(c):
+    """
+    readset =
+    writeset = c
+    """
     count = 0
     i = 0
     while i < perProcess:
@@ -29,7 +33,11 @@ def worker(c):
     return       
 
 @process
-def consumer(cins):     
+def consumer(cins):
+    """
+    readset = cins
+    writeset =
+    """
     alt = Alt(*cins)
     total = Decimal(0)
     for i in range(len(cins)):

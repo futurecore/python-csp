@@ -13,6 +13,10 @@ def calculateRowColumnProduct(self, A, row, B, col):
 
 @process
 def ParcalculateRowColumnProduct(cout, A, row, B, col):
+    """
+    readset =
+    writeset = cout
+    """
     product = 0
     for i in range(len(A[row])):
         product  += A[row][i] * B[i][col]

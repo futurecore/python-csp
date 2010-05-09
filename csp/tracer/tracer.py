@@ -62,11 +62,26 @@ callgraph = []
 # TODO: This is rather brittle and should be replaced, possibly with
 # the sort of "globbing" system that pycallgraph uses.
 # Or with a list of function calls to notice.
-ignore = ('csp.tracer.tracer.stop_trace',
+ignore = ('csp.tracer.tracer.start_trace',
+          'csp.tracer.tracer.stop_trace',
           'csp.tracer.tracer.csptrace',
+          '<module>',
           'Synchronized.getvalue',
           'Synchronized.setvalue',
+          'csp.guards',
+          'csp.guards.Skip',
+          'csp.guards.Skip.__init__',
+          'csp.guards.Skip.enable',
+          'csp.guards.Skip.disable',
+          'csp.guards.Skip.select',
+          'csp.guards.Skip.is_selectable'
+          'csp.guards.Timer',
+          'csp.guards.Timer.__init__',
+          'csp.guards.AbstractBarrier',
+          'csp.guards.BarrierThreading',
+          'csp.guards.BarrierProcessing',
           'csp.cspprocess.process', # Decorator
+          'csp.cspprocess.forever', # Decorator
           'csp.cspprocess._call',
           'csp.cspprocess._debug',
           'csp.cspprocess._is_csp_type',
@@ -91,11 +106,6 @@ ignore = ('csp.tracer.tracer.stop_trace',
           'csp.cspprocess.Channel.select',
           'csp.cspprocess.Channel.is_selectable',
           'csp.cspprocess.Channel.checkpoison',
-          'csp.guards.Skip.__init__',
-          'csp.guards.Skip.enable',
-          'csp.guards.Skip.disable',
-          'csp.guards.Skip.select',
-          'csp.guards.Skip.is_selectable'
           )
 
 
@@ -373,23 +383,13 @@ class Tracer(object):
     
     def trace(self, frame, event, arg):
         if event == 'line':
-            self.trace_line(frame, event, arg)
+            Self.trace_line(frame, event, arg)
         elif event == 'exception':
             self.trace_exn(frame, event, arg)
         elif event == 'return':
             self.trace_return(frame, event, arg)
         elif event == 'call':
             self.trace_call(frame, event, arg)
-
-    def trace_line(self, frame, event, arg):
-        """Trace a line of source code.
-        """
-        pass
-
-    def trace_exn(self, frame, event, arg):
-        """Trace an exception.
-        """
-        pass
 
     def trace_call(self, frame, event, arg):
         """Trace a function call.
@@ -454,9 +454,18 @@ class Tracer(object):
 
         return self
 
+    def trace_line(self, frame, event, arg):
+        """Trace a line of source code.
+        """
+        pass
+
+    def trace_exn(self, frame, event, arg):
+        """Trace an exception.
+        """
+        pass
+
     def trace_return(self, frame, event, arg):
         """Trace a return value from a function.
         """
         pass
-
 

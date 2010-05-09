@@ -174,6 +174,11 @@ def create_run(n, level, ss, filename='scene.pgm'):
 
 @process
 def perpixel(ss, n, x, y, scene, chnl):
+    """
+
+    readset =
+    writeset = chnl
+    """
     g = 0.0
     for dx in xrange(0, ss):
         for dy in xrange(0, ss):

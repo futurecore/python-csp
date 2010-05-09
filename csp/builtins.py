@@ -45,7 +45,11 @@ del os
 
 @forever
 def Zeroes(cout):
-    """Writes out a stream of zeroes."""
+    """Writes out a stream of zeroes.
+
+    readset =
+    writeset = cout
+    """
     while True:
         cout.write(0)
         yield
@@ -54,6 +58,9 @@ def Zeroes(cout):
 @forever
 def Id(cin, cout):
     """Id is the CSP equivalent of lambda x: x.
+
+    readset = cin
+    writeset = cout
     """
     while True:
         cout.write(cin.read())
@@ -62,7 +69,11 @@ def Id(cin, cout):
 
 @forever
 def Succ(cin, cout):
-    """Succ is the successor process, which writes out 1 + its input event.
+    """Succ is the successor process, which writes out 1 + its input
+    event.
+
+    readset = cin
+    writeset = cout
     """
     while True:
         cout.write(cin.read() + 1)
@@ -71,7 +82,11 @@ def Succ(cin, cout):
 
 @forever
 def Pred(cin, cout):
-    """Pred is the predecessor process, which writes out 1 - its input event.
+    """Pred is the predecessor process, which writes out 1 - its input
+    event.
+
+    readset = cin
+    writeset = cout
     """
     while True:
         cout.write(cin.read() - 1)
@@ -82,6 +97,9 @@ def Pred(cin, cout):
 def Prefix(cin, cout, prefix_item=None):
     """Prefix a write on L{cout} with the value read from L{cin}.
 
+    readset = cin
+    writeset = cout
+    
     @type prefix_item: object
     @param prefix_item: prefix value to use before first item read from L{cin}.
     """
@@ -95,6 +113,9 @@ def Prefix(cin, cout, prefix_item=None):
 @forever
 def Delta2(cin, cout1, cout2):
     """Delta2 sends input values down two output channels.
+
+    readset = cin
+    writeset = cout1, cout2
     """
     while True:
         val = cin.read()
@@ -106,6 +127,9 @@ def Delta2(cin, cout1, cout2):
 @forever
 def Mux2(cin1, cin2, cout):
     """Mux2 provides a fair multiplex between two input channels.
+
+    readset = cin1, cin2
+    writeset = cout
     """
 #    alt = Alt(cin1, cin2)
     while True:
@@ -116,16 +140,24 @@ def Mux2(cin1, cin2, cout):
 
 
 @forever
-def Multiply(cin0, cin1, cout0):
+def Multiply(cin0, cin1, cout):
+    """
     
+    readset = cin0, cin1
+    writeset = cout
+    """
     while True:
-        cout0.write(cin0.read() * cin1.read())
+        cout.write(cin0.read() * cin1.read())
         yield
 
 
 @forever
 def Clock(cout, resolution=1):
-    """Send None object down output channel every C{resolution} seconds.
+    """Send None object down output channel every C{resolution}
+    seconds.
+
+    readset =
+    writeset = cout
     """
     from csp.guards import Timer
     timer = Timer()
@@ -138,6 +170,9 @@ def Clock(cout, resolution=1):
 @forever
 def Printer(cin, out=sys.stdout):
     """Print all values read from L{cin} to standard out or L{out}.
+
+    readset = cin
+    writeset =
     """
     while True:
         msg = str(cin.read()) + '\n'
@@ -149,6 +184,9 @@ def Printer(cin, out=sys.stdout):
 def Pairs(cin1, cin2, cout):
     """Read values from L{cin1} and L{cin2} and write their addition
     to L{cout}.
+
+    readset = cin1, cin2
+    writeset = cout
     """
     while True:
         in1 = cin1.read()
@@ -160,6 +198,9 @@ def Pairs(cin1, cin2, cout):
 @forever
 def Mult(cin, cout, scale):
     """Scale values read on L{cin} and write to L{cout}.
+
+    readset = cin
+    writeset = cout
     """
     while True:
         cout.write(cin.read() * scale)
@@ -169,6 +210,9 @@ def Mult(cin, cout, scale):
 @forever
 def Generate(cout):
     """Generate successive (+ve) ints and write to L{cout}.
+
+    readset = 
+    writeset = cout
     """
     counter = 0
     while True:
@@ -181,6 +225,9 @@ def Generate(cout):
 def FixedDelay(cin, cout, delay):
     """Read values from L{cin} and write to L{cout} after a delay of
     L{delay} seconds.
+
+    readset = cin
+    writeset = cout
     """
     while True:
         in1 = cin.read()
@@ -192,6 +239,9 @@ def FixedDelay(cin, cout, delay):
 @forever
 def Fibonacci(cout):
     """Write successive Fibonacci numbers to L{cout}.
+
+    readset =
+    writeset = cout
     """
     a_int = b_int = 1
     while True:
@@ -203,6 +253,9 @@ def Fibonacci(cout):
 @forever
 def Blackhole(cin):
     """Read values from L{cin} and do nothing with them.
+
+    readset = cin
+    writeset = 
     """
     while True:
         cin.read()
@@ -212,6 +265,9 @@ def Blackhole(cin):
 @forever
 def Sign(cin, cout, prefix):
     """Read values from L{cin} and write to L{cout}, prefixed by L{prefix}.
+
+    readset = cin
+    writeset = cout
     """
     while True:
         val = cin.read()
@@ -225,13 +281,18 @@ def _applyunop(unaryop, docstring):
     """Create a process whose output is C{unaryop(cin.read())}.
     """
 
+    chandoc = """
+    readset = cin
+    writeset = cout
+"""
+    
     @forever
     def _myproc(cin, cout):
         while True:
             in1 = cin.read()
             cout.write(unaryop(in1))
             yield
-    _myproc.__doc__ = docstring
+    _myproc.__doc__ = docstring + chandoc
     return _myproc
 
 
@@ -239,6 +300,11 @@ def _applybinop(binop, docstring):
     """Create a process whose output is C{binop(cin1.read(), cin2.read())}.
     """
 
+    chandoc = """
+    readset = cin1, cin2
+    writeset = cout
+"""
+    
     @forever
     def _myproc(cin1, cin2, cout):
         while True:
@@ -246,7 +312,7 @@ def _applybinop(binop, docstring):
             in2 = cin2.read()
             cout.write(binop(in1, in2))
             yield
-    _myproc.__doc__ = docstring
+    _myproc.__doc__ = docstring + chandoc
     return _myproc
 
 # Numeric operators

@@ -44,6 +44,10 @@ def match_neighbour_velocities(near_vel):
 
 @process
 def simulate(infochan, SIZE):
+    """
+    readset = infochan
+    writeset = infochan
+    """
     centre = [random.randint(0, SIZE[0]), random.randint(0, SIZE[1])]
     default_velocity = [random.choice((-1.0, 0.0, 1.0)),
                         random.choice((-1.0, 0.0, 1.0))]
@@ -72,6 +76,10 @@ def nearby((pos1, vel1), (pos2, vel2)):
 
 @process
 def FlockManager(channels, drawchan, NUMBOIDS):
+    """
+    readchan = channels
+    writechan = channels, drawchan
+    """
     info = [(0,0) for i in range(len(channels))]
     relify = lambda ((x,y), vel): ([info[i][0][0]-x, info[i][0][1]-y], vel)
     while True:
@@ -86,6 +94,10 @@ def FlockManager(channels, drawchan, NUMBOIDS):
 
 @process
 def drawboids(drawchan, SIZE):
+    """
+    readchan = drawchan
+    writechan = 
+    """
     import pygame
 
     FGCOL = (137, 192, 210, 100)  # Foreground colour.

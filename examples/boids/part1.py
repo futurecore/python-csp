@@ -27,6 +27,10 @@ __date__ = 'October 2009'
 
 @process
 def simulate(poschan, SIZE):
+    """
+    readset =
+    writeset = poschan
+    """
     centre = [random.randint(0, SIZE[0]), random.randint(0, SIZE[1])]
     while True:
         centre = random.randint(0, SIZE[0]), random.randint(0, SIZE[1])
@@ -36,6 +40,10 @@ def simulate(poschan, SIZE):
 
 @process
 def drawboids(poschans, SIZE):
+    """
+    readset = poschans
+    writeset = 
+    """
     import pygame
 
     FGCOL = (137, 192, 210, 100)  # Foreground colour.

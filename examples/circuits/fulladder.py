@@ -33,6 +33,10 @@ from csp.builtins import *
 
 @process
 def Bool1(cout):
+    """
+    readset =
+    writeset = cout
+    """
     while True:
         cout.write(1)
         cout.write(1)
@@ -42,6 +46,10 @@ def Bool1(cout):
         
 @process
 def Bool2(cout):
+    """
+    readset =
+    writeset = cout
+    """
     while True:
         cout.write(1)
         cout.write(0)

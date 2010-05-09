@@ -37,6 +37,10 @@ from Jycspthread import *
 
 @process
 def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
+    """
+    readset = inchan
+    writeset = outchan
+    """    
     trials = 10000
     if tokens == 1 and index == 0:
         token = 1

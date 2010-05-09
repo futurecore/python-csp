@@ -20,7 +20,11 @@ import os
 
 @process
 def Consumer(cin):
-    "Commstime consumer process"
+    """Commstime consumer process
+
+    readset = cin
+    writeset =
+    """
     N = 5000
     ts = time.time
     t1 = ts()

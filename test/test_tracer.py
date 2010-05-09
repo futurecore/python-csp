@@ -17,16 +17,30 @@ ch = Channel()
 
 @process
 def client(inchan):
+    """
+    readset = inchan
+    writeset =
+    """
     print inchan.read()
+    return
 
 
 @process
 def foo(outchan, msg):
+    """
+    readset =
+    writeset = outchan
+    """
     outchan.write(msg)
+    return
 
 
 @process
 def alt3(inchan1, inchan2, inchan3):
+    """
+    readset = inchan1, inchan2, inchan3
+    writeset = 
+    """
     alt = Alt(inchan1, inchan2, inchan3, Skip())
     selects = 0
     while selects < 3:
@@ -34,11 +48,13 @@ def alt3(inchan1, inchan2, inchan3):
         if val != 'Skip':
             selects += 1
         print val
+    return
 
 
 @process
 def simple():
     print 'SIMPLES'
+    return
 
 
 @forever
@@ -46,20 +62,31 @@ def server():
     while True:
         print 'server process'
         yield
+    return
 
 
 @forever
 def server_write(outchan):
+    """
+    readset =
+    writeset = outchan
+    """
     while True:
         outchan.write('Hello server')
         yield
+    return
 
 
 @forever
 def server_read(inchan):
+    """
+    readset = inchan
+    writeset =
+    """
     while True:
         print inchan.read()
         yield
+    return
 
 
 if __name__ == '__main__':

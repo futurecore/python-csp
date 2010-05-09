@@ -32,6 +32,10 @@ def foo(n, _process=None):
 
 @process
 def send(cout, _process=None):
+    """
+    readset =
+    writeset = cout
+    """
     for i in xrange(5):
         print '%s PID: %s sending %g' % (_process.getName(),
                                          _process.getPid(), 
@@ -42,6 +46,10 @@ def send(cout, _process=None):
 
 @process
 def recv(cin, _process=None):
+    """
+    readset = cin
+    writeset =
+    """
     for i in xrange(5):
         data = cin.read()
         print data
@@ -53,6 +61,10 @@ def recv(cin, _process=None):
 
 @process
 def send100(cout, _process=None):
+    """
+    readset =
+    writeset = cout
+    """
     for i in xrange(100):
         print '%s PID: %s sending %g' % (_process.getName(),
                                          _process.getPid(), 
@@ -63,6 +75,10 @@ def send100(cout, _process=None):
 
 @process
 def recv100(cin, _process=None):
+    """
+    readset = cin
+    writeset =
+    """
     for i in xrange(100):
         data = cin.read()
         print '%s PID: %s received %s' % (_process.getName(),
@@ -75,44 +91,73 @@ class TestOOP(object):
     
     def __init__(self):
         self.chan = Channel()
+        return
 
     @process
     def send(self, msg, _process=None):
+        """
+        readset =
+        writeset = self.chan
+        """
         self.chan.write(msg)
+        return
 
     @process
     def recv(self, _process=None):
+        """
+        readset = self.chan
+        writeset =
+        """
         print self.chan.read()
+        return
 
 
 def testoop():
     f = TestOOP()
     Par(f.send('hello world'), f.recv()).start()
+    return
 
 
 @process
 def testpoison(chan, _process=None):
+    """
+    readset =
+    writeset =
+    """
     print 'Sending termination event...'
     chan.poison()    
 
 
 @process
 def sendAlt(cout, num, _process=None):
+    """
+    readset =
+    writeset = cout
+    """
     cout.write(num)
     return
 
 
 @process
 def testAlt0(_process=None):
+    """
+    readset =
+    writeset =
+    """
     alt = Alt(Skip(), Skip(), Skip())
     for i in range(3):
         print '*** TestAlt0 selecting...'
         val = alt.select()
         print '* Got this from Alt:', val
+    return
 
 
 @process
 def testAlt1(cin, _process=None):
+    """
+    readset = cin
+    writeset =
+    """
     alt = Alt(cin)
     numeric = 0 
     while numeric < 1:
@@ -120,10 +165,15 @@ def testAlt1(cin, _process=None):
         val = alt.select()
         if isinstance(recv, int): numeric += 1 
         print '* Got this from Alt:', val
+    return
 
 
 @process
 def testAlt2(cin1, cin2, cin3, _process=None):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0 
     while numeric < 3:
@@ -131,10 +181,15 @@ def testAlt2(cin1, cin2, cin3, _process=None):
         val = alt.select()
         if isinstance(val, int): numeric +=1
         print '* Got this from Alt:', val
+    return
 
 
 @process
 def testAlt3(cin1, cin2, cin3, _process=None):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     # For obvious reasons, SKIP cannot go first 
     alt = Alt(cin1, cin2, cin3, Skip())
     numeric = 0
@@ -143,10 +198,15 @@ def testAlt3(cin1, cin2, cin3, _process=None):
         val = alt.pri_select()
         if isinstance(val, int): numeric +=1
         print '* Got this from Alt:', val
+    return
 
 
 @process
 def testAlt4(cin1, cin2, cin3, _process=None):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """    
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0
     while numeric < 3:
@@ -154,30 +214,52 @@ def testAlt4(cin1, cin2, cin3, _process=None):
         val = alt.fair_select()
         if isinstance(val, int): numeric +=1
         print '* Got this from Alt:', val
+    return
+
 
 @process
 def testOr(cin1, cin2, _process=None):
+    """
+    readset = cin1, cin2
+    writeset =
+    """
     print cin1 | cin2
     print cin1 | cin2
     return
 
+
 @process
 def testAltRRep(cin1, cin2, cin3, _process=None):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     gen = Alt(cin1, cin2, cin3) * 3
     print gen.next()
     print gen.next()
     print gen.next()
+    return
+
 
 @process
 def testAltLRep(cin1, cin2, cin3, _process=None):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     gen = 3 * Alt(cin1, cin2, cin3)
     print gen.next()
     print gen.next()
     print gen.next()
+    return
 
 
 @process
 def chMobSend(cout, klass=Channel, _process=None):
+    """
+    readset =
+    writeset = cout
+    """
     ch = klass()
     print 'Sending channel about to write channel to cout.'
     if isinstance(chan, FileChannel):
@@ -190,6 +272,10 @@ def chMobSend(cout, klass=Channel, _process=None):
 
 @process
 def chMobRecv(cin, _process=None):
+    """
+    readset = cin
+    writeset =
+    """
     print 'Receiving channel about to read channel.'
     chan = cin.read()
     print 'Receiving channel got channel:', type(chan)
@@ -210,6 +296,7 @@ def _printHeader(name):
     print
     return
 
+
 def testSeq():
     _printHeader('Seq')
     print 'With operator overloading...'
@@ -218,6 +305,7 @@ def testSeq():
     print 'With process objects...'
     Seq(foo(1), foo(2), foo(3)).start()
     return
+
 
 def testPar():
     _printHeader('Par')
@@ -233,6 +321,7 @@ def testPar():
     Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
     time.sleep(5)
     return
+
 
 def testChan():
     _printHeader('Channels')
@@ -254,10 +343,12 @@ def testChan():
     pp.start()
     return
 
+
 def testOOP():
     _printHeader('channel read/write using object methods...')
     testoop()
 
+    
 def testPoison():
     _printHeader('process termination (by poisoning)')
     chanp = Channel()
@@ -265,6 +356,7 @@ def testPoison():
     tpar.start()
     time.sleep(5)
     return
+
 
 def testAlt():
     _printHeader('Alt')
@@ -307,12 +399,14 @@ def testAlt():
     ta4._join()
     return
 
+
 def testChoice():
     _printHeader('Choice')
     print 'Choice with |:'
     c1, c2 = Channel(), Channel()
     sendAlt(c1, 100) & sendAlt(c2, 200) & testOr(c1, c2)
     return
+
 
 def testRep():
     _printHeader('Repetition')
@@ -327,10 +421,12 @@ def testRep():
      testAltLRep(ch1, ch2, ch3))
     return
 
+
 def testDynamicChannel():
     _printHeader('dynamic channel creation')
     print 'Not implemented yet...'
     return
+
 
 def testMobility():
     _printHeader('mobility')
@@ -346,6 +442,7 @@ def testMobility():
     par2.start()
     par2._join()
     return
+
 
 if __name__ == '__main__':
     from optparse import OptionParser

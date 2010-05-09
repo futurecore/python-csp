@@ -18,6 +18,10 @@ def execute ( processCount ) :
     channels = [ ]
     @process
     def accumulator ( ) :
+        """
+        readset = channel
+        writeset =
+        """
         pi = 4.0 * sum ( [ channel.read ( ) for channel in channels ] ) * delta
         elapseTime = time.time ( ) - startTime
         print "==== Python CSP Multiple NestedDeep pi =" , pi
@@ -30,7 +34,11 @@ def execute ( processCount ) :
         channel = Channel ( )
         channels.append ( channel )
         @process
-        def calculator (channel ) :
+        def calculator ( channel ) :
+            """
+            readset =
+            writeset = channel
+            """
             sum = 0.0
             for j in xrange ( 1 + i * slice , ( i + 1 ) * slice ) :
                 x = ( j - 0.5 ) * delta

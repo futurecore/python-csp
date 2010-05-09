@@ -69,6 +69,10 @@ def apply_speed_limit(velocity):
 
 @process
 def simulate(infochan, SIZE):
+    """
+    readset = infochan
+    writeset = infochan
+    """
     COHESION = 0.03   # Cohesion weight.
     AVOIDANCE = 0.25  # Separation weight.
     ALIGNMENT = 0.120 # Alignment weight.
@@ -108,6 +112,10 @@ def nearby((pos1, vel1), (pos2, vel2)):
 
 @process
 def FlockManager(channels, drawchan, NUMBOIDS):
+    """
+    readset = channels
+    writeset = drawchan, channels
+    """
     info = [(0,0) for i in range(len(channels))]
     relify = lambda ((x,y), vel): ([info[i][0][0]-x, info[i][0][1]-y], vel)
     while True:
@@ -122,6 +130,10 @@ def FlockManager(channels, drawchan, NUMBOIDS):
 
 @process
 def drawboids(drawchan, SIZE):
+    """
+    readset = drawchan
+    writeset = 
+    """
     import pygame
 
     FGCOL = (137, 192, 210, 100)  # Foreground colour.

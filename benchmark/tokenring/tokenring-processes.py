@@ -44,6 +44,10 @@ TRIALS = 10000
 
 @process
 def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
+    """
+    readset = inchan
+    writeset = outchan
+    """
     if tokens == 1 and index == 0:
         token = 1
         outchan.write(token)
@@ -54,6 +58,7 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
     # Avoid deadlock.
     if index == 1:
         inchan.read()
+
 
 if __name__ == '__main__':
     from optparse import OptionParser

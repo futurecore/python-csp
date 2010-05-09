@@ -69,6 +69,9 @@ def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
     normalized iteration count algorithm to smooth the colour
     gradients of the area outside the set.
 
+    readset = cout
+    writeset = cout
+    
     @type xcoord: C{int}
     @param xcoord: x-coordinate of this image column.
     @type width: C{int}
@@ -113,6 +116,9 @@ def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
 def consume(IMSIZE, filename, cins):
     """Consumer process to aggregate image data for Mandelbrot fractal.
 
+    readset = cins
+    writeset = 
+    
     @type IMSIZE: C{tuple}
     @param IMSIZE: Width and height of generated fractal image.
     @type filename: C{str}

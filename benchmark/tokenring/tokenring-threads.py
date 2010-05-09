@@ -40,6 +40,10 @@ from csp.patterns import TokenRing
 
 @process
 def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
+    """
+    readset = inchan
+    writeset = outchan
+    """
     trials = 10000
     if tokens == 1 and index == 0:
         token = 1
@@ -63,6 +67,7 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
         microsecs = cumtime * 1000000.0 / float((trials * numnodes))
         print microsecs
     return
+
 
 if __name__ == '__main__':
     from optparse import OptionParser

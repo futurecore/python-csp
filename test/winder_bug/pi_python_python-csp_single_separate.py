@@ -12,6 +12,10 @@ from csp.cspprocess import *
 
 @process
 def calculator ( channel , id , sliceSize , delta ) :
+    """
+    readset =
+    writeset = channel
+    """
     sum = 0.0
     for i in xrange ( 1 + id * sliceSize , ( id + 1 ) * sliceSize + 1 ) :
         x = ( i - 0.5 ) * delta
@@ -20,6 +24,10 @@ def calculator ( channel , id , sliceSize , delta ) :
         
 @process
 def accumulator ( channel , n , delta , startTime , processCount ) :
+    """
+    readset = channel
+    writeset =
+    """
     pi = 4.0 * sum ( [ channel.read ( ) for i in xrange ( 0 , processCount ) ] ) * delta
     elapseTime = time.time ( ) - startTime
     print "==== Python CSP Single pi =" , pi

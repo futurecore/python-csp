@@ -45,6 +45,10 @@ def foo(n):
 
 @process
 def send(cout):
+    """
+    readset =
+    writeset = cout
+    """
     for i in xrange(5):
         print 'send() is sending %i' % i
         cout.write(i)
@@ -53,6 +57,10 @@ def send(cout):
 
 @process
 def recv(cin):
+    """
+    readset = cin
+    writeset =
+    """
     for i in xrange(5):
         data = cin.read()
         print 'recv() has received %s' % str(data)
@@ -61,6 +69,10 @@ def recv(cin):
 
 @process
 def send100(cout):
+    """
+    readset =
+    writeset = cout
+    """
     for i in xrange(100):
         print 'send100() is sending %i' % i
         cout.write(i)
@@ -69,6 +81,10 @@ def send100(cout):
 
 @process
 def recv100(cin):
+    """
+    readset = cin
+    writeset =
+    """
     for i in xrange(100):
         data = cin.read()
         print 'recv100() has received %s' % str(data)
@@ -83,11 +99,19 @@ class TestOOP(object):
 
     @process
     def send(self, msg):
+        """
+        readset = self.chan
+        writeset =
+        """
         self.chan.write(msg)
         return
 
     @process
     def recv(self):
+        """
+        readset = self.chan
+        writeset =
+        """
         print self.chan.read()
         return
 
@@ -107,10 +131,15 @@ def testpoison(chan):
 
 @process
 def sendAlt(cout, num):
+    """
+    readset =
+    writeset = cout
+    """
     t = Timer()
     t.sleep(1)
     cout.write(num)
     return
+
 
 @process
 def testAlt0():
@@ -124,6 +153,10 @@ def testAlt0():
 
 @process
 def testAlt1(cin):
+    """
+    readset = cin
+    writeset =
+    """
     alt = Alt(cin)
     numeric = 0 
     while numeric < 1:
@@ -136,6 +169,10 @@ def testAlt1(cin):
 
 @process
 def testAlt2(cin1, cin2, cin3):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0 
     while numeric < 3:
@@ -148,6 +185,10 @@ def testAlt2(cin1, cin2, cin3):
 
 @process
 def testAlt3(cin1, cin2, cin3):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     # For obvious reasons, SKIP cannot go first 
     alt = Alt(cin1, cin2, cin3, Skip())
     numeric = 0
@@ -161,6 +202,10 @@ def testAlt3(cin1, cin2, cin3):
 
 @process
 def testAlt4(cin1, cin2, cin3):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0
     while numeric < 3:
@@ -170,22 +215,37 @@ def testAlt4(cin1, cin2, cin3):
         print '* Got this from Alt:', val
     return
 
+
 @process
 def testOr(cin1, cin2):
+    """
+    readset = cin1, cin2
+    writeset =
+    """
     print cin1 | cin2
     print cin1 | cin2
     return
 
+
 @process
 def testAltRRep(cin1, cin2, cin3):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     gen = Alt(cin1, cin2, cin3) * 3
     print gen.next()
     print gen.next()
     print gen.next()
     return
 
+
 @process
 def testAltLRep(cin1, cin2, cin3):
+    """
+    readset = cin1, cin2, cin3
+    writeset =
+    """
     gen = 3 * Alt(cin1, cin2, cin3)
     print gen.next()
     print gen.next()
@@ -204,6 +264,7 @@ def _printHeader(name):
     print
     return
 
+
 def testSeq():
     _printHeader('Seq')
     print 'With operator overloading...'
@@ -212,6 +273,7 @@ def testSeq():
     print 'With process objects...'
     Seq(foo(1), foo(2), foo(3)).start()
     return
+
 
 def testPar():
     _printHeader('Par')
@@ -224,6 +286,7 @@ def testPar():
     print '5 processes with process objects...'
     Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
     return
+
 
 def testChan():
     _printHeader('Channels')
@@ -245,16 +308,19 @@ def testChan():
     pp.start()
     return
 
+
 def testOOP():
     _printHeader('channel read/write using object methods...')
     testoop()
     return
+
 
 def testPoison():
     _printHeader('process termination (by poisoning)')
     chanp = Channel()
     Par(send100(chanp), recv100(chanp), testpoison(chanp)).start()
     return
+
 
 def testAlt():
     _printHeader('Alt')
@@ -289,12 +355,14 @@ def testAlt():
 		sendAlt(ch10, 300)).start()
     return
 
+
 def testChoice():
     _printHeader('Choice')
     print 'Choice with |:'
     c1, c2 = Channel(), Channel()
     Par(sendAlt(c1, 100), sendAlt(c2, 200), testOr(c1, c2)).start()
     return
+
 
 def testRep():
     _printHeader('Repetition')
