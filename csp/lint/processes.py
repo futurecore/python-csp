@@ -30,6 +30,8 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
 
+__all__ = ['ProcessChecker']
+
 class ProcessChecker(visitor.ASTVisitor):
     """Check that documented readsets and writesets are correct
     w.r.t. code.

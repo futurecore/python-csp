@@ -30,6 +30,10 @@ import sys
 severity = {'I':'Information', 'W':'Warning', 'E':'Error'}
 
 
+__all__ = ['severity', 'ExstaticErrorList', 'ExstaticError',
+           'ExstaticErrorFactory']
+
+
 class ExstaticErrorList(object):
 
     def __init__(self, errcodes):

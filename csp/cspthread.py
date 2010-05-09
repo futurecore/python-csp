@@ -69,6 +69,11 @@ except ImportError:
     import pickle as mypickle
 
 
+### Names exported by this module
+__all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
+           'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
+           'process', 'forever']
+
 ### Seeded random number generator (16 bytes)
 
 _RANGEN = random.Random(os.urandom(16))

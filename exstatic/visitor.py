@@ -23,6 +23,10 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
 
+# Names exported by this module
+__all__ = ['IcodeVisitor', 'ExampleIcodeVisitor', 'GraphIcodeVisitor']
+
+
 class IcodeVisitor:
     """Performs a depth-first walk of an ICODE tree.
 

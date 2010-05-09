@@ -41,6 +41,20 @@ else:
 
 del os
 
+
+# Names exported by this module.
+
+__all__ = ['Zeroes', 'Id', 'Succ', 'Pred', 'Prefix', 'Delta2',
+           'Mux2', 'Multiply', 'Clock', 'Printer', 'Pairs',
+           'Mult', 'Generate', 'FixedDelay', 'Fibonacci',
+           'Blackhole', 'Sign',
+           # Processes based on Python operators
+           'Plus', 'Sub', 'Mul', 'Div', 'FloorDiv', 'Mod',
+           'Pow', 'LShift', 'RShift', 'Neg', 'Not', 'And',
+           'Or', 'Nand', 'Nor', 'Xor', 'Land', 'Lor', 'Lnot',
+           'Lnand', 'Lnor', 'Lxor', 'Eq', 'Ne', 'Geq', 'Leq',
+           'Gt', 'Lt', 'Is', 'Is_Not']
+
 # PlugNPlay guards and processes
 
 @forever
@@ -229,9 +243,11 @@ def FixedDelay(cin, cout, delay):
     readset = cin
     writeset = cout
     """
+    from csp.guards import Timer
+    timer = Timer()
     while True:
         in1 = cin.read()
-        time.sleep(delay)
+        timer.sleep(delay)
         cout.write(in1)
         yield
 

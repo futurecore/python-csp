@@ -16,7 +16,9 @@ DEBUG = True
 import ast, sys
 from pyicode import *
 
-class AST2ICODEVisitor(ast.NodeTransformer):
+__all__ = ['Ast2IcodeVisitor']
+
+class Ast2IcodeVisitor(ast.NodeTransformer):
     """
     AST Visitor which creates an ICODE translation of the AST, stored
     in its icode attribute.

@@ -36,6 +36,10 @@ else:
     from csp.cspprocess import *   
 
 
+### Names exported by this module
+__all__ = ['Skip', 'Timer', 'Barrier']
+
+
 class Skip(Guard):
     """Guard which will always return C{True}. Useful in L{Alt}s where
     the programmer wants to ensure that L{Alt.select} will always

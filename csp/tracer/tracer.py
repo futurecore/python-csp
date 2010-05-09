@@ -51,6 +51,9 @@ from distutils import sysconfig
 
 from contextlib import contextmanager
 
+# Names exported by this module
+__all__ = ['start_trace', 'stop_trace', 'csptrace']
+
 DEBUG = True
 
 tracer = None

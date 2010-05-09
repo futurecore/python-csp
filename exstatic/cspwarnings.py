@@ -23,6 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import exstatic.warnings
 
+__all__ = ['errcodes', 'list_error_codes', 'create_error', 'reset_errors',
+           'get_errors', 'print_errors']
+
 errcodes = {
     # Information.
     'I001':'Function is a CSP process or server process',

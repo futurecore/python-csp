@@ -35,6 +35,7 @@ else:
 del os
 
 
+__all__ = ['TokenRing']
 
 class TokenRing(Par):
     def __init__(self, func, size, numtoks=1):

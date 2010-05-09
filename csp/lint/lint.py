@@ -25,8 +25,13 @@ import csp.lint.processes
 
 import exstatic.cspwarnings
 
+
+__all__ = ['run']
+
+
 checkers = [csp.lint.channels.ChannelChecker,
             csp.lint.processes.ProcessChecker]
+
 
 def run(filename, excluded=[]):
     exstatic.cspwarnings.reset_errors()
