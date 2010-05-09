@@ -61,3 +61,12 @@ Documentation.
     python-csp source code.
 
   * examples/ contains some larger example programs.
+
+
+Publications.
+------------
+
+S. Mount, M. Hammoudeh, S. Wilson, R. Newman (2009) CSP as a
+Domain-Specific Language Embedded in Python and Jython. In Proceedings
+of Communicating Process Architectures 2009. Eindoven,
+Netherlands. 1st -- 4th November 2009. Published IOS Press.
