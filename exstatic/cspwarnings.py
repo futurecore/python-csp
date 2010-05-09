@@ -30,6 +30,7 @@ errcodes = {
     'W001':'Channel in both readset and writeset.',
     'W002':'No readset given in documentation.',
     'W003':'No writeset given in documentation.',
+    'W004':'@process or @forever applied to method (rather than function)',
     # Errors.
     'E001':'Process / forever decorator wraps a method, not a function.',
     'E002':'Channel in readset is not a formal parameter to this process.',

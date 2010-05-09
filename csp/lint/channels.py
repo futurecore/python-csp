@@ -168,12 +168,6 @@ class ChannelChecker(visitor.ASTVisitor):
         self.readset_lineno, self.writeset_lineno = node.lineno, node.lineno
         readset, writeset = self.extract_sets(node.doc)
 
-        # 'I001':'Function is a CSP process or server process',
-        exstatic.cspwarnings.create_error(self.filename,
-                                          self.current_process_lineno,
-                                          self.current_process,
-                                          'I001')
-
         # 'E002':'Channel in readset is not a formal parameter to this
         # process.',
         for channel in readset:

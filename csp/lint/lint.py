@@ -21,10 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import compiler
 import csp.lint.channels
+import csp.lint.processes
 
 import exstatic.cspwarnings
 
-checkers = [csp.lint.channels.ChannelChecker]
+checkers = [csp.lint.channels.ChannelChecker,
+            csp.lint.processes.ProcessChecker]
 
 def run(filename, excluded=[]):
     exstatic.cspwarnings.reset_errors()
