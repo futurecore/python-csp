@@ -45,14 +45,6 @@ import threading
 import time
 import uuid
 
-
-try: # Python optimisation compiler
-    import psyco
-    psyco.full()
-except ImportError:
-    print 'No available optimisation'
-
-
 # Are we sending secure messages?
 try:
     import hmac
@@ -62,6 +54,13 @@ except ImportError:
     SECURITY_ON = False
 # Override the above, for testing:
 SECURITY_ON = False
+
+try: # Python optimisation compiler
+    import psyco
+    psyco.full()
+except ImportError:
+    print 'No available optimisation'
+
 
 try:
     import cPickle as mypickle # Faster pickle
@@ -85,8 +84,6 @@ _BUFFSIZE = 1024
 
 _HOST = socket.gethostbyname(socket.gethostname())
 _CHANNEL_PORT = 9890
-_OTA_PORT = 8888
-_VIS_PORT = 8889
 
 ### Authentication
 
@@ -107,18 +104,24 @@ class CorruptedData(Exception):
         return 'Data sent with incorrect authentication key.'
 
 
+class NoGuardInAlt(Exception):
+    """Raised when an Alt has no guards to select.
+    """
+
+    def __init__(self):
+        super(NoGuardInAlt, self).__init__()
+        return
+
+    def __str__(self):
+        return 'Every Alt must have at least one guard.'
+
+
 ### Special constants / exceptions for termination and mobility
 ### Better not to use classes/objects here or pickle will get confused
 ### by the way that csp.__init__ manages the namespace.
 
 _POISON = ';;;__POISON__;;;'
 """Used as special data sent down a channel to invoke termination."""
-
-_SUSPEND = ';;;__SUSPEND__;;;' 	### NOT IMPLEMENTED
-"""Used as special data sent down a channel to invoke suspension."""
-
-_RESUME = ';;;__RESUME__;;;'	### NOT IMPLEMENTED
-"""Used as special data sent down a channel to resume operation."""
 
 
 class ChannelPoison(Exception):
@@ -133,42 +136,6 @@ class ChannelPoison(Exception):
         return 'Posioned channel exception.'
 
 
-class ChannelAbort(Exception):
-    """Used to stop a channel write if a select aborts...
-    """
-
-    def __init__(self):
-        super(ChannelAbort, self).__init__()
-        return
-
-    def __str__(self):
-        return 'Channel abort exception.'
-
-
-class NoGuardInAlt(Exception):
-    """Raised when an Alt has no guards to select.
-    """
-
-    def __init__(self):
-        super(NoGuardInAlt, self).__init__()
-        return
-
-    def __str__(self):
-        return 'Every Alt must have at least one guard.'
-
-
-class ProcessSuspend(Exception):
-    """Used to suspend a process.
-    """
-
-    def __init__(self):
-        super(ProcessSuspend, self).__init__()
-        return
-
-    def __str__(self):
-        return 'Process suspend exception.'
-
-
 ### DEBUGGING
 
 def set_debug(status):
@@ -178,7 +145,7 @@ def set_debug(status):
                         stream=sys.stdout)
     logging.info("Using multiprocessing version of python-csp.")
     return
-    
+
 
 ### Fundamental CSP concepts -- Processes, Channels, Guards
 
@@ -279,7 +246,7 @@ class CSPProcess(threading.Thread, CSPOpMixin):
                                   kwargs=kwargs)
         assert inspect.isfunction(func) # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
-        
+
         CSPOpMixin.__init__(self)
 
         for arg in list(args) + kwargs.values():
@@ -310,13 +277,12 @@ class CSPProcess(threading.Thread, CSPOpMixin):
                           (str(self), self.getPid()))
             self.referent_visitor(self._Thread__args +
                                   tuple(self._Thread__kwargs.values()))
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
+        return
 
     def __del__(self):
         """Run the garbage collector automatically on deletion of this
@@ -350,9 +316,9 @@ class CSPServer(CSPProcess):
         """Called automatically when the L{start} methods is called.
         """
         try:
-            func = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+            generator = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
             while sys.gettrace() is None:
-                func.next()
+                generator.next()
             else:
                 # If the tracer is running execute the target only once.
                 generator.next()
@@ -363,137 +329,12 @@ class CSPServer(CSPProcess):
                           (str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
 #            if self._popen is not None: self.terminate()
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
         return
-
-    
-### CSP combinators -- Par, Alt, Seq, ...
-
-class Par(threading.Thread, CSPOpMixin):
-    """Run CSP processes in parallel.
-    """
-
-    def __init__(self, *procs, **kwargs):
-        super(Par, self).__init__(None)
-        if 'timeout' in kwargs:
-            self.timeout = kwargs['timeout']
-        else:
-            self.timeout = 0.1
-        self.procs = []
-        for proc in procs:
-            # FIXME: only catches shallow nesting.
-            if isinstance(proc, Par):
-                self.procs += proc.procs
-            else:
-                self.procs.append(proc)
-        for proc in self.procs:
-            proc.enclosing = self
-        logging.debug('%i processes in Par:' % len(self.procs))
-        return
-
-    def __str__(self):
-        return 'CSP Par running in process %i.' % self.getPid()
-
-    def terminate(self):
-        """Terminate the execution of this process.
-        """
-        for proc in self.procs:
-            proc.terminate()
-        if self._Thread__started.is_set():
-            Thread._Thread__stop(self)
-
-    def getPid(self):
-        """Return thread ident.
-
-        The name of this method ensures that the CSPProcess interface
-        in this module is identical to the one defined in
-        cspprocess.py.
-        """
-        return self.ident
-
-    def start(self):
-        """Run this process. Analogue of L{CSPProcess.run}.
-        """
-        self.start()
-
-    def join(self):
-        for proc in self.procs:
-            proc.join()
-
-    def start(self):
-        """Start then synchronize with the execution of parallel processes.
-        Return when all parallel processes have returned.
-        """
-        try:
-            for proc in self.procs:
-                proc.spawn()
-            for proc in self.procs:
-                proc.join() #self.timeout)
-        except ChannelPoison:
-            logging.debug('%s in %g got ChannelPoison exception' %
-                          (str(self), self.getPid()))
-            self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
-        except Exception:
-            typ, excn, tback = sys.exc_info()
-            sys.excepthook(typ, excn, tback)
-
-
-class Seq(threading.Thread, CSPOpMixin):
-    """Run CSP processes sequentially.
-    """
-
-    def __init__(self, *procs):
-        super(Seq, self).__init__()
-        self.procs = []
-        for proc in procs:
-            # FIXME: only catches shallow nesting.
-            if isinstance(proc, Seq):
-                self.procs += proc.procs
-            else:
-                self.procs.append(proc)
-        for proc in self.procs:
-            proc.enclosing = self
-        return
-
-    def __str__(self):
-        return 'CSP Seq running in process %i.' % self.getPid()
-
-    def join(self):
-        for proc in self.procs:
-            proc.join()
-
-    def terminate(self):
-        """Terminate the execution of this process.
-        """
-        for proc in self.procs:
-            proc.terminate()
-        if self._Thread__started.is_set():
-            Thread._Thread__stop(self)
-
-    def start(self):
-        """Start this process running.
-        """
-        try:
-            for proc in self.procs:
-                CSPOpMixin.start(proc)
-                proc.join()
-        except ChannelPoison:
-            logging.debug('%s in %g got ChannelPoison exception' %
-                          (str(self), self.getPid()))
-            self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
-        except Exception:
-            typ, excn, tback = sys.exc_info()
-            sys.excepthook(typ, excn, tback)
 
 
 class Alt(CSPOpMixin):
@@ -550,7 +391,7 @@ class Alt(CSPOpMixin):
                 logging.debug('Alt enabled all guards')
             time.sleep(0.01) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-            logging.debug('Alt got %i items to choose from, out of %i' %
+            logging.debug('Alt got %i items to choose from out of %i' %
                           (len(ready), len(self.guards)))
         selected = _RANGEN.choice(ready)
         self.last_selected = selected
@@ -620,6 +461,113 @@ class Alt(CSPOpMixin):
         return
 
 
+class Par(threading.Thread, CSPOpMixin):
+    """Run CSP processes in parallel.
+    """
+
+    def __init__(self, *procs, **kwargs):
+        super(Par, self).__init__(None)
+        if 'timeout' in kwargs:
+            self.timeout = kwargs['timeout']
+        else:
+            self.timeout = 0.1
+        self.procs = []
+        for proc in procs:
+            # FIXME: only catches shallow nesting.
+            if isinstance(proc, Par):
+                self.procs += proc.procs
+            else:
+                self.procs.append(proc)
+        for proc in self.procs:
+            proc.enclosing = self
+        logging.debug('%i processes in Par:' % len(self.procs))
+        return
+
+    def __str__(self):
+        return 'CSP Par running in process %i.' % self.getPid()
+
+    def terminate(self):
+        """Terminate the execution of this process.
+        """
+        for proc in self.procs:
+            proc.terminate()
+        if self._Thread__started.is_set():
+            Thread._Thread__stop(self)
+
+    def getPid(self):
+        """Return thread ident.
+
+        The name of this method ensures that the CSPProcess interface
+        in this module is identical to the one defined in
+        cspprocess.py.
+        """
+        return self.ident
+
+    def start(self):
+        """Run this process. Analogue of L{CSPProcess.run}.
+        """
+        self.start()
+
+    def join(self):
+        for proc in self.procs:
+            proc.join()
+
+    def start(self):
+        """Start then synchronize with the execution of parallel processes.
+        Return when all parallel processes have returned.
+        """
+        try:
+            for proc in self.procs:
+                proc.spawn()
+            for proc in self.procs:
+                proc.join() #self.timeout)
+        except ChannelPoison:
+            logging.debug('%s in %g got ChannelPoison exception' %
+                          (str(self), self.getPid()))
+            self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
+        except Exception:
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
+        return
+
+
+class Seq(threading.Thread, CSPOpMixin):
+    """Run CSP processes sequentially.
+    """
+
+    def __init__(self, *procs):
+        super(Seq, self).__init__()
+        self.procs = []
+        for proc in procs:
+            # FIXME: only catches shallow nesting.
+            if isinstance(proc, Seq):
+                self.procs += proc.procs
+            else:
+                self.procs.append(proc)
+        for proc in self.procs:
+            proc.enclosing = self
+        return
+
+    def __str__(self):
+        return 'CSP Seq running in process %i.' % self.getPid()
+
+    def start(self):
+        """Start this process running.
+        """
+        try:
+            for proc in self.procs:
+                CSPOpMixin.start(proc)
+                proc.join()
+        except ChannelPoison:
+            logging.debug('%s in %g got ChannelPoison exception' %
+                          (str(self), self.getPid()))
+            self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
+        except Exception:
+            typ, excn, tback = sys.exc_info()
+            sys.excepthook(typ, excn, tback)
+        return
+
+
 ### Guards and channels
 
 class Guard(object):
@@ -658,15 +606,11 @@ class Guard(object):
 
     def __or__(self, other):
         assert isinstance(other, Guard)
-        alt = Alt(self, other)
-        print 'Alt created.'
-        return alt.select()
+        return Alt(self, other).select()
 
     def __ror__(self, other):
         assert isinstance(other, Guard)
-        alt = Alt(self, other)
-        print 'Alt created'
-        alt.select()
+        return Alt(self, other).select()
 
 
 class Channel(Guard):
@@ -702,6 +646,7 @@ class Channel(Guard):
         self._poisoned = False
         self._setup()
         super(Channel, self).__init__()
+        logging.debug('Channel created: %s' % self.name)
         return
 
     def _setup(self):
@@ -884,6 +829,7 @@ class Channel(Guard):
         with self._plock:
             if self._poisoned:
                 raise ChannelPoison()
+        return
 
     def poison(self):
         """Poison a channel causing all processes using it to terminate.
@@ -892,17 +838,8 @@ class Channel(Guard):
             self._poisoned = True
             # Avoid race conditions on any waiting readers / writers.
             self._available.release() 
-            self._taken.release() 
-
-    def suspend(self):
-        """Suspend this mobile channel before migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
-
-    def resume(self):
-        """Resume this mobile channel after migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
+            self._taken.release()
+        return
 
 
 class FileChannel(Channel):
@@ -994,16 +931,6 @@ class FileChannel(Channel):
     def __str__(self):
         return 'Channel using files for IPC.'
 
-    def suspend(self):
-        """Suspend this mobile channel before migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
-
-    def resume(self):
-        """Suspend this mobile channel after migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
-
     
 class NetworkChannel(Channel):
     """Network channels ...
@@ -1074,16 +1001,6 @@ class NetworkChannel(Channel):
     
     def __str__(self):
         return 'Channel using sockets for IPC.'
-
-    def suspend(self):
-        """Suspend this mobile channel before migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
-
-    def resume(self):
-        """Suspend this mobile channel after migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
 
 
 ### Function decorators

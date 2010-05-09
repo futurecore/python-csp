@@ -24,6 +24,9 @@ __date__ = 'May 2010'
 
 
 import os
+import multiprocessing
+import threading
+import time
 
 if os.environ.has_key('CSP'):
     if os.environ['CSP'] == 'PROCESSES':
@@ -49,6 +52,7 @@ class Skip(Guard):
     def __init__(self):
         Guard.__init__(self)
         self.name = None
+        return
 
     def is_selectable(self):
         """Skip is always selectable."""
@@ -185,7 +189,7 @@ class BarrierProcessing(AbstractBarrier):
 
     def __init__(self):
         super(BarrierProcessing, self).__init__()
-        self.lock = processing.Condition()
+        self.lock = multiprocessing.Condition()
         return
 
 

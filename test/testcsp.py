@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
 import os
+import random
+import sys
+import time
 
 if os.environ.has_key('CSP'):
     if os.environ['CSP'] == 'PROCESSES':

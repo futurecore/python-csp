@@ -28,6 +28,9 @@ __date__ = 'May 2010'
 
 import operator
 import os
+import sys
+
+from csp.guards import Timer
 
 if os.environ.has_key('CSP'):
     if os.environ['CSP'] == 'PROCESSES':
@@ -67,6 +70,7 @@ def Zeroes(cout):
     while True:
         cout.write(0)
         yield
+    return
 
 
 @forever
@@ -79,6 +83,7 @@ def Id(cin, cout):
     while True:
         cout.write(cin.read())
         yield
+    return
 
 
 @forever
@@ -92,6 +97,7 @@ def Succ(cin, cout):
     while True:
         cout.write(cin.read() + 1)
         yield
+    return
 
 
 @forever
@@ -105,6 +111,7 @@ def Pred(cin, cout):
     while True:
         cout.write(cin.read() - 1)
         yield
+    return
 
 
 @forever
@@ -122,6 +129,7 @@ def Prefix(cin, cout, prefix_item=None):
         cout.write(pre)
         pre = cin.read()
         yield
+    return
 
 
 @forever
@@ -136,6 +144,7 @@ def Delta2(cin, cout1, cout2):
         cout1.write(val)
         cout2.write(val)
         yield
+    return
 
 
 @forever
@@ -151,6 +160,7 @@ def Mux2(cin1, cin2, cout):
         cout.write(cin2.read())
 #        cout.write(alt.pri_select())
         yield
+    return
 
 
 @forever
@@ -163,6 +173,7 @@ def Multiply(cin0, cin1, cout):
     while True:
         cout.write(cin0.read() * cin1.read())
         yield
+    return
 
 
 @forever
@@ -173,12 +184,12 @@ def Clock(cout, resolution=1):
     readset =
     writeset = cout
     """
-    from csp.guards import Timer
     timer = Timer()
     while True:
         timer.sleep(resolution)
         cout.write(None)
         yield
+    return
 
 
 @forever
@@ -192,6 +203,7 @@ def Printer(cin, out=sys.stdout):
         msg = str(cin.read()) + '\n'
         out.write(msg)
         yield
+    return
 
 
 @forever
@@ -207,6 +219,7 @@ def Pairs(cin1, cin2, cout):
         in2 = cin2.read()
         cout.write(in1 + in2)
         yield
+    return
 
 
 @forever
@@ -219,6 +232,7 @@ def Mult(cin, cout, scale):
     while True:
         cout.write(cin.read() * scale)
         yield
+    return
 
 
 @forever
@@ -233,6 +247,7 @@ def Generate(cout):
         cout.write(counter)
         counter += 1
         yield
+    return
 
 
 @forever
@@ -243,13 +258,13 @@ def FixedDelay(cin, cout, delay):
     readset = cin
     writeset = cout
     """
-    from csp.guards import Timer
     timer = Timer()
     while True:
         in1 = cin.read()
         timer.sleep(delay)
         cout.write(in1)
         yield
+    return
 
 
 @forever
@@ -264,6 +279,7 @@ def Fibonacci(cout):
         cout.write(a_int)
         a_int, b_int = b_int, a_int + b_int
         yield
+    return
 
 
 @forever
@@ -276,6 +292,7 @@ def Blackhole(cin):
     while True:
         cin.read()
         yield
+    return
 
 
 @forever
@@ -289,6 +306,7 @@ def Sign(cin, cout, prefix):
         val = cin.read()
         cout.write(prefix + str(val))
         yield
+    return
 
 
 ### Magic for processes built on Python operators

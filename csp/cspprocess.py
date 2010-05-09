@@ -85,14 +85,13 @@ __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
 
 _RANGEN = random.Random(os.urandom(16))
 
+
 ### CONSTANTS
 
 _BUFFSIZE = 1024
 
 _HOST = socket.gethostbyname(socket.gethostname())
 _CHANNEL_PORT = 9890
-_OTA_PORT = 8888
-_VIS_PORT = 8889
 
 ### Authentication
 
@@ -132,12 +131,6 @@ class NoGuardInAlt(Exception):
 _POISON = ';;;__POISON__;;;'
 """Used as special data sent down a channel to invoke termination."""
 
-_SUSPEND = ';;;__SUSPEND__;;;' 	### NOT IMPLEMENTED
-"""Used as special data sent down a channel to invoke suspension."""
-
-_RESUME = ';;;__RESUME__;;;'	### NOT IMPLEMENTED
-"""Used as special data sent down a channel to resume operation."""
-
 
 class ChannelPoison(Exception):
     """Used to poison a processes and propagate to all known channels.
@@ -149,30 +142,6 @@ class ChannelPoison(Exception):
 
     def __str__(self):
         return 'Posioned channel exception.'
-
-
-class ChannelAbort(Exception):
-    """Used to stop a channel write if a select aborts...
-    """
-
-    def __init__(self):
-        super(ChannelAbort, self).__init__()
-        return
-
-    def __str__(self):
-        return 'Channel abort exception.'
-
-
-class ProcessSuspend(Exception):
-    """Used to suspend a process.
-    """
-
-    def __init__(self):
-        super(ProcessSuspend, self).__init__()
-        return
-
-    def __str__(self):
-        return 'Process suspend exception.'
 
 
 ### DEBUGGING
@@ -235,13 +204,15 @@ class CSPOpMixin(object):
 
     def __and__(self, other):
         """Implementation of CSP Par.
+
+        Requires timeout with a small value to ensure
+        parallelism. Otherwise a long sequence of '&' operators will
+        run in sequence (because of left-to-right evaluation and
+        orders of precedence.
         """
         assert _is_csp_type(other)
         par = Par(other, self, timeout = 0.1)
-        print 'TYPES IN PAR:',  type(self), type(other)
-        print self._target.__name__, other._target.__name__
-        if isinstance(other, CSPProcess):
-            par.start()
+        par.start()
         return par
 
     def __gt__(self, other):
@@ -307,8 +278,6 @@ class CSPProcess(processing.Process, CSPOpMixin):
                           (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
@@ -357,12 +326,10 @@ class CSPServer(CSPProcess):
                 logging.info('Server process detected a tracer running.')
                 return
         except ChannelPoison:
-            logging.debug('%s got ChannelPoison exception in %g' %
+            logging.debug('%s in %g got ChannelPoison exception' %
                           (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
@@ -370,8 +337,6 @@ class CSPServer(CSPProcess):
             sys.excepthook(typ, excn, tback)
         return
 
-    
-### CSP combinators -- Par, Alt, Seq, ...
 
 class Alt(CSPOpMixin):
     """CSP select (OCCAM ALT) process.
@@ -548,8 +513,6 @@ class Par(processing.Process, CSPOpMixin):
                           (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
@@ -576,16 +539,6 @@ class Seq(processing.Process, CSPOpMixin):
     def __str__(self):
         return 'CSP Seq running in process %i.' % self.getPid()
 
-    def stop(self):
-        """Terminate the execution of this process.
-
-		FIXME: Remove this method.
-        """
-        for proc in self.procs:
-            proc._terminate()
-        if self._popen:
-            self.terminate()
-
     def start(self):
         """Start this process running.
         """
@@ -598,8 +551,6 @@ class Seq(processing.Process, CSPOpMixin):
                           (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
             if self._popen is not None: self.terminate()
-        except ProcessSuspend:
-            raise NotImplementedError('Process suspension not yet implemented')
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
@@ -649,6 +600,7 @@ class Guard(object):
     def __ror__(self, other):
         assert isinstance(other, Guard)
         return Alt(self, other).select()
+
 
 class Channel(Guard):
     """CSP Channel objects.
@@ -895,6 +847,7 @@ class Channel(Guard):
             if self._poisoned.value == Channel.TRUE:
                 logging.debug('%s is poisoned. Raising ChannelPoison()' % self.name)
                 raise ChannelPoison()
+        return
 
     def poison(self):
         """Poison a channel causing all processes using it to terminate.
@@ -903,17 +856,8 @@ class Channel(Guard):
             self._poisoned.value = Channel.TRUE
             # Avoid race conditions on any waiting readers / writers.
             self._available.release() 
-            self._taken.release() 
-
-    def suspend(self):
-        """Suspend this mobile channel before migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
-
-    def resume(self):
-        """Resume this mobile channel after migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
+            self._taken.release()
+        return
 
 
 class FileChannel(Channel):
@@ -1003,16 +947,6 @@ class FileChannel(Channel):
     def __str__(self):
         return 'Channel using files for IPC.'
 
-    def suspend(self):
-        """Suspend this mobile channel before migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
-
-    def resume(self):
-        """Suspend this mobile channel after migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
-
 
 class NetworkChannel(Channel):
     """Network channels ...
@@ -1070,6 +1004,7 @@ class NetworkChannel(Channel):
     def get(self):
         """Get a Python object from a process-safe store.
         """
+        if self.is_poisoned: raise ChannelPoison()
         data = self.sock.recv(_BUFFSIZE)
         obj = mypickle.loads(data)
         return obj
@@ -1081,16 +1016,6 @@ class NetworkChannel(Channel):
     
     def __str__(self):
         return 'Channel using sockets for IPC.'
-
-    def suspend(self):
-        """Suspend this mobile channel before migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
-
-    def resume(self):
-        """Suspend this mobile channel after migrating between processes.
-        """
-        raise NotImplementedError('Suspend / resume not implemented')
 
 
 ### Function decorators
@@ -1118,7 +1043,7 @@ def forever(func):
     """
     
     @wraps(func)
-    def _call(*args, **kwargs):        
+    def _call(*args, **kwargs):
         """Call the target function."""
         return CSPServer(func, *args, **kwargs)
     return _call
