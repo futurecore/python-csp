@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    '#',
         VERSION:     '0.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
@@ -20,7 +20,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="python-csp v0.1 documentation" href="index.html" />
-    <link rel="prev" title="Reactive programming with the reactive module" href="reactive.html" /> 
+    <link rel="prev" title="Debugging with the tracer module" href="tracer.html" /> 
   </head>
   <body>
     <div class="related">
@@ -33,7 +33,7 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="reactive.html" title="Reactive programming with the reactive module"
+          <a href="tracer.html" title="Debugging with the tracer module"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
       </ul>
@@ -71,6 +71,8 @@ fractal image.
 <dt id="mandelbrot.consume">
 <tt class="descclassname">mandelbrot.</tt><tt class="descname">consume</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mandelbrot.consume" title="Permalink to this definition">¶</a></dt>
 <dd><p>Consumer process to aggregate image data for Mandelbrot fractal.</p>
+<p>readset = cins
+writeset =</p>
 <p>&#64;type IMSIZE: C{tuple}
 &#64;param IMSIZE: Width and height of generated fractal image.
 &#64;type filename: C{str}
@@ -115,6 +117,8 @@ Recipe 9.10 from the Python Cookbook.</p>
 RGB triples. The list should be of length C{height}. Uses the
 normalized iteration count algorithm to smooth the colour
 gradients of the area outside the set.</p>
+<p>readset =
+writeset = cout</p>
 <p>&#64;type xcoord: C{int}
 &#64;param xcoord: x-coordinate of this image column.
 &#64;type width: C{int}
@@ -150,13 +154,13 @@ gradients of the area outside the set.</p>
             </a></p>
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">Mandelbrot example</a></li>
+<li><a class="reference external" href="#">Mandelbrot example</a></li>
 <li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="reactive.html"
-                                  title="previous chapter">Reactive programming with the reactive module</a></p>
+            <p class="topless"><a href="tracer.html"
+                                  title="previous chapter">Debugging with the tracer module</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/mandelbrot.txt"
@@ -189,14 +193,14 @@ gradients of the area outside the set.</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="reactive.html" title="Reactive programming with the reactive module"
+          <a href="tracer.html" title="Debugging with the tracer module"
              >previous</a> |</li>
         <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2010, Sarah Mount.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
     </div>
   </body>
 </html>

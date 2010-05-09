@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    '#',
         VERSION:     '0.1',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
@@ -52,9 +52,7 @@
 <h1>CSP based on POSIX threads<a class="headerlink" href="#module-cspthread" title="Permalink to this headline">¶</a></h1>
 <p>Communicating sequential processes, in Python.</p>
 <p>When using CSP Python as a DSL, this module will normally be imported
-via the statement &#8216;from csp.csp import <a href="#id1"><span class="problematic" id="id2">*</span></a>&#8216;. For that reason this module
-imports all names from the csp.builtins module (and therefore that
-module should not normally be imported by client code).</p>
+via the statement &#8216;from csp.cspthread import <a href="#id1"><span class="problematic" id="id2">*</span></a>&#8216;.</p>
 <p>Copyright (C) Sarah Mount, 2009.</p>
 <p>This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -62,15 +60,47 @@ as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.</p>
 <p>This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A ParTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.</p>
 <p>You should have rceeived a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA</p>
 <dl class="class">
+<dt id="cspthread.CSPProcess">
+<em class="property">class </em><tt class="descclassname">cspthread.</tt><tt class="descname">CSPProcess</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.CSPProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of CSP processes.
+Not intended to be used in client code. Use &#64;process instead.</p>
+<dl class="method">
+<dt id="cspthread.CSPProcess.getPid">
+<tt class="descname">getPid</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.CSPProcess.getPid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return thread ident.</p>
+<p>The name of this method ensures that the CSPProcess interface
+in this module is identical to the one defined in
+cspprocess.py.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cspthread.CSPProcess.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.CSPProcess.run" title="Permalink to this definition">¶</a></dt>
+<dd>Called automatically when the L{start} methods is called.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cspthread.CSPServer">
+<em class="property">class </em><tt class="descclassname">cspthread.</tt><tt class="descname">CSPServer</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.CSPServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of CSP server processes.
+Not intended to be used in client code. Use &#64;forever instead.</p>
+<dl class="method">
+<dt id="cspthread.CSPServer.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.CSPServer.run" title="Permalink to this definition">¶</a></dt>
+<dd>Called automatically when the L{start} methods is called.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="cspthread.Alt">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Alt</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#cspthread.Alt" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Alt</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#cspthread.Alt" title="Permalink to this definition">¶</a></dt>
 <dd><p>CSP select (OCCAM ALT) process.</p>
 <p>What should happen if a guard is poisoned?</p>
 <dl class="method">
@@ -101,54 +131,13 @@ list has the highest priority.</dd></dl>
 
 </dd></dl>
 
-<dl class="function">
-<dt id="cspthread.And">
-<tt class="descclassname">cspthread.</tt><tt class="descname">And</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.And" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the bitwise and of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Blackhole">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Blackhole</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Blackhole" title="Permalink to this definition">¶</a></dt>
-<dd>Read values from L{cin} and do nothing with them.</dd></dl>
-
 <dl class="class">
-<dt id="cspthread.CSPOpMixin">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">CSPOpMixin</tt><a class="headerlink" href="#cspthread.CSPOpMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Mixin class used for operator overloading in CSP process types.</p>
+<dt id="cspthread.Par">
+<em class="property">class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Par</tt><big>(</big><em>*procs</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Par" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CSP processes in parallel.</p>
 <dl class="method">
-<dt id="cspthread.CSPOpMixin.join">
-<tt class="descname">join</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#cspthread.CSPOpMixin.join" title="Permalink to this definition">¶</a></dt>
-<dd>Join only if self is running and impose a timeout.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.CSPOpMixin.spawn">
-<tt class="descname">spawn</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.CSPOpMixin.spawn" title="Permalink to this definition">¶</a></dt>
-<dd>Start only if self is not running.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.CSPOpMixin.start">
-<tt class="descname">start</tt><big>(</big><em>timeout=None</em><big>)</big><a class="headerlink" href="#cspthread.CSPOpMixin.start" title="Permalink to this definition">¶</a></dt>
-<dd>Start only if self is not running.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.CSPOpMixin.terminate">
-<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.CSPOpMixin.terminate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Terminate only if self is running.</p>
-<p>FIXME: This doesn&#8217;t work yet...</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="cspthread.CSPProcess">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">CSPProcess</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.CSPProcess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implementation of CSP processes.
-Not intended to be used in client code. Use &#64;process instead.</p>
-<dl class="method">
-<dt id="cspthread.CSPProcess.getPid">
-<tt class="descname">getPid</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.CSPProcess.getPid" title="Permalink to this definition">¶</a></dt>
+<dt id="cspthread.Par.getPid">
+<tt class="descname">getPid</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Par.getPid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return thread ident.</p>
 <p>The name of this method ensures that the CSPProcess interface
 in this module is identical to the one defined in
@@ -156,16 +145,69 @@ cspprocess.py.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="cspthread.CSPProcess.run">
-<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.CSPProcess.run" title="Permalink to this definition">¶</a></dt>
-<dd>Called automatically when the L{start} methods is called.</dd></dl>
+<dt id="cspthread.Par.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Par.start" title="Permalink to this definition">¶</a></dt>
+<dd>Start then synchronize with the execution of parallel processes.
+Return when all parallel processes have returned.</dd></dl>
+
+<dl class="method">
+<dt id="cspthread.Par.terminate">
+<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Par.terminate" title="Permalink to this definition">¶</a></dt>
+<dd>Terminate the execution of this process.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cspthread.Seq">
+<em class="property">class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Seq</tt><big>(</big><em>*procs</em><big>)</big><a class="headerlink" href="#cspthread.Seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CSP processes sequentially.</p>
+<dl class="method">
+<dt id="cspthread.Seq.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Seq.start" title="Permalink to this definition">¶</a></dt>
+<dd>Start this process running.</dd></dl>
+
+<dl class="method">
+<dt id="cspthread.Seq.terminate">
+<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Seq.terminate" title="Permalink to this definition">¶</a></dt>
+<dd>Terminate the execution of this process.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cspthread.Guard">
+<em class="property">class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Guard</tt><a class="headerlink" href="#cspthread.Guard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract class to represent CSP guards.</p>
+<p>All methods must be overridden in subclasses.</p>
+<dl class="method">
+<dt id="cspthread.Guard.disable">
+<tt class="descname">disable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.disable" title="Permalink to this definition">¶</a></dt>
+<dd>Roll back from an L{enable} call.</dd></dl>
+
+<dl class="method">
+<dt id="cspthread.Guard.enable">
+<tt class="descname">enable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.enable" title="Permalink to this definition">¶</a></dt>
+<dd>Prepare for, but do not commit to a synchronisation.</dd></dl>
+
+<dl class="method">
+<dt id="cspthread.Guard.is_selectable">
+<tt class="descname">is_selectable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.is_selectable" title="Permalink to this definition">¶</a></dt>
+<dd>Should return C{True} if this guard can be selected by an L{Alt}.</dd></dl>
+
+<dl class="method">
+<dt id="cspthread.Guard.poison">
+<tt class="descname">poison</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.poison" title="Permalink to this definition">¶</a></dt>
+<dd>Terminate all processes attached to this guard.</dd></dl>
+
+<dl class="method">
+<dt id="cspthread.Guard.select">
+<tt class="descname">select</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.select" title="Permalink to this definition">¶</a></dt>
+<dd>Commit to a synchronisation started by L{enable}.</dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="cspthread.Channel">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Channel</tt><a class="headerlink" href="#cspthread.Channel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Channel</tt><a class="headerlink" href="#cspthread.Channel" title="Permalink to this definition">¶</a></dt>
 <dd><p>CSP Channel objects.</p>
 <p>In python-csp there are two sorts of channel. In JCSP terms these
 are Any2Any, Alting channels. However, each channel creates an
@@ -241,53 +283,9 @@ pickling.</p>
 
 </dd></dl>
 
-<dl class="exception">
-<dt id="cspthread.ChannelAbort">
-<em class="property">
-exception </em><tt class="descclassname">cspthread.</tt><tt class="descname">ChannelAbort</tt><a class="headerlink" href="#cspthread.ChannelAbort" title="Permalink to this definition">¶</a></dt>
-<dd>Used to stop a channel write if a select aborts...</dd></dl>
-
-<dl class="exception">
-<dt id="cspthread.ChannelPoison">
-<em class="property">
-exception </em><tt class="descclassname">cspthread.</tt><tt class="descname">ChannelPoison</tt><a class="headerlink" href="#cspthread.ChannelPoison" title="Permalink to this definition">¶</a></dt>
-<dd>Used to poison a processes and propagate to all known channels.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Clock">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Clock</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Clock" title="Permalink to this definition">¶</a></dt>
-<dd>Send None object down output channel every C{resolution} seconds.</dd></dl>
-
-<dl class="exception">
-<dt id="cspthread.CorruptedData">
-<em class="property">
-exception </em><tt class="descclassname">cspthread.</tt><tt class="descname">CorruptedData</tt><a class="headerlink" href="#cspthread.CorruptedData" title="Permalink to this definition">¶</a></dt>
-<dd>Used to verify that data has come from an honest source.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Delta2">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Delta2</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Delta2" title="Permalink to this definition">¶</a></dt>
-<dd>Delta2 sends input values down two output channels.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Div">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Div</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Div" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the division of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Eq">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Eq</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Eq" title="Permalink to this definition">¶</a></dt>
-<dd>Writes True if two input events are equal (==).</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Fibonacci">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Fibonacci</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Fibonacci" title="Permalink to this definition">¶</a></dt>
-<dd>Write successive Fibonacci numbers to L{cout}.</dd></dl>
-
 <dl class="class">
 <dt id="cspthread.FileChannel">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">FileChannel</tt><a class="headerlink" href="#cspthread.FileChannel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">cspthread.</tt><tt class="descname">FileChannel</tt><a class="headerlink" href="#cspthread.FileChannel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Channel objects using files on disk.</p>
 <p>C{FileChannel} objects close their files after each read or write
 operation. The advantage of this is that client code can create as
@@ -318,373 +316,20 @@ C{FileChannel} objects compared to L{Channel} objects.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="cspthread.FixedDelay">
-<tt class="descclassname">cspthread.</tt><tt class="descname">FixedDelay</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.FixedDelay" title="Permalink to this definition">¶</a></dt>
-<dd>Read values from L{cin} and write to L{cout} after a delay of
-L{delay} seconds.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.FloorDiv">
-<tt class="descclassname">cspthread.</tt><tt class="descname">FloorDiv</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.FloorDiv" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the floor div of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Generate">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Generate</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Generate" title="Permalink to this definition">¶</a></dt>
-<dd>Generate successive (+ve) ints and write to L{cout}.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Geq">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Geq</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Geq" title="Permalink to this definition">¶</a></dt>
-<dd>Writes True if &#8216;right&#8217; input event is &gt;= &#8216;left&#8217;.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Gt">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Gt</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Gt" title="Permalink to this definition">¶</a></dt>
-<dd>Writes True if &#8216;right&#8217; input event is &gt; &#8216;left&#8217;.</dd></dl>
-
-<dl class="class">
-<dt id="cspthread.Guard">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Guard</tt><a class="headerlink" href="#cspthread.Guard" title="Permalink to this definition">¶</a></dt>
-<dd><p>Abstract class to represent CSP guards.</p>
-<p>All methods must be overridden in subclasses.</p>
-<dl class="method">
-<dt id="cspthread.Guard.disable">
-<tt class="descname">disable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.disable" title="Permalink to this definition">¶</a></dt>
-<dd>Roll back from an L{enable} call.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Guard.enable">
-<tt class="descname">enable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.enable" title="Permalink to this definition">¶</a></dt>
-<dd>Prepare for, but do not commit to a synchronisation.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Guard.is_selectable">
-<tt class="descname">is_selectable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.is_selectable" title="Permalink to this definition">¶</a></dt>
-<dd>Should return C{True} if this guard can be selected by an L{Alt}.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Guard.poison">
-<tt class="descname">poison</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.poison" title="Permalink to this definition">¶</a></dt>
-<dd>Terminate all processes attached to this guard.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Guard.select">
-<tt class="descname">select</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Guard.select" title="Permalink to this definition">¶</a></dt>
-<dd>Commit to a synchronisation started by L{enable}.</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Id">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Id</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Id" title="Permalink to this definition">¶</a></dt>
-<dd>Id is the CSP equivalent of lambda x: x.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Is">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Is</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Is" title="Permalink to this definition">¶</a></dt>
-<dd>Writes True if two input events are the same (is).</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Is_Not">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Is_Not</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Is_Not" title="Permalink to this definition">¶</a></dt>
-<dd>Writes True if two input events are not the same (is).</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.LShift">
-<tt class="descclassname">cspthread.</tt><tt class="descname">LShift</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.LShift" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the left shift of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Land">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Land</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Land" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the logical and of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Leq">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Leq</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Leq" title="Permalink to this definition">¶</a></dt>
-<dd>Writes True if &#8216;right&#8217; input event is &lt;= &#8216;left&#8217;.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Lnand">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Lnand</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Lnand" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the logical nand of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Lnor">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Lnor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Lnor" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the logical nor of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Lnot">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Lnot</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Lnot" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the logical not of input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Lor">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Lor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Lor" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the logical or of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Lt">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Lt</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Lt" title="Permalink to this definition">¶</a></dt>
-<dd>Writes True if &#8216;right&#8217; input event is &lt; &#8216;left&#8217;.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Lxor">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Lxor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Lxor" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the logical xor of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Mod">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Mod</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Mod" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the modulo of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Mul">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Mul</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Mul" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the multiplication of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Mult">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Mult</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Mult" title="Permalink to this definition">¶</a></dt>
-<dd>Scale values read on L{cin} and write to L{cout}.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Mux2">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Mux2</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Mux2" title="Permalink to this definition">¶</a></dt>
-<dd>Mux2 provides a fair multiplex between two input channels.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Nand">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Nand</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Nand" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the bitwise nand of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Ne">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Ne</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Ne" title="Permalink to this definition">¶</a></dt>
-<dd>Writes True if two input events are not equal (not ==).</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Neg">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Neg</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Neg" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the negation of input events.</dd></dl>
-
-<dl class="class">
-<dt id="cspthread.NetworkChannel">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">NetworkChannel</tt><a class="headerlink" href="#cspthread.NetworkChannel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Network channels ...</p>
-<dl class="method">
-<dt id="cspthread.NetworkChannel.get">
-<tt class="descname">get</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.NetworkChannel.get" title="Permalink to this definition">¶</a></dt>
-<dd>Get a Python object from a process-safe store.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.NetworkChannel.put">
-<tt class="descname">put</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#cspthread.NetworkChannel.put" title="Permalink to this definition">¶</a></dt>
-<dd>Put C{item} on a process-safe store.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.NetworkChannel.resume">
-<tt class="descname">resume</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.NetworkChannel.resume" title="Permalink to this definition">¶</a></dt>
-<dd>Suspend this mobile channel after migrating between processes.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.NetworkChannel.suspend">
-<tt class="descname">suspend</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.NetworkChannel.suspend" title="Permalink to this definition">¶</a></dt>
-<dd>Suspend this mobile channel before migrating between processes.</dd></dl>
-
-</dd></dl>
-
-<dl class="exception">
-<dt id="cspthread.NoGuardInAlt">
-<em class="property">
-exception </em><tt class="descclassname">cspthread.</tt><tt class="descname">NoGuardInAlt</tt><a class="headerlink" href="#cspthread.NoGuardInAlt" title="Permalink to this definition">¶</a></dt>
-<dd>Raised when an Alt has no guards to select.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Nor">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Nor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Nor" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the bitwise nor of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Not">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Not</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Not" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the inverse of input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Or">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Or</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Or" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the bitwise or of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Pairs">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Pairs</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Pairs" title="Permalink to this definition">¶</a></dt>
-<dd>Read values from L{cin1} and L{cin2} and write their addition
-to L{cout}.</dd></dl>
-
-<dl class="class">
-<dt id="cspthread.Par">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Par</tt><big>(</big><em>*procs</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Par" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run CSP processes in parallel.</p>
-<dl class="method">
-<dt id="cspthread.Par.getPid">
-<tt class="descname">getPid</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Par.getPid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return thread ident.</p>
-<p>The name of this method ensures that the CSPProcess interface
-in this module is identical to the one defined in
-cspprocess.py.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Par.start">
-<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Par.start" title="Permalink to this definition">¶</a></dt>
-<dd>Start then synchronize with the execution of parallel processes.
-Return when all parallel processes have returned.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Par.terminate">
-<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Par.terminate" title="Permalink to this definition">¶</a></dt>
-<dd>Terminate the execution of this process.</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Plus">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Plus</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Plus" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the addition of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Pow">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Pow</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Pow" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the power of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Pred">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Pred</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Pred" title="Permalink to this definition">¶</a></dt>
-<dd>Pred is the predecessor process, which writes out 1 - its input event.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Prefix">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Prefix</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Prefix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prefix a write on L{cout} with the value read from L{cin}.</p>
-<p>&#64;type prefix_item: object
-&#64;param prefix_item: prefix value to use before first item read from L{cin}.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Printer">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Printer</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Printer" title="Permalink to this definition">¶</a></dt>
-<dd>Print all values read from L{cin} to standard out or L{out}.</dd></dl>
-
-<dl class="exception">
-<dt id="cspthread.ProcessSuspend">
-<em class="property">
-exception </em><tt class="descclassname">cspthread.</tt><tt class="descname">ProcessSuspend</tt><a class="headerlink" href="#cspthread.ProcessSuspend" title="Permalink to this definition">¶</a></dt>
-<dd>Used to suspend a process.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.RShift">
-<tt class="descclassname">cspthread.</tt><tt class="descname">RShift</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.RShift" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the right shift of two input events.</dd></dl>
-
-<dl class="class">
-<dt id="cspthread.Seq">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Seq</tt><big>(</big><em>*procs</em><big>)</big><a class="headerlink" href="#cspthread.Seq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run CSP processes sequentially.</p>
-<dl class="method">
-<dt id="cspthread.Seq.start">
-<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Seq.start" title="Permalink to this definition">¶</a></dt>
-<dd>Start this process running.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Seq.terminate">
-<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Seq.terminate" title="Permalink to this definition">¶</a></dt>
-<dd>Terminate the execution of this process.</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Sign">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Sign</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Sign" title="Permalink to this definition">¶</a></dt>
-<dd>Read values from L{cin} and write to L{cout}, prefixed by L{prefix}.</dd></dl>
-
-<dl class="class">
-<dt id="cspthread.Skip">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">Skip</tt><a class="headerlink" href="#cspthread.Skip" title="Permalink to this definition">¶</a></dt>
-<dd><p>Guard which will always return C{True}. Useful in L{Alt}s where
-the programmer wants to ensure that L{Alt.select} will always
-synchronise with at least one guard.</p>
-<dl class="method">
-<dt id="cspthread.Skip.disable">
-<tt class="descname">disable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Skip.disable" title="Permalink to this definition">¶</a></dt>
-<dd>Has no effect.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Skip.enable">
-<tt class="descname">enable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Skip.enable" title="Permalink to this definition">¶</a></dt>
-<dd>Has no effect.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Skip.is_selectable">
-<tt class="descname">is_selectable</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Skip.is_selectable" title="Permalink to this definition">¶</a></dt>
-<dd>Skip is always selectable.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.Skip.select">
-<tt class="descname">select</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.Skip.select" title="Permalink to this definition">¶</a></dt>
-<dd>Has no effect.</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Sub">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Sub</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Sub" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the subtraction of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Succ">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Succ</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Succ" title="Permalink to this definition">¶</a></dt>
-<dd>Succ is the successor process, which writes out 1 + its input event.</dd></dl>
-
-<dl class="class">
-<dt id="cspthread.TimerGuard">
-<em class="property">
-class </em><tt class="descclassname">cspthread.</tt><tt class="descname">TimerGuard</tt><a class="headerlink" href="#cspthread.TimerGuard" title="Permalink to this definition">¶</a></dt>
-<dd><p>Guard which only commits to synchronisation when a timer has expired.</p>
-<dl class="method">
-<dt id="cspthread.TimerGuard.read">
-<tt class="descname">read</tt><big>(</big><big>)</big><a class="headerlink" href="#cspthread.TimerGuard.read" title="Permalink to this definition">¶</a></dt>
-<dd>Return current time.</dd></dl>
-
-<dl class="method">
-<dt id="cspthread.TimerGuard.sleep">
-<tt class="descname">sleep</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#cspthread.TimerGuard.sleep" title="Permalink to this definition">¶</a></dt>
-<dd>Put this process to sleep for a number of seconds.</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Xor">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Xor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Xor" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out the bitwise xor of two input events.</dd></dl>
-
-<dl class="function">
-<dt id="cspthread.Zeroes">
-<tt class="descclassname">cspthread.</tt><tt class="descname">Zeroes</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#cspthread.Zeroes" title="Permalink to this definition">¶</a></dt>
-<dd>Writes out a stream of zeroes.</dd></dl>
-
-<dl class="function">
 <dt id="cspthread.process">
 <tt class="descclassname">cspthread.</tt><tt class="descname">process</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#cspthread.process" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator to turn a function into a CSP process.</p>
 <p>Note that the function itself will not be a CSPProcess object, but
 will generate a CSPProcess object when called.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cspthread.forever">
+<tt class="descclassname">cspthread.</tt><tt class="descname">forever</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#cspthread.forever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to turn a function into a CSP server process.</p>
+<p>It is preferable to use this rather than &#64;process, to enable the
+CSP tracer to terminate correctly and produce a CSP model, or
+other debugging information.</p>
 </dd></dl>
 
 </div>
@@ -708,7 +353,7 @@ will generate a CSPProcess object when called.</p>
             </a></p>
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">CSP based on POSIX threads</a></li>
+<li><a class="reference external" href="#">CSP based on POSIX threads</a></li>
 <li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
@@ -760,7 +405,7 @@ will generate a CSPProcess object when called.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2010, Sarah Mount.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
     </div>
   </body>
 </html>
