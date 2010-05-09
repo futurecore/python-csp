@@ -1,0 +1,92 @@
+<html>
+<head></head>
+<body>
+
+<h2>python-csp: Communicating Sequential Processes for Python</h2>
+
+<p>
+Homepage: <a href="http://code.google.com/p/python-csp/">http://code.google.com/p/python-csp/</a>
+</p>
+
+<p>
+Copyright (C) Sarah Mount, 2009 under the GNU GPL v2. See the file
+LICENSE for more details.
+</p>
+
+<h3>Installation</h3>
+
+<p>
+python-csp can be installed from a source distribution using setup.py:
+</p>
+
+<pre>
+    $ sudo python setup.py install
+</pre>
+
+<h3>Introduction</h3>
+
+
+<p>
+python-csp adds C.A.R. (Tony) Hoare's Communicating Sequential
+  Processes to Python. A brief example:
+</p>
+
+<pre>
+  >>> @process
+  ... def writer(channel, n):
+  ...      for i in xrange(n):
+  ...              channel.write(i)
+  ...      channel.poison()
+  ...      return
+  ... 
+  >>> @process
+  ... def reader(channel):
+  ...      while True:
+  ...              print channel.read()
+  ... 
+  >>> chan = Channel()
+  >>> Par(reader(chan), writer(chan, 5)).start()
+  0
+  1
+  2
+  3
+  4
+  >>>
+</pre>
+
+<h3>Documentation</h3>
+
+<p>
+  There are several sources of documentation for python-csp:
+</p>
+
+<ul>
+
+  <li>If you are running the python-csp shell, type "info csp" to list
+    available in-shell help.</li>
+
+  <li>A user guide exists online at:
+    <a href="http://code.google.com/p/python-csp/wiki/Tutorial">http://code.google.com/p/python-csp/wiki/Tutorial</a></li>
+
+  <li>tutorial/ contains code from the tutorial pages on the wiki.</li>
+
+  <li>docs/ contains API documentation generated directly from the
+    python-csp source code.</li>
+
+  <li>examples/ contains some larger example programs.</li>
+
+</ul>
+
+
+<h3>Publications</h3>
+
+
+<p>
+S. Mount, M. Hammoudeh, S. Wilson, R. Newman (2009) <strong>CSP as a
+Domain-Specific Language Embedded in Python and Jython</strong>. In Proceedings
+of Communicating Process Architectures 2009. Eindoven,
+Netherlands. 1st -- 4th November 2009. Published IOS Press.
+</p>
+
+</body>
+</html>
