@@ -1,0 +1,5 @@
+Mandelbrot example
+==================
+
+.. automodule:: mandelbrot
+   :members:

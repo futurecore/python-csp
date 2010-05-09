@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Reactive programming with the reactive module &mdash; python-csp v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python-csp v0.1 documentation" href="index.html" />
+    <link rel="next" title="Mandelbrot example" href="mandelbrot.html" />
+    <link rel="prev" title="Bulk synchronous processing with the bsp module" href="bsp.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="mandelbrot.html" title="Mandelbrot example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="bsp.html" title="Bulk synchronous processing with the bsp module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-reactive">
+<h1>Reactive programming with the reactive module<a class="headerlink" href="#module-reactive" title="Permalink to this headline">¶</a></h1>
+<p>Reactive (dataflow) library for python-csp.</p>
+<p>Copyright (C) Sarah Mount, 2010.</p>
+<p>This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+<p>You should have rceeived a copy of the GNU General Public License
+along with this program.  If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+<dl class="class">
+<dt id="reactive.Cell">
+<em class="property">
+class </em><tt class="descclassname">reactive.</tt><tt class="descname">Cell</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#reactive.Cell" title="Permalink to this definition">¶</a></dt>
+<dd>Rx Cell.</dd></dl>
+
+<dl class="class">
+<dt id="reactive.Signal">
+<em class="property">
+class </em><tt class="descclassname">reactive.</tt><tt class="descname">Signal</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#reactive.Signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rx signal.</p>
+<p>Should maybe be a subclass of CSPProcess.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="reactive.signal">
+<tt class="descclassname">reactive.</tt><tt class="descname">signal</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#reactive.signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn a function into a signal.</p>
+<p>All non-keyword args should be channels.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pythoncsp-docs.png" alt="Logo"/>
+            </a></p>
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Reactive programming with the reactive module</a></li>
+<li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="bsp.html"
+                                  title="previous chapter">Bulk synchronous processing with the bsp module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="mandelbrot.html"
+                                  title="next chapter">Mandelbrot example</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/reactive.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="mandelbrot.html" title="Mandelbrot example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="bsp.html" title="Bulk synchronous processing with the bsp module"
+             >previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Sarah Mount.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+CSP based on POSIX threads
+==========================
+
+.. automodule:: cspthread
+   :members:

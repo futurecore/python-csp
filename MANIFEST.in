@@ -1,0 +1,6 @@
+include README ChangeLog LICENSE
+include scripts/python-csp
+include scripts/cspdb
+
+recursive-include csp/ *.py
+recursive-include exstatic/ *.py

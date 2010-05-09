@@ -1,0 +1,40 @@
+8 May 2010
+	Introduced documented readsets and writesets. Added lint-like
+	static checker to determine whether readsets and writesets are
+	correctly documented.
+2 May 2010
+	Introduced CSPServer processes and a @forever decorator to easily
+	create them.
+1 May 2010
+	Removed the _process keyword from CSPProcess objects.
+	Refactored builtin processes to their own library.
+	Updated documentation in the python-csp shell.
+9 Apr 2010:
+	Moved documentation to Sphinx.
+	Added new project logo.
+6 Apr 2010:
+	Added packages for bulk synchronous processing and reactive
+	programming. Added directory structure for tutorial examples.
+15 Nov 2009:
+	Major poisoning bug fixed. Other bug fixes in test scripts and
+	synchronisation fixed.
+9 Nov 2009:
+	Added token ring example to benchmark/ directory.  Added bsp
+	package containing barriers. These are automatically imported into
+	csp modules.
+26 Oct 2009:
+	Added Boids demo to the examples/ directory.
+28 June 2009:
+	Added unit testing, in addition to test scripts. Sam Wilson added
+	Jython version of the CSP library / DSL.
+20 June 2009:
+	Added threaded version of python-csp. Made main CSP code PEP8
+	compliant.
+24 March 2009:
+	Fixed bug in channel poisoning.
+6 January 2009:
+	Added ALTing to CSP package. Added example parallel programs,
+	including Mandelbrot fractal generator.
+22 December 2008:
+	Added initial version of CSP package. Added python-csp
+	shell. Added .desktop files for GNU/Linux desktop integration.
