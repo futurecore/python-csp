@@ -43,16 +43,6 @@ import tempfile
 import time
 import uuid
 
-# Are we sending secure messages?
-try:
-    import hmac
-    import hashlib
-    SECURITY_ON = True
-except ImportError:
-    SECURITY_ON = False
-# Override the above, for testing:
-SECURITY_ON = False
-
 try: # Python optimisation compiler
     import psyco
     psyco.full()
@@ -88,13 +78,6 @@ _RANGEN = random.Random(os.urandom(16))
 ### CONSTANTS
 
 _BUFFSIZE = 1024
-
-
-### Authentication
-
-def _make_digest(message):
-    """Return a digest for a given message."""
-    return hmac.new('these/are/the/droids', message, hashlib.sha1).hexdigest()
 
 
 class CorruptedData(Exception):
