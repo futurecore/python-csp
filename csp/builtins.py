@@ -26,6 +26,7 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
 
+import math
 import operator
 import os
 import sys
@@ -47,7 +48,8 @@ del os
 
 # Names exported by this module.
 
-__all__ = ['Zeroes', 'Id', 'Succ', 'Pred', 'Prefix', 'Delta2',
+__all__ = ['Sin', 'Cos', 'GenerateFloats',
+           'Zeroes', 'Id', 'Succ', 'Pred', 'Prefix', 'Delta2',
            'Mux2', 'Multiply', 'Clock', 'Printer', 'Pairs',
            'Mult', 'Generate', 'FixedDelay', 'Fibonacci',
            'Blackhole', 'Sign',
@@ -58,7 +60,44 @@ __all__ = ['Zeroes', 'Id', 'Succ', 'Pred', 'Prefix', 'Delta2',
            'Lnand', 'Lnor', 'Lxor', 'Eq', 'Ne', 'Geq', 'Leq',
            'Gt', 'Lt', 'Is', 'Is_Not']
 
-# PlugNPlay guards and processes
+
+@forever
+def Sin(inchan, outchan):
+    """
+    readset = inchan
+    writeset = outchan
+    """
+    while True:
+        outchan.write(math.sin(inchan.read()))
+        yield
+    return
+
+
+@forever
+def Cos(inchan, outchan):
+    """
+    readset = inchan
+    writeset = outchan
+    """
+    while True:
+        outchan.write(math.cos(inchan.read()))
+        yield
+    return
+
+
+@forever
+def GenerateFloats(outchan, epsilon=0.1):
+    """
+    readset =
+    writeset =    
+    """
+    x = 0.0
+    while True:
+        outchan.write(x)
+        x += epsilon
+        yield
+    return
+
 
 @forever
 def Zeroes(cout):

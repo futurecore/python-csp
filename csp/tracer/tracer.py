@@ -386,7 +386,7 @@ class Tracer(object):
     
     def trace(self, frame, event, arg):
         if event == 'line':
-            Self.trace_line(frame, event, arg)
+            self.trace_line(frame, event, arg)
         elif event == 'exception':
             self.trace_exn(frame, event, arg)
         elif event == 'return':
