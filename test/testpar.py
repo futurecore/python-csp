@@ -11,10 +11,9 @@ def Msg(m):
         print m
     return
 
-@process
 def foo():
     # Previously deadlocked
-    global Unit
+    Unit = Skip()
     Unit //= Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)
 
 #(Msg('aaaaa') & Msg('b') & Msg('***'))
@@ -31,5 +30,8 @@ def bar():
 #PAR //= [Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)]
 
 if __name__ == '__main__':
+#    Unit = Skip()
+#    Unit //= Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)
+#
 #    bar().start()
     foo().start()

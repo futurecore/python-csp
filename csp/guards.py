@@ -40,39 +40,7 @@ else:
 
 
 ### Names exported by this module
-__all__ = ['Skip', 'Timer', 'Barrier']
-
-
-class Skip(Guard):
-    """Guard which will always return C{True}. Useful in L{Alt}s where
-    the programmer wants to ensure that L{Alt.select} will always
-    synchronise with at least one guard.
-    """
-
-    def __init__(self):
-        Guard.__init__(self)
-        self.name = None
-        return
-
-    def is_selectable(self):
-        """Skip is always selectable."""
-        return True
-
-    def enable(self):
-        """Has no effect."""
-        return
-
-    def disable(self):
-        """Has no effect."""
-        return
-
-    def select(self):
-        """Has no effect."""
-        return 'Skip'
-
-    def __str__(self):
-        return 'Skip guard is always selectable.'
-
+__all__ = ['Timer', 'Barrier']
 
 class Timer(Guard):
     """Guard which only commits to synchronisation when a timer has expired.

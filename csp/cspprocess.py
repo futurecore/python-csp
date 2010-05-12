@@ -68,7 +68,7 @@ except ImportError:
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever', 'Unit', 'PAR']
+           'process', 'forever', 'Skip']
 
 ### Seeded random number generator (16 bytes)
 
@@ -1005,29 +1005,38 @@ def _is_csp_type(name):
     return False
 
 
-
 def _nop():
     return
 
-class SkipProc(object):
+
+class Skip(Guard, CSPProcess):
+    """Guard which will always return C{True}. Useful in L{Alt}s where
+    the programmer wants to ensure that L{Alt.select} will always
+    synchronise with at least one guard.
+    """
 
     def __init__(self):
+        Guard.__init__(self)
+        CSPProcess.__init__(self, _nop)
+        self.name = '__Skip__'
         return
 
-    def __ifloordiv__(self, proclist):
-        """
-        Run this process in parallel with a list of others.
-        """
-        assert hasattr(proclist, '__iter__')
-        par = Par(*proclist)
-        par.start()
+    def is_selectable(self):
+        """Skip is always selectable."""
+        return True
+
+    def enable(self):
+        """Has no effect."""
         return
 
-    def __del__(self):
+    def disable(self):
+        """Has no effect."""
         return
 
-### BUG: Can only use Unit once, for obvious reason
-Unit = SkipProc()
+    def select(self):
+        """Has no effect."""
+        return 'Skip'
 
+    def __str__(self):
+        return 'Skip guard is always selectable / process does nothing.'
 
-PAR = Par()

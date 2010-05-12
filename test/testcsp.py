@@ -25,22 +25,19 @@ import random
 import sys
 import time
 
-#from csp.cspprocess import *
-from csp.cspthread import *
+if os.environ.has_key('CSP'):
+    if os.environ['CSP'] == 'PROCESSES':
+        from csp.cspprocess import *
+    elif os.environ['CSP'] == 'THREADS':
+        from csp.cspthread import *
+    else:
+        from csp.cspprocess import *   
+else:
+    from csp.cspprocess import *   
 
-# if os.environ.has_key('CSP'):
-#     if os.environ['CSP'] == 'PROCESSES':
-#         from csp.cspprocess import *
-#     elif os.environ['CSP'] == 'THREADS':
-#         from csp.cspthread import *
-#     else:
-#         from csp.cspprocess import *   
-# else:
-#     from csp.cspprocess import *   
+del os
 
-# del os
-
-from csp.guards import Skip, Timer
+from csp.guards import Timer
 
 @process
 def foo(n):
@@ -284,10 +281,12 @@ def testSeq():
 def testPar():
     _printHeader('Par')
     print '5 processes with operator overloading...'
+    Unit = Skip()
     Unit //= foo(1), foo(2), foo(3),  foo(4),  foo(5)
     print
     print '8 processes with operator overloading...'
-    Unit //= foo(1),  foo(2),  foo(3),  foo(4),  foo(5),  foo(6),  foo(7),  foo(8)
+    Nop = Skip()
+    Nop //= foo(1),  foo(2),  foo(3),  foo(4),  foo(5),  foo(6),  foo(7),  foo(8)
     print
     print '5 processes with process objects...'
     Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
