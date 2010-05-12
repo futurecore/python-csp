@@ -11,21 +11,25 @@ def Msg(m):
         print m
     return
 
-
+@process
 def foo():
     # Previously deadlocked
-    Unit //= Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)
+    Par.Skip //= Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)
 
 #(Msg('aaaaa') & Msg('b') & Msg('***'))
 
 # Infinite stream of ints (OK)
 #p //= [Generate(out), Printer(out)]
 
-# Infinite stream of even ints (OK)
-#Par(Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)).start()
+@process
+def bar():
+    # Infinite stream of even ints (OK)
+    Par(Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)).start()
 
 
 #PAR //= [Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)]
 
 if __name__ == '__main__':
-    foo()
+    print globals()
+    bar().start()
+    foo().start()

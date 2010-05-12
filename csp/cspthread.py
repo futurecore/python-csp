@@ -129,7 +129,7 @@ def set_debug(status):
 
 ### Fundamental CSP concepts -- Processes, Channels, Guards
 
-class CSPOpMixin(object):
+class _CSPOpMixin(object):
     """Mixin class used for operator overloading in CSP process types.
     """
 
@@ -201,7 +201,7 @@ class CSPOpMixin(object):
         return
 
 
-class CSPProcess(threading.Thread, CSPOpMixin):
+class CSPProcess(threading.Thread, _CSPOpMixin):
     """Implementation of CSP processes.
     Not intended to be used in client code. Use @process instead.
     """
@@ -214,7 +214,7 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         assert inspect.isfunction(func) # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
 
-        CSPOpMixin.__init__(self)
+        _CSPOpMixin.__init__(self)
 
         for arg in list(args) + kwargs.values():
             if _is_csp_type(arg):
@@ -314,7 +314,7 @@ class CSPServer(CSPProcess):
         return
 
 
-class Alt(CSPOpMixin):
+class Alt(_CSPOpMixin):
     """CSP select (OCCAM ALT) process.
 
     What should happen if a guard is poisoned?
@@ -438,7 +438,7 @@ class Alt(CSPOpMixin):
         return
 
 
-class Par(threading.Thread, CSPOpMixin):
+class Par(threading.Thread, _CSPOpMixin):
     """Run CSP processes in parallel.
     """
 
@@ -521,7 +521,7 @@ class Par(threading.Thread, CSPOpMixin):
         return
 
 
-class Seq(threading.Thread, CSPOpMixin):
+class Seq(threading.Thread, _CSPOpMixin):
     """Run CSP processes sequentially.
     """
 
@@ -546,7 +546,7 @@ class Seq(threading.Thread, CSPOpMixin):
         """
         try:
             for proc in self.procs:
-                CSPOpMixin.start(proc)
+                _CSPOpMixin.start(proc)
                 proc.join()
         except ChannelPoison:
             logging.debug('%s in %g got ChannelPoison exception' %

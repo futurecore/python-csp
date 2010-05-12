@@ -512,7 +512,6 @@ class Par(processing.Process, _CSPOpMixin):
             sys.excepthook(typ, excn, tback)
         return
 
-    Skip = Par()
 
 class Seq(processing.Process, _CSPOpMixin):
     """Run CSP processes sequentially.
