@@ -137,7 +137,7 @@ def set_debug(status):
 
 ### Fundamental CSP concepts -- Processes, Channels, Guards
 
-class CSPOpMixin(object):
+class _CSPOpMixin(object):
     """Mixin class used for operator overloading in CSP process types.
     """
 
@@ -207,7 +207,7 @@ class CSPOpMixin(object):
         return
 
 
-class CSPProcess(processing.Process, CSPOpMixin):
+class CSPProcess(processing.Process, _CSPOpMixin):
     """Implementation of CSP processes.
     Not intended to be used in client code. Use @process instead.
     """
@@ -220,7 +220,7 @@ class CSPProcess(processing.Process, CSPOpMixin):
         assert inspect.isfunction(func) # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
 
-        CSPOpMixin.__init__(self)
+        _CSPOpMixin.__init__(self)
         for arg in list(self._args) + self._kwargs.values():
             if _is_csp_type(arg):
                 arg.enclosing = self
@@ -275,7 +275,8 @@ class CSPProcess(processing.Process, CSPOpMixin):
         behaviour which is difficult to debug, such as a program
         pausing indefinitely on Channel creation.
         """
-        gc.collect()
+        if gc is not None:
+            gc.collect()
         return
 
 
@@ -316,7 +317,7 @@ class CSPServer(CSPProcess):
         return
 
 
-class Alt(CSPOpMixin):
+class Alt(_CSPOpMixin):
     """CSP select (OCCAM ALT) process.
 
     What should happen if a guard is poisoned?
@@ -440,7 +441,7 @@ class Alt(CSPOpMixin):
         return
 
 
-class Par(processing.Process, CSPOpMixin):
+class Par(processing.Process, _CSPOpMixin):
     """Run CSP processes in parallel.
     """
 
@@ -512,7 +513,7 @@ class Par(processing.Process, CSPOpMixin):
         return
 
 
-class Seq(processing.Process, CSPOpMixin):
+class Seq(processing.Process, _CSPOpMixin):
     """Run CSP processes sequentially.
     """
 
@@ -537,7 +538,7 @@ class Seq(processing.Process, CSPOpMixin):
         """
         try:
             for proc in self.procs:
-                CSPOpMixin.start(proc)
+                _CSPOpMixin.start(proc)
                 proc.join()
         except ChannelPoison:
             logging.debug('%s got ChannelPoison exception in %g' %

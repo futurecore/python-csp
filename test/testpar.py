@@ -20,6 +20,6 @@ def Msg(m):
 #Par(Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)).start()
 
 # Previously deadlocked
-Unit //= [Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)]
+Unit //= Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)
 
 #PAR //= [Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)]

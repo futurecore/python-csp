@@ -281,10 +281,10 @@ def testSeq():
 def testPar():
     _printHeader('Par')
     print '5 processes with operator overloading...'
-    foo(1) & foo(2) & foo(3) & foo(4) & foo(5)
+    Unit //= foo(1), foo(2), foo(3),  foo(4),  foo(5)
     print
     print '8 processes with operator overloading...'
-    foo(1) & foo(2) & foo(3) & foo(4) & foo(5) & foo(6) & foo(7) & foo(8)
+    Unit //= foo(1),  foo(2),  foo(3),  foo(4),  foo(5),  foo(6),  foo(7),  foo(8)
     print
     print '5 processes with process objects...'
     Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
