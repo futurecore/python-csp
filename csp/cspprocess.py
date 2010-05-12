@@ -464,6 +464,7 @@ class Par(processing.Process, _CSPOpMixin):
         Run this Par in parallel with a list of others.
         """
         assert hasattr(proclist, '__iter__')
+        self.procs = []
         for proc in proclist:
             # FIXME: only catches shallow nesting.
             if isinstance(proc, Par):
