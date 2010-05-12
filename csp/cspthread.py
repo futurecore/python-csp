@@ -231,11 +231,10 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         """
         return self.ident
 
- def __ifloordiv__(self, proclist):
+    def __ifloordiv__(self, proclist):
         """
         Run this process in parallel with a list of others.
         """
-
         assert hasattr(proclist, '__iter__')
         par = Par(self, *proclist)
         par.start()
