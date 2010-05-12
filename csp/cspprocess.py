@@ -237,7 +237,6 @@ class CSPProcess(processing.Process, _CSPOpMixin):
         """
         Run this process in parallel with a list of others.
         """
-
         assert hasattr(proclist, '__iter__')
         par = Par(self, *proclist)
         par.start()
@@ -487,10 +486,12 @@ class Par(processing.Process, _CSPOpMixin):
             proc.terminate()
         if self._popen:
             self.terminate()
+        return
 
     def join(self):
         for proc in self.procs:
             proc.join()
+        return
 
     def start(self):
         """Start then synchronize with the execution of parallel processes.
@@ -512,6 +513,23 @@ class Par(processing.Process, _CSPOpMixin):
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
         return
+
+    def __len__(self):
+        return len(self.procs)
+
+    def __getitem__(self, index):
+        try:
+            return self.procs[index]
+        except IndexError:
+            raise IndexError
+
+    def __setitem__(self, index, value):
+        assert isinstance(value, CSPProcess)
+        self.procs[index] = value
+        return
+
+    def __contains__(self, proc):
+        return proc in self.procs
 
 
 class Seq(processing.Process, _CSPOpMixin):
@@ -991,6 +1009,25 @@ def _is_csp_type(name):
 def _nop():
     return
 
-Unit = CSPProcess(_nop)
+class SkipProc(object):
+
+    def __init__(self):
+        return
+
+    def __ifloordiv__(self, proclist):
+        """
+        Run this process in parallel with a list of others.
+        """
+        assert hasattr(proclist, '__iter__')
+        par = Par(self, *proclist)
+        par.start()
+        return
+
+    def __del__(self):
+        return
+
+### BUG: Can only use Unit once, for obvious reason
+Unit = SkipProc()
+
 
 PAR = Par()
