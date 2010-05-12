@@ -150,17 +150,18 @@ class CSPOpMixin(object):
             processing.Process.start(self)
         return
 
-    def start(self, timeout=None):
+    def start(self):
         """Start only if self is not running."""
         if not self._popen:
             processing.Process.start(self)
-            processing.Process.join(self, timeout)
+            processing.Process.join(self)
         return
 
-    def join(self, timeout=None):
-        """Join only if self is running and impose a timeout."""
+    def join(self):
+        """Join only if self is running."""
         if self._popen:
-            processing.Process.join(self, timeout)
+            processing.Process.join(self)
+        return
 
     def referent_visitor(self, referents):
         for obj in referents:
@@ -181,19 +182,6 @@ class CSPOpMixin(object):
         """Terminate only if self is running."""
         if self._popen is not None:
             processing.Process.terminate(self)
-
-    def __and__(self, other):
-        """Implementation of CSP Par.
-
-        Requires timeout with a small value to ensure
-        parallelism. Otherwise a long sequence of '&' operators will
-        run in sequence (because of left-to-right evaluation and
-        orders of precedence.
-        """
-        assert _is_csp_type(other)
-        par = Par(other, self, timeout = 0.1)
-        par.start()
-        return par
 
     def __gt__(self, other):
         """Implementation of CSP Seq."""
@@ -244,6 +232,16 @@ class CSPProcess(processing.Process, CSPOpMixin):
 
     def getPid(self):
         return self._parent_pid
+
+    def __ifloordiv__(self, proclist):
+        """
+        Run this process in parallel with a list of others.
+        """
+
+        assert hasattr(proclist, '__iter__')
+        par = Par(self, *proclist)
+        par.start()
+        return
     
     def __str__(self):
         return 'CSPProcess running in PID %s' % self.getPid()
@@ -448,10 +446,6 @@ class Par(processing.Process, CSPOpMixin):
 
     def __init__(self, *procs, **kwargs):
         super(Par, self).__init__(None)
-        if 'timeout' in kwargs:
-            self.timeout = kwargs['timeout']
-        else:
-            self.timeout = 0.1
         self.procs = []
         for proc in procs:
             # FIXME: only catches shallow nesting.
@@ -462,6 +456,23 @@ class Par(processing.Process, CSPOpMixin):
         for proc in self.procs:
             proc.enclosing = self
         logging.debug('%i processes in Par:' % len(self.procs))
+        return
+
+    def __ifloordiv__(self, proclist):
+        """
+        Run this Par in parallel with a list of others.
+        """
+        assert hasattr(proclist, '__iter__')
+        for proc in proclist:
+            # FIXME: only catches shallow nesting.
+            if isinstance(proc, Par):
+                self.procs += proc.procs
+            else:
+                self.procs.append(proc)
+        for proc in self.procs:
+            proc.enclosing = self
+        logging.debug('%i processes added to Par by //=:' % len(self.procs))
+        self.start()
         return
 
     def __str__(self):
@@ -479,7 +490,7 @@ class Par(processing.Process, CSPOpMixin):
         for proc in self.procs:
             proc.join()
 
-    def start(self, timeout = None):
+    def start(self):
         """Start then synchronize with the execution of parallel processes.
         Return when all parallel processes have returned.
         """
@@ -487,12 +498,14 @@ class Par(processing.Process, CSPOpMixin):
             for proc in self.procs:
                 proc.spawn()
             for proc in self.procs:
-                proc.join() #self.timeout)
+                proc.join()
         except ChannelPoison:
             logging.debug('%s got ChannelPoison exception in %g' %
                           (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
+        except KeyboardInterrupt:
+            sys.exit()
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
@@ -531,6 +544,8 @@ class Seq(processing.Process, CSPOpMixin):
                           (str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
             if self._popen is not None: self.terminate()
+        except KeyboardInterrupt:
+            sys.exit()
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
@@ -969,3 +984,11 @@ def _is_csp_type(name):
             return True
     return False
 
+
+
+def _nop():
+    return
+
+Unit = CSPProcess(_nop)
+
+PAR = Par()
