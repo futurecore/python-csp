@@ -40,8 +40,8 @@ from csp.builtins import Generate, Printer
 
 
 def test_builtins():
-    channel = Channel()
-    Generate(channel) & Printer(channel)
+    channel, skip = Channel(), Skip()
+    skip //= Generate(channel), Printer(channel)
 
 
 @forever
@@ -62,8 +62,8 @@ def fact(outchan):
         yield
 
 def test_fact():
-    channel = Channel()
-    fact(channel) & Printer(channel)
+    channel, skip = Channel(), Skip()
+    skip //= fact(channel), Printer(channel)
 
 if __name__ == '__main__':
 #    test_builtins()

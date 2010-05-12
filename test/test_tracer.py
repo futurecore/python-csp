@@ -92,8 +92,8 @@ def server_read(inchan):
 if __name__ == '__main__':
     from csp.tracer.tracer import csptrace
     with csptrace():
-        chan = Channel()
-        foo(chan, 'hello world!') & client(chan)
+        chan, skip = Channel(), Skip()
+        skip //= foo(chan, 'hello world!'), client(chan)
         Par(foo(chan, 1243), client(chan)).start()
         chan1, chan2, chan3 = Channel(), Channel(), Channel()
         Par(foo(chan1, 1),
@@ -102,6 +102,6 @@ if __name__ == '__main__':
             alt3(chan1, chan2, chan3)).start()
         simple().start()
         server().start()
-        chan_s = Channel()
-        server_read(chan_s) & server_write(chan_s)
+        chan_s, skip = Channel(), Skip()
+        skip //= server_read(chan_s), server_write(chan_s)
     

@@ -5,20 +5,14 @@ from csp.builtins import Generate, Plus, Printer
 
 in1, in2, out = Channel(), Channel(), Channel()  
 
-@forever
-def Msg(m):
-    while True:
-        print m
-    return
-
 def foo():
     # Previously deadlocked
     Unit = Skip()
     Unit //= Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)
 
-#(Msg('aaaaa') & Msg('b') & Msg('***'))
 
 # Infinite stream of ints (OK)
+#p = Skip()
 #p //= [Generate(out), Printer(out)]
 
 @process
