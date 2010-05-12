@@ -14,6 +14,7 @@ def Msg(m):
 @process
 def foo():
     # Previously deadlocked
+    global Unit
     Unit //= Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)
 
 #(Msg('aaaaa') & Msg('b') & Msg('***'))
@@ -30,5 +31,5 @@ def bar():
 #PAR //= [Generate(in1), Generate(in2), Plus(in1, in2, out), Printer(out)]
 
 if __name__ == '__main__':
-    bar().start()
+#    bar().start()
     foo().start()

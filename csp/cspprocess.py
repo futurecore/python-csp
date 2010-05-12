@@ -1019,7 +1019,7 @@ class SkipProc(object):
         Run this process in parallel with a list of others.
         """
         assert hasattr(proclist, '__iter__')
-        par = Par(self, *proclist)
+        par = Par(*proclist)
         par.start()
         return
 
