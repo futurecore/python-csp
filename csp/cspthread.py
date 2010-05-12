@@ -60,7 +60,7 @@ except ImportError:
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever']
+           'process', 'forever', 'Unit', 'PAR']
 
 ### Seeded random number generator (16 bytes)
 
@@ -142,16 +142,16 @@ class CSPOpMixin(object):
             threading.Thread.start(self)
         return
 
-    def start(self, timeout=None):
+    def start(self):
         """Start only if self is not running."""
         if not self._Thread__started.is_set():
             threading.Thread.start(self)
-            threading.Thread.join(self, timeout)
+            threading.Thread.join(self)
 
-    def join(self, timeout=None):
-        """Join only if self is running and impose a timeout."""
+    def join(self):
+        """Join only if self is running."""
         if self._Thread__started.is_set():
-            threading.Thread.join(self, timeout)
+            threading.Thread.join(self)
 
     def referent_visitor(self, referents):
         for obj in referents:
@@ -176,19 +176,6 @@ class CSPOpMixin(object):
         if self._Thread__started.is_set():
             logging.debug('%s terminating now...' % self.getName())
             return #threading.Thread._Thread__stop(self) # Sets an event object
-
-    def __and__(self, other):
-        """Implementation of CSP Par.
-
-        Requires timeout with a small value to ensure
-        parallelism. Otherwise a long sequence of '&' operators will
-        run in sequence (because of left-to-right evaluation and
-        orders of precedence.
-        """
-        assert _is_csp_type(other)
-        par = Par(other, self, timeout = 0.1)
-        par.start()
-        return par
 
     def __gt__(self, other):
         """Implementation of CSP Seq."""
@@ -244,6 +231,16 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         """
         return self.ident
 
+ def __ifloordiv__(self, proclist):
+        """
+        Run this process in parallel with a list of others.
+        """
+
+        assert hasattr(proclist, '__iter__')
+        par = Par(self, *proclist)
+        par.start()
+        return
+
     def __str__(self):
         return 'CSPProcess running in TID %s' % self.getName()
 
@@ -276,7 +273,8 @@ class CSPProcess(threading.Thread, CSPOpMixin):
         behaviour which is difficult to debug, such as a program
         pausing indefinitely on Channel creation.
         """
-        gc.collect()
+        if gc is not None:
+            gc.collect()
         return
 
 
@@ -447,10 +445,6 @@ class Par(threading.Thread, CSPOpMixin):
 
     def __init__(self, *procs, **kwargs):
         super(Par, self).__init__(None)
-        if 'timeout' in kwargs:
-            self.timeout = kwargs['timeout']
-        else:
-            self.timeout = 0.1
         self.procs = []
         for proc in procs:
             # FIXME: only catches shallow nesting.
@@ -461,6 +455,23 @@ class Par(threading.Thread, CSPOpMixin):
         for proc in self.procs:
             proc.enclosing = self
         logging.debug('%i processes in Par:' % len(self.procs))
+        return
+
+    def __ifloordiv__(self, proclist):
+        """
+        Run this Par in parallel with a list of others.
+        """
+        assert hasattr(proclist, '__iter__')
+        for proc in proclist:
+            # FIXME: only catches shallow nesting.
+            if isinstance(proc, Par):
+                self.procs += proc.procs
+            else:
+                self.procs.append(proc)
+        for proc in self.procs:
+            proc.enclosing = self
+        logging.debug('%i processes added to Par by //=:' % len(self.procs))
+        self.start()
         return
 
     def __str__(self):
@@ -500,9 +511,9 @@ class Par(threading.Thread, CSPOpMixin):
             for proc in self.procs:
                 proc.spawn()
             for proc in self.procs:
-                proc.join() #self.timeout)
+                proc.join()
         except ChannelPoison:
-            logging.debug('%s in %g got ChannelPoison exception' %
+            logging.debug('%s got ChannelPoison exception in %g' %
                           (str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
         except Exception:
@@ -542,6 +553,8 @@ class Seq(threading.Thread, CSPOpMixin):
             logging.debug('%s in %g got ChannelPoison exception' %
                           (str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
+        except KeyboardInterrupt:
+            sys.exit()
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
@@ -877,7 +890,6 @@ class FileChannel(Channel):
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
-        if self.is_poisoned: raise ChannelPoison()
         file_d = file(self._fname, 'w')
         file_d.write(mypickle.dumps(item, protocol=1))
         file_d.flush()
@@ -887,7 +899,6 @@ class FileChannel(Channel):
     def get(self):
         """Get a Python object from a process-safe store.
         """
-        if self.is_poisoned: raise ChannelPoison()
         stored = ''
         while stored == '':
             file_d = file(self._fname, 'r')
@@ -906,7 +917,7 @@ class FileChannel(Channel):
         return
 
     def __str__(self):
-        return 'Channel using files for IPC.'    
+        return 'Channel using files for IPC.'
 
 
 ### Function decorators
@@ -951,3 +962,11 @@ def _is_csp_type(name):
             return True
     return False
 
+
+
+def _nop():
+    return
+
+Unit = CSPProcess(_nop)
+
+PAR = Par()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from csp.cspprocess import Channel, Par, PAR, Unit, forever
+from csp.cspprocess import * #Channel, Par, PAR, Unit, forever
 from csp.builtins import Generate, Plus, Printer
 
 in1, in2, out = Channel(), Channel(), Channel()  

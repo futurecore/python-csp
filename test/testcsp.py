@@ -280,6 +280,7 @@ def testSeq():
 
 def testPar():
     _printHeader('Par')
+    set_debug(True)
     print '5 processes with operator overloading...'
     Unit //= foo(1), foo(2), foo(3),  foo(4),  foo(5)
     print
@@ -382,6 +383,7 @@ def testRep():
 
 
 if __name__ == '__main__':
+
     from optparse import OptionParser
     parser = OptionParser()
 
