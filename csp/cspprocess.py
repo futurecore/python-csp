@@ -241,7 +241,7 @@ class CSPProcess(processing.Process, _CSPOpMixin):
         par = Par(self, *proclist)
         par.start()
         return
-    
+
     def __str__(self):
         return 'CSPProcess running in PID %s' % self.getPid()
 

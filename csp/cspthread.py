@@ -60,7 +60,7 @@ except ImportError:
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever', 'Unit', 'PAR']
+           'process', 'forever', 'Skip']
 
 ### Seeded random number generator (16 bytes)
 
@@ -502,6 +502,7 @@ class Par(threading.Thread, _CSPOpMixin):
     def join(self):
         for proc in self.procs:
             proc.join()
+        return
 
     def start(self):
         """Start then synchronize with the execution of parallel processes.
@@ -520,6 +521,23 @@ class Par(threading.Thread, _CSPOpMixin):
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
         return
+
+    def __len__(self):
+        return len(self.procs)
+
+    def __getitem__(self, index):
+        try:
+            return self.procs[index]
+        except IndexError:
+            raise IndexError
+
+    def __setitem__(self, index, value):
+        assert isinstance(value, CSPProcess)
+        self.procs[index] = value
+        return
+
+    def __contains__(self, proc):
+        return proc in self.procs
 
 
 class Seq(threading.Thread, _CSPOpMixin):
@@ -963,10 +981,38 @@ def _is_csp_type(name):
     return False
 
 
-
 def _nop():
     return
 
-Unit = CSPProcess(_nop)
 
-PAR = Par()
+class Skip(Guard, CSPProcess):
+    """Guard which will always return C{True}. Useful in L{Alt}s where
+    the programmer wants to ensure that L{Alt.select} will always
+    synchronise with at least one guard.
+    """
+
+    def __init__(self):
+        Guard.__init__(self)
+        CSPProcess.__init__(self, _nop)
+        self.name = '__Skip__'
+        return
+
+    def is_selectable(self):
+        """Skip is always selectable."""
+        return True
+
+    def enable(self):
+        """Has no effect."""
+        return
+
+    def disable(self):
+        """Has no effect."""
+        return
+
+    def select(self):
+        """Has no effect."""
+        return 'Skip'
+
+    def __str__(self):
+        return 'Skip guard is always selectable / process does nothing.'
+
