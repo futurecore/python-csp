@@ -25,17 +25,20 @@ import random
 import sys
 import time
 
-if os.environ.has_key('CSP'):
-    if os.environ['CSP'] == 'PROCESSES':
-        from csp.cspprocess import *
-    elif os.environ['CSP'] == 'THREADS':
-        from csp.cspthread import *
-    else:
-        from csp.cspprocess import *   
-else:
-    from csp.cspprocess import *   
+#from csp.cspprocess import *
+from csp.cspthread import *
 
-del os
+# if os.environ.has_key('CSP'):
+#     if os.environ['CSP'] == 'PROCESSES':
+#         from csp.cspprocess import *
+#     elif os.environ['CSP'] == 'THREADS':
+#         from csp.cspthread import *
+#     else:
+#         from csp.cspprocess import *   
+# else:
+#     from csp.cspprocess import *   
+
+# del os
 
 from csp.guards import Skip, Timer
 
@@ -280,7 +283,6 @@ def testSeq():
 
 def testPar():
     _printHeader('Par')
-    set_debug(True)
     print '5 processes with operator overloading...'
     Unit //= foo(1), foo(2), foo(3),  foo(4),  foo(5)
     print
