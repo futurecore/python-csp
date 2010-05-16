@@ -5,7 +5,7 @@
 When using CSP Python as a DSL, this module will normally be imported
 via the statement 'from csp.cspthread import *'. 
 
-Copyright (C) Sarah Mount, 2009.
+Copyright (C) Sarah Mount, 2009-10.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 from __future__ import with_statement
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
-__date__ = 'June 2009'
+__date__ = '2010-05-16'
 
 #DEBUG = True
 DEBUG = False
@@ -48,7 +48,7 @@ try: # Python optimisation compiler
     import psyco
     psyco.full()
 except ImportError:
-    print 'No available optimisation'
+    print ( 'No available optimisation' )
 
 
 try:

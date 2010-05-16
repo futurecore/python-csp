@@ -8,7 +8,7 @@ Some source from pycallgraph.py is used here.  pycallgraph is
 published under the GNU General Public License.
 U{http://pycallgraph.slowchop.com/} (C) Gerald Kaszuba 2007
 
-Copyright (C) Sarah Mount, 2009.
+Copyright (C) Sarah Mount, 2009-10.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __credits__ = 'Sarah Mount, Gerald Kaszuba'
-__date__ = 'June 2009'
+__date__ = '2010-05-16'
 
 
 import exstatic.icode
@@ -452,7 +452,7 @@ class Tracer(object):
         for param in func_args:
             func_args[param] = _get_arguments(param, frame)
 
-        if DEBUG: print _pprint_func(full_name, func_args)
+        if DEBUG: print ( _pprint_func(full_name, func_args) )
         callgraph.append(exstatic.icode.Call(frame.f_lineno, full_name, func_args, []))
 
         return self

@@ -52,17 +52,17 @@ def list_error_codes():
     """List all available error codes.
     """
     sep = '--------------------------------------------------------------------'
-    print sep
-    print ' CODE  | MESSAGE'
+    print ( sep )
+    print ( ' CODE  | MESSAGE' )
     codes = errcodes.keys()
     codes.sort()
     current_type = ''
     for key in codes:
         if key[0] != current_type:
-            print sep
-        print '', key + ': |', errcodes[key]
+            print ( sep )
+        print ( str ( key ) + ': |' + str ( errcodes[key] ) )
         current_type = key[0]
-    print sep
+    print ( sep )
     return
 
 
