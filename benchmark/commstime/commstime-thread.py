@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 """CSP Commstime benchmark.
 
 See F.R.M. Barnes (2006) Compiling CSP. In Proceedings of

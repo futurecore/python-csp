@@ -1,4 +1,4 @@
-#!/bin/env python
+#! /usr/bin/env python3
 
 """
 Generic interface to any USB HID sensor.

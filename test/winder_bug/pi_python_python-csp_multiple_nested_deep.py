@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- mode:python; coding:utf-8; -*-
 
 #  Calculation of Pi using quadrature.  Using the python-csp package by Sarah Mount.

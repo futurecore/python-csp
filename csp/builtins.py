@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """Builtin processes for python-csp. For guard types see csp.guards.
 

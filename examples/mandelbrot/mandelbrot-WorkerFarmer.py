@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#! /usr/bin/env python3
 
 """Mandelbrot set computed in parallel using python-csp.
 Multiple-producer, single consumer architecture.

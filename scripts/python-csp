@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """Interactive interpreter for python-csp, with online help.
 

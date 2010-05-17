@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 # FIXME: Nowhere near PEP8 compatible :(
 

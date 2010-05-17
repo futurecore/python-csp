@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Unit testing framework for python-csp. Same API as unittest.py in the

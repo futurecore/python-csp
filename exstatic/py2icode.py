@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 py2icode.py produces an ICODE representation of a Python file.

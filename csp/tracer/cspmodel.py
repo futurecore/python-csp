@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Simple representation of CSP models, with graphviz and FDR2 output.
