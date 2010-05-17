@@ -22,13 +22,13 @@ def execute ( processCount ) :
         readset = channel
         writeset =
         """
-        pi = 4.0 * sum ( [ channel.read ( ) for i in xrange ( 0 , processCount ) ] ) * delta
+        pi = 4.0 * sum ( [ channel.read ( ) for i in range ( 0 , processCount ) ] ) * delta
         elapseTime = time.time ( ) - startTime
-        print "==== Python CSP Single NestedDeep pi =" , pi
-        print "==== Python CSP Single NestedDeep iteration count =", n
-        print "==== Python CSP Single NestedDeep elapse =" , elapseTime
-        print "==== Python CSP Single NestedDeep process count = ", processCount
-        print "==== Python CSP Single NestedDeep processor count =" , multiprocessing.cpu_count ( )
+        print ( "==== Python CSP Single NestedDeep pi = " + str ( pi ) )
+        print ( "==== Python CSP Single NestedDeep iteration count = " + str ( n ) )
+        print ( "==== Python CSP Single NestedDeep elapse = " + str ( elapseTime ) )
+        print ( "==== Python CSP Single NestedDeep process count = " + str ( processCount ) )
+        print ( "==== Python CSP Single NestedDeep processor count = " + str ( multiprocessing.cpu_count ( ) ) )
     processes = [ ] 
     for i in range ( 0 , processCount ) :
         @process
@@ -38,7 +38,7 @@ def execute ( processCount ) :
             writeset = channel
             """
             sum = 0.0
-            for j in xrange ( 1 + i * slice , ( i + 1 ) * slice ) :
+            for j in range ( 1 + i * slice , ( i + 1 ) * slice ) :
                 x = ( j - 0.5 ) * delta
                 sum += 1.0 / ( 1.0 + x * x )
             channel.write ( sum )
@@ -48,9 +48,9 @@ def execute ( processCount ) :
 
 if __name__ == '__main__' :
     execute ( 1 )
-    print
+    print ( )
     execute ( 2 )
-    print
+    print ( )
     execute ( 8 )
-    print
+    print ( )
     execute ( 32 )

@@ -25,7 +25,7 @@ import random
 import sys
 import time
 
-if os.environ.has_key('CSP'):
+if 'CSP' in os.environ:
     if os.environ['CSP'] == 'PROCESSES':
         from csp.cspprocess import *
     elif os.environ['CSP'] == 'THREADS':
@@ -42,7 +42,7 @@ from csp.guards import Timer
 @process
 def foo(n):
     time.sleep(random.random()*2)
-    print 'foo() got argument %i' % n
+    print('foo() got argument %i' % n)
     return
 
 
@@ -52,8 +52,8 @@ def send(cout):
     readset =
     writeset = cout
     """
-    for i in xrange(5):
-        print 'send() is sending %i' % i
+    for i in range(5):
+        print('send() is sending %i' % i)
         cout.write(i)
     return
 
@@ -64,9 +64,9 @@ def recv(cin):
     readset = cin
     writeset =
     """
-    for i in xrange(5):
+    for i in range(5):
         data = cin.read()
-        print 'recv() has received %s' % str(data)
+        print('recv() has received %s' % str(data))
     return
 
 
@@ -76,8 +76,8 @@ def send100(cout):
     readset =
     writeset = cout
     """
-    for i in xrange(100):
-        print 'send100() is sending %i' % i
+    for i in range(100):
+        print('send100() is sending %i' % i)
         cout.write(i)
     return
 
@@ -88,9 +88,9 @@ def recv100(cin):
     readset = cin
     writeset =
     """
-    for i in xrange(100):
+    for i in range(100):
         data = cin.read()
-        print 'recv100() has received %s' % str(data)
+        print('recv100() has received %s' % str(data))
     return
 
 
@@ -115,7 +115,7 @@ class TestOOP(object):
         readset = self.chan
         writeset =
         """
-        print self.chan.read()
+        print(self.chan.read())
         return
 
 
@@ -127,7 +127,7 @@ def testoop():
 
 @process
 def testpoison(chan):
-    print 'Sending termination event...'
+    print('Sending termination event...')
     chan.poison()
     return
 
@@ -148,9 +148,9 @@ def sendAlt(cout, num):
 def testAlt0():
     alt = Alt(Skip(), Skip(), Skip())
     for i in range(3):
-        print '*** TestAlt0 selecting...'
+        print('*** TestAlt0 selecting...')
         val = alt.select()
-        print '* Got this from Alt:', val
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -163,10 +163,10 @@ def testAlt1(cin):
     alt = Alt(cin)
     numeric = 0 
     while numeric < 1:
-        print '*** TestAlt1 selecting...'
+        print('*** TestAlt1 selecting...')
         val = alt.select()
         if isinstance(val, int): numeric += 1 
-        print '* Got this from Alt:', val
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -179,10 +179,10 @@ def testAlt2(cin1, cin2, cin3):
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0 
     while numeric < 3:
-        print '*** TestAlt2 selecting...'
+        print('*** TestAlt2 selecting...')
         val = alt.select()
         if isinstance(val, int): numeric +=1
-        print '* Got this from Alt:', val
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -196,10 +196,10 @@ def testAlt3(cin1, cin2, cin3):
     alt = Alt(cin1, cin2, cin3, Skip())
     numeric = 0
     while numeric < 3:
-        print '*** TestAlt3 selecting...'        
+        print('*** TestAlt3 selecting...')        
         val = alt.pri_select()
         if isinstance(val, int): numeric +=1
-        print '* Got this from Alt:', val
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -212,10 +212,10 @@ def testAlt4(cin1, cin2, cin3):
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0
     while numeric < 3:
-        print '*** TestAlt4 selecting...'        
+        print('*** TestAlt4 selecting...')        
         val = alt.fair_select()
         if isinstance(val, int): numeric +=1
-        print '* Got this from Alt:', val
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -225,8 +225,8 @@ def testOr(cin1, cin2):
     readset = cin1, cin2
     writeset =
     """
-    print cin1 | cin2
-    print cin1 | cin2
+    print(cin1 | cin2)
+    print(cin1 | cin2)
     return
 
 
@@ -237,9 +237,9 @@ def testAltRRep(cin1, cin2, cin3):
     writeset =
     """
     gen = Alt(cin1, cin2, cin3) * 3
-    print gen.next()
-    print gen.next()
-    print gen.next()
+    print(next(gen))
+    print(next(gen))
+    print(next(gen))
     return
 
 
@@ -250,9 +250,9 @@ def testAltLRep(cin1, cin2, cin3):
     writeset =
     """
     gen = 3 * Alt(cin1, cin2, cin3)
-    print gen.next()
-    print gen.next()
-    print gen.next()
+    print(next(gen))
+    print(next(gen))
+    print(next(gen))
     return
 
 
@@ -260,53 +260,53 @@ def testAltLRep(cin1, cin2, cin3):
 
 def _printHeader(name):
     random.seed(time.clock()) # Introduce a bit more randomness...    
-    print
-    print '****************************************************'
-    print '* Testing %s...' % name
-    print '****************************************************'
-    print
+    print()
+    print('****************************************************')
+    print('* Testing %s...' % name)
+    print('****************************************************')
+    print()
     return
 
 
 def testSeq():
     _printHeader('Seq')
-    print 'With operator overloading...'
+    print('With operator overloading...')
     foo(1) > foo(2) > foo(3)
-    print
-    print 'With process objects...'
+    print()
+    print('With process objects...')
     Seq(foo(1), foo(2), foo(3)).start()
     return
 
 
 def testPar():
     _printHeader('Par')
-    print '5 processes with operator overloading...'
+    print('5 processes with operator overloading...')
     Unit = Skip()
     Unit //= foo(1), foo(2), foo(3),  foo(4),  foo(5)
-    print
-    print '8 processes with operator overloading...'
+    print()
+    print('8 processes with operator overloading...')
     Nop = Skip()
     Nop //= foo(1),  foo(2),  foo(3),  foo(4),  foo(5),  foo(6),  foo(7),  foo(8)
-    print
-    print '5 processes with process objects...'
+    print()
+    print('5 processes with process objects...')
     Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
     return
 
 
 def testChan():
     _printHeader('Channels')
-    print '1 producer, 1 consumer, 1 channel...'
+    print('1 producer, 1 consumer, 1 channel...')
     c1 = Channel()
     p = Par(recv(c1), send(c1))
     p.start()
-    print
-    print '5 producers, 5 consumers, 5 channels...'
+    print()
+    print('5 producers, 5 consumers, 5 channels...')
     chans = [Channel() for i in range(5)]
     p = [send(chan) for chan in chans] + [recv(chan) for chan in chans]
     pp = Par(*p)
     pp.start()
-    print
-    print '5 producers, 5 consumers, 1 channel...'
+    print()
+    print('5 producers, 5 consumers, 1 channel...')
     chan = Channel()
     p = [send(chan) for i in range(5)] + [recv(chan) for i in range(5)]
     pp = Par(*p)
@@ -329,30 +329,30 @@ def testPoison():
 
 def testAlt():
     _printHeader('Alt')
-    print 'Alt with 3 SKIPs:'
+    print('Alt with 3 SKIPs:')
     ta0 = testAlt0()
     ta0.start()
-    print
-    print 'Alt with 1 channel read:'
+    print()
+    print('Alt with 1 channel read:')
     ch1 = Channel()
     Par(testAlt1(ch1), sendAlt(ch1, 100)).start()
-    print
-    print 'Alt with 1 SKIP, 3 channel reads:'
+    print()
+    print('Alt with 1 SKIP, 3 channel reads:')
     ch2, ch3, ch4 = Channel(), Channel(), Channel()
     Par(testAlt2(ch2, ch3, ch4),
 		sendAlt(ch2, 100),
 		sendAlt(ch3, 200),
 		sendAlt(ch4, 300)).start()
-    print
-    print 'Alt with priSelect on 1 SKIP, 3 channel reads:'
+    print()
+    print('Alt with priSelect on 1 SKIP, 3 channel reads:')
     ch5, ch6, ch7 = Channel(), Channel(), Channel()
     ta3 = Par(testAlt3(ch5, ch6, ch7),
               sendAlt(ch5, 100),
               sendAlt(ch6, 200),
               sendAlt(ch7, 300))
     ta3.start()
-    print
-    print 'Alt with fairSelect on 1 SKIP, 3 channel reads:'
+    print()
+    print('Alt with fairSelect on 1 SKIP, 3 channel reads:')
     ch8, ch9, ch10 = Channel(), Channel(), Channel()
     Par(testAlt4(ch8, ch9, ch10),
 		sendAlt(ch8, 100),
@@ -363,7 +363,7 @@ def testAlt():
 
 def testChoice():
     _printHeader('Choice')
-    print 'Choice with |:'
+    print('Choice with |:')
     c1, c2 = Channel(), Channel()
     Par(sendAlt(c1, 100), sendAlt(c2, 200), testOr(c1, c2)).start()
     return
@@ -371,12 +371,12 @@ def testChoice():
 
 def testRep():
     _printHeader('Repetition')
-    print 'Repetition with Alt * int:'
+    print('Repetition with Alt * int:')
     ch1, ch2, ch3 = Channel(), Channel(), Channel()
     Par(sendAlt(ch1, 100), sendAlt(ch2, 200), sendAlt(ch3, 300),
         testAltRRep(ch1, ch2, ch3)).start()
-    print
-    print 'Repetition with Alt * int:'
+    print()
+    print('Repetition with Alt * int:')
     ch1, ch2, ch3 = Channel(), Channel(), Channel()
     Par(sendAlt(ch1, 100), sendAlt(ch2, 200), sendAlt(ch3, 300),
         testAltLRep(ch1, ch2, ch3)).start()
@@ -430,7 +430,7 @@ if __name__ == '__main__':
         testAlt()
         testChoice()
         testRep()
-        print _exit
+        print(_exit)
         sys.exit()
     elif options.seq: testSeq()
     elif options.par: testPar()
@@ -441,5 +441,5 @@ if __name__ == '__main__':
     elif options.choice: testChoice()
     elif options.rep: testRep()
     else: parser.print_help()
-    print _exit
+    print(_exit)
     sys.exit()
