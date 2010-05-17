@@ -41,14 +41,13 @@ import tempfile
 import threading
 import time
 import uuid
+import pickle
 
 try: # Python optimisation compiler
     import psyco
     psyco.full()
 except ImportError:
     print ( 'No available optimisation' )
-
-import pickle as mypickle
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
@@ -703,13 +702,13 @@ class Channel(Guard):
         """Put C{item} on a process-safe store.
         """
         self.checkpoison()
-        self._store = mypickle.dumps(item, protocol=1)
+        self._store = pickle.dumps(item, protocol=1)
 
     def get(self):
         """Get a Python object from a process-safe store.
         """
         self.checkpoison()        
-        item = mypickle.loads(self._store)
+        item = pickle.loads(self._store)
         self._store = None
         return item
 
@@ -871,11 +870,11 @@ class FileChannel(Channel):
 
     def __getstate__(self):
         """Return state required for pickling."""
-        state = [mypickle.dumps(self._available, protocol=1),
-                 mypickle.dumps(self._taken, protocol=1),
-                 mypickle.dumps(self._is_alting, protocol=1),
-                 mypickle.dumps(self._is_selectable, protocol=1),
-                 mypickle.dumps(self._has_selected, protocol=1),
+        state = [pickle.dumps(self._available, protocol=1),
+                 pickle.dumps(self._taken, protocol=1),
+                 pickle.dumps(self._is_alting, protocol=1),
+                 pickle.dumps(self._is_selectable, protocol=1),
+                 pickle.dumps(self._has_selected, protocol=1),
                  self._fname]
         if self._available.getValue() > 0:
             obj = self.get()
@@ -888,11 +887,11 @@ class FileChannel(Channel):
         """Restore object state after unpickling."""
         self._wlock = threading.RLock()	# Write lock.
         self._rlock = threading.RLock()	# Read lock.
-        self._available = mypickle.loads(state[0])
-        self._taken = mypickle.loads(state[1])
-        self._is_alting = mypickle.loads(state[2])
-        self._is_selectable = mypickle.loads(state[3])
-        self._has_selected = mypickle.loads(state[4])
+        self._available = pickle.loads(state[0])
+        self._taken = pickle.loads(state[1])
+        self._is_alting = pickle.loads(state[2])
+        self._is_selectable = pickle.loads(state[3])
+        self._has_selected = pickle.loads(state[4])
         self._fname = state[5]
         if state[6] is not None:
             self.put(state[6])
@@ -902,7 +901,7 @@ class FileChannel(Channel):
         """Put C{item} on a process-safe store.
         """
         file_d = file(self._fname, 'w')
-        file_d.write(mypickle.dumps(item, protocol=1))
+        file_d.write(pickle.dumps(item, protocol=1))
         file_d.flush()
         file_d.close()
         return
@@ -918,7 +917,7 @@ class FileChannel(Channel):
         # Unlinking here ensures that FileChannel objects exhibit the
         # same semantics as Channel objects.
         os.unlink(self._fname)
-        obj = mypickle.loads(stored)
+        obj = pickle.loads(stored)
         return obj
 
     def __del__(self):
