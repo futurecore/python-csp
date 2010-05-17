@@ -54,7 +54,7 @@ def list_error_codes():
     sep = '--------------------------------------------------------------------'
     print ( sep )
     print ( ' CODE  | MESSAGE' )
-    codes = errcodes.keys()
+    codes = list(errcodes.keys())
     codes.sort()
     current_type = ''
     for key in codes:
