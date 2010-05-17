@@ -54,7 +54,7 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
     if index == 0:
         starttime = time.time()
         cumtime = 0.0
-    for i in xrange(trials):
+    for i in range(trials):
         token = inchan.read()
         token += 1
         outchan.write(token)
@@ -65,7 +65,7 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
         cumtime += (time.time() - starttime)
         # 1*10^6 micro second == 1 second
         microsecs = cumtime * 1000000.0 / float((trials * numnodes))
-        print microsecs
+        print(microsecs)
     return
 
 
@@ -93,10 +93,10 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.exp:
-        print 'All times measured in microseconds.'
-        for size in xrange(2, 10):
+        print('All times measured in microseconds.')
+        for size in range(2, 10):
             try:
-                print 'Token ring with %i nodes.' % size
+                print('Token ring with %i nodes.' % size)
                 TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
             except: continue
     else:
