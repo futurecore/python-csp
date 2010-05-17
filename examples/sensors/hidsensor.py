@@ -19,7 +19,6 @@ You should have rceeived a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from __future__ import with_statement
 import struct
 import hid
 import os
@@ -158,7 +157,7 @@ class HIDSensorCollection:
     def __init__(self, hidclasses):
         self._hidtypes = {}
         for hidclass in hidclasses:
-            print 'Searching for %s sensors...' % hidclass.__name__
+            print('Searching for %s sensors...' % hidclass.__name__)
             self._hidtypes[hidclass] = HIDMatcher(hidclass.VID, hidclass.PID)
         self._interfaces = {}
         retval = hid.hid_init()
@@ -176,21 +175,21 @@ class HIDSensorCollection:
                     hidif = hidclass()
                     details = hidif.open()
                     if details:
-                        print 'Found HID sensor: %s' % hidif._id
+                        print('Found HID sensor: %s' % hidif._id)
                         self._interfaces[hidif._id] = hidif
-                except HIDError, e:
+                except HIDError as e:
                     del hidif 
                 #except Error, e:
                     #continue
         return
 
     def get_all_data(self):
-        return [hidif.get_data() for hidif in self._interfaces.values()]
+        return [hidif.get_data() for hidif in list(self._interfaces.values())]
 
     def _debug(self):
-        print len(self._interfaces), 'HID sensors attached'
+        print(len(self._interfaces), 'HID sensors attached')
         for hidif in self._interfaces:
-            print 'Interface: %s,' % hidif,
-            print self._interfaces[hidif]._debug_str() % \
-                self._interfaces[hidif].get_data()
+            print('Interface: %s,' % hidif, end=' ')
+            print(self._interfaces[hidif]._debug_str() % \
+                self._interfaces[hidif].get_data())
 

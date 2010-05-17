@@ -23,21 +23,26 @@ from csp.cspprocess import *
 
 import math
 import operator
+from functools import reduce
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'October 2009'
 
 
-def distance((x1, y1), (x2, y2)):
+def distance(xxx_todo_changeme, xxx_todo_changeme1):
+    (x1, y1) = xxx_todo_changeme
+    (x2, y2) = xxx_todo_changeme1
     return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
 
-def dot_add((x1, y1), (x2, y2)):
+def dot_add(xxx_todo_changeme2, xxx_todo_changeme3):
+    (x1, y1) = xxx_todo_changeme2
+    (x2, y2) = xxx_todo_changeme3
     return [x1 + x2, y1 + y2]
 
 
 def match_neighbour_velocities(near_vel):
-    xs, ys = zip(*near_vel)
+    xs, ys = list(list(zip(*near_vel)))
     n = len(near_vel)
     return [reduce(operator.add, xs) / n, reduce(operator.add, ys) / n]
 
@@ -58,7 +63,7 @@ def simulate(infochan, SIZE):
         if not possible_flockmates:
             velocity = default_velocity
         else:
-            near_pos, near_vel = zip(*possible_flockmates)
+            near_pos, near_vel = list(zip(*possible_flockmates))
             velocity = match_neighbour_velocities(near_vel)
         centre = dot_add(centre, velocity)
         # Wrap the screen.
@@ -69,7 +74,9 @@ def simulate(infochan, SIZE):
     return
 
 
-def nearby((pos1, vel1), (pos2, vel2)):
+def nearby(xxx_todo_changeme4, xxx_todo_changeme5):
+    (pos1, vel1) = xxx_todo_changeme4
+    (pos2, vel2) = xxx_todo_changeme5
     if pos1 == pos2 and vel1 == vel2: return False
     return distance(pos1, pos2) <= 20
 
@@ -81,13 +88,13 @@ def FlockManager(channels, drawchan, NUMBOIDS):
     writechan = channels, drawchan
     """
     info = [(0,0) for i in range(len(channels))]
-    relify = lambda ((x,y), vel): ([info[i][0][0]-x, info[i][0][1]-y], vel)
+    relify = lambda x_y_vel: ([info[i][0][0]-x_y_vel[0][0], info[i][0][1]-x_y_vel[0][1]], x_y_vel[1])
     while True:
         for i in range(NUMBOIDS): info[i] = channels[i].read()
         drawchan.write(info)
         for i in range(NUMBOIDS):
-            near = filter(lambda posvel: nearby(info[i], posvel), info)
-            rel = map(relify, near)
+            near = [posvel for posvel in info if nearby(info[i], posvel)]
+            rel = list(map(relify, near))
             channels[i].write(rel)
     return
 
@@ -120,7 +127,7 @@ def drawboids(drawchan, SIZE):
         dirty = last
         for rect in last: screen.fill(BGCOL, rect)
         last = []
-        positions, vels = zip(*drawchan.read())
+        positions, vels = list(zip(*drawchan.read()))
         for (x, y) in positions:
             rect = pygame.draw.circle(screen, FGCOL, (int(x), int(y)), 2, 0)
             dirty.append(rect)
@@ -131,7 +138,7 @@ def drawboids(drawchan, SIZE):
                 QUIT = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, FILENAME)
-                print 'Saving boids in:', FILENAME
+                print('Saving boids in:', FILENAME)
     drawchan.poison()
     pygame.quit()
     return

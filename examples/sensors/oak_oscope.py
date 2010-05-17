@@ -29,7 +29,7 @@ def chart_accel():
     """Requires a Toradex Oak G to be attached to a USB port."""
     import dsp
     from toradex_csp import Accelerometer
-    channels = [Channel() for i in xrange(7)]
+    channels = [Channel() for i in range(7)]
     par = Par(Accelerometer(channels[0]),
               dsp.Unzip(channels[0], (channels[0:3])),
               Blackhole(channels[1]),

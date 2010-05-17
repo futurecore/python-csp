@@ -57,7 +57,7 @@ def get_colour(mag, cmin=0, cmax=100):
 
 
 @process
-def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
+def mandelbrot(xcoord, xxx_todo_changeme, cout, acorn=-2.0, bcorn=-1.250):
     """Calculate pixel values for a single column of a Mandelbrot set.
 
     Writes an image column to C{cout}. An image column is a list of
@@ -81,6 +81,7 @@ def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
     @type bcorn: C{float}
     @keyword bcorn: Seed value for fractal generation (imaginary part).
     """
+    (width, height) = xxx_todo_changeme
     # nu implements the normalized iteration count algorithm
     nu = lambda zz, n: n + 1 - math.log(math.log(abs(zz)))/math.log(2)
     imgcolumn = [0. for i in range(height)]
@@ -124,7 +125,7 @@ def consume(size, filename, cins):
     # Wait on channel events
     gen = len(cins) * Alt(*cins)
     for i in range(len(cins)):
-        xcoord, column = gen.next()
+        xcoord, column = next(gen)
         # Update column of blit buffer
         pixmap[xcoord] = column
         # Update image on screen.

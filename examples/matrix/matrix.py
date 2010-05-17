@@ -85,7 +85,7 @@ class Matrix():
                         self.matrix[i][j] = 0
              
         def printMatrix(self):
-            print self.matrix
+            print(self.matrix)
         
 
 if __name__ == '__main__':
@@ -98,4 +98,4 @@ if __name__ == '__main__':
     j = i.ParMultiply(g)
     j.printMatrix()
     
-    print ""
+    print("")
