@@ -26,7 +26,7 @@ __credits__ = 'Steve Purcell, author of unittest.py in stdlib'
 __date__ = '2010-05-16'
 
 
-import unittest
+from . import unittest
 
 
 # Exported classes and functions

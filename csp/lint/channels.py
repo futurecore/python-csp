@@ -66,14 +66,12 @@ class ChannelChecker(visitor.ASTVisitor):
                         has_readset = True
                         self.readset_lineno += lineno
                         chans = words[1].strip().split(',')
-                        readset = filter(lambda y: y is not '',
-                                         map(lambda x: x.strip(), chans))
+                        readset = [y for y in [x.strip() for x in chans] if y is not '']
                     elif words[0].strip() == 'writeset':
                         has_writeset = True
                         self.writeset_lineno += lineno
                         chans = words[1].strip().split(',')
-                        writeset = filter(lambda y: y is not '',
-                                          map(lambda x: x.strip(), chans))
+                        writeset = [y for y in [x.strip() for x in chans] if y is not '']
 
         # 'W002':'No readset given in documentation.'
         if not has_readset:
@@ -126,7 +124,7 @@ class ChannelChecker(visitor.ASTVisitor):
             
         # 'E005':'Channel is read from in function body but does not
         # appear in documented readset'
-        diff = set(readset).difference(self.readset.values())
+        diff = set(readset).difference(list(self.readset.values()))
         for channel in diff:
             for key in self.readset:
                 exstatic.cspwarnings.create_error(self.filename,
@@ -145,7 +143,7 @@ class ChannelChecker(visitor.ASTVisitor):
 
         # 'E007':'Channel is written to in function body but does not
         # appear in documented writeset'
-        diff = set(writeset).difference(self.writeset.values())
+        diff = set(writeset).difference(list(self.writeset.values()))
         for channel in diff:
             for key in self.writeset:
                 exstatic.cspwarnings.create_error(self.filename,

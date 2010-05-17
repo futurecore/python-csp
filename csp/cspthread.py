@@ -22,8 +22,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
-from __future__ import with_statement
-
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = '2010-05-16'
 
@@ -50,12 +48,7 @@ try: # Python optimisation compiler
 except ImportError:
     print ( 'No available optimisation' )
 
-
-try:
-    import cPickle as mypickle # Faster pickle
-except ImportError:
-    import pickle as mypickle
-
+import pickle as mypickle
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
@@ -160,12 +153,12 @@ class _CSPOpMixin(object):
             if isinstance(obj, Channel):
                 obj.poison()
             elif ((hasattr(obj, '__getitem__') or hasattr(obj, '__iter__')) and
-                  not isinstance(obj, basestring)):
+                  not isinstance(obj, str)):
                 self.referent_visitor(obj)
             elif isinstance(obj, CSPProcess):
                 self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
             elif hasattr(obj, '__dict__'):
-                self.referent_visitor(obj.__dict__.values())
+                self.referent_visitor(list(obj.__dict__.values()))
         return
 
     def terminate(self):
@@ -187,7 +180,7 @@ class _CSPOpMixin(object):
     def __mul__(self, n):
         assert n > 0
         clone = None
-        for i in xrange(n):
+        for i in range(n):
             clone = copy.copy(self)
             clone.start()
         return
@@ -195,7 +188,7 @@ class _CSPOpMixin(object):
     def __rmul__(self, n):
         assert n > 0
         clone = None
-        for i in xrange(n):
+        for i in range(n):
             clone = copy.copy(self)
             clone.start()
         return
@@ -216,7 +209,7 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
 
         _CSPOpMixin.__init__(self)
 
-        for arg in list(args) + kwargs.values():
+        for arg in list(args) + list(kwargs.values()):
             if _is_csp_type(arg):
                 arg.enclosing = self
         self.enclosing = None
@@ -295,10 +288,10 @@ class CSPServer(CSPProcess):
         try:
             generator = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
             while sys.gettrace() is None:
-                generator.next()
+                next(generator)
             else:
                 # If the tracer is running execute the target only once.
-                generator.next()
+                next(generator)
                 logging.info('Server process detected a tracer running.')
                 return
         except ChannelPoison:
@@ -427,13 +420,13 @@ class Alt(_CSPOpMixin):
 
     def __mul__(self, n):
         assert n > 0
-        for i in xrange(n):
+        for i in range(n):
             yield self.select()
         return
 
     def __rmul__(self, n):
         assert n > 0
-        for i in xrange(n):
+        for i in range(n):
             yield self.select()
         return
 

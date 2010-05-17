@@ -33,7 +33,7 @@ import sys
 
 from csp.guards import Timer
 
-if os.environ.has_key('CSP'):
+if 'CSP' in os.environ:
     if os.environ['CSP'] == 'PROCESSES':
         from csp.cspprocess import *
     elif os.environ['CSP'] == 'THREADS':
