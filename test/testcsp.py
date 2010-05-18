@@ -281,12 +281,12 @@ def testSeq():
 def testPar():
     _printHeader('Par')
     print '5 processes with operator overloading...'
-    Unit = Skip()
-    Unit //= foo(1), foo(2), foo(3),  foo(4),  foo(5)
+#    Unit = Skip()
+    foo(1) // (foo(2), foo(3),  foo(4),  foo(5))
     print
     print '8 processes with operator overloading...'
-    Nop = Skip()
-    Nop //= foo(1),  foo(2),  foo(3),  foo(4),  foo(5),  foo(6),  foo(7),  foo(8)
+#    Nop = Skip()
+    foo(1) //  (foo(2),  foo(3),  foo(4),  foo(5),  foo(6),  foo(7),  foo(8))
     print
     print '5 processes with process objects...'
     Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()

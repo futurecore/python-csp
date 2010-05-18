@@ -153,8 +153,11 @@ class _CSPOpMixin(object):
     def start(self):
         """Start only if self is not running."""
         if not self._popen:
-            processing.Process.start(self)
-            processing.Process.join(self)
+            try:
+                processing.Process.start(self)
+                processing.Process.join(self)
+            except KeyboardInterrupt:
+                sys.exit()
         return
 
     def join(self):
@@ -233,7 +236,7 @@ class CSPProcess(processing.Process, _CSPOpMixin):
     def getPid(self):
         return self._parent_pid
 
-    def __ifloordiv__(self, proclist):
+    def __floordiv__(self, proclist):
         """
         Run this process in parallel with a list of others.
         """
@@ -1009,7 +1012,7 @@ def _nop():
     return
 
 
-class Skip(Guard, CSPProcess):
+class Skip(CSPProcess, Guard):
     """Guard which will always return C{True}. Useful in L{Alt}s where
     the programmer wants to ensure that L{Alt.select} will always
     synchronise with at least one guard.

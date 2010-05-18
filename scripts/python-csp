@@ -191,7 +191,7 @@ expression:
 >>> foo(100).start()
 >>> n: 100
 
->>> foo(10) & foo(20)
+>>> foo(10) // (foo(20),)
 n: 10
 n: 20
 <Par(Par-5, initial)>
@@ -277,18 +277,21 @@ _par = """
 *** python-csp: Info on Par. ***
 
 There are two ways to run processes in parallel.  Firstly, given two
-(or more) processes you can parallelize them with the & operator, like this:
+(or more) processes you can parallelize them with the // operator, like this:
 
 >>> @process
 ... def foo(n):
 ...     print 'n:', n
 ... 
->>> foo(1) & foo(2) & foo(3)
+>>> foo(1) // (foo(2), foo(3))
 n: 2
 n: 1
 n: 3
 <Par(Par-5, initial)>
 >>> 
+
+Notice that the // operator takes a CSPProcess on the left hand side
+and a sequence of processes on the right hand side.
 
 Alternatively, you can create a Par object which is a sort of CSP
 process and start that process manually:
@@ -414,7 +417,7 @@ use choice operator: "|", as in the example below:
 ...     print chan1 | chan2
 ... 
 >>> c1, c2 = Channel(), Channel()
->>> choice(c1, c2) & send_msg(c1, 'yes') & send_msg(c2, 'no')
+>>> choice(c1, c2) // (send_msg(c1, 'yes'), send_msg(c2, 'no'))
 yes
 no
 <Par(Par-8, initial)>
@@ -500,7 +503,7 @@ then be used either to read (using the .read() method) or to write
 ...     print 'Got:', cin.read()
 ... 
 >>> c = Channel()
->>> send(c, 100) & recv(c)
+>>> send(c, 100) // (recv(c),)
 Got: 100
 <Par(Par-3, initial)>
 >>> 
@@ -540,7 +543,7 @@ calling the poison() method on any channel. For example:
 ...     return
 ... 
 >>> doomed = Channel()
->>> send(doomed) & recv(doomed) & poison(doomed)
+>>> send(doomed) // (recv(doomed), poison(doomed))
 send5 sending: 0
 recv got: 0
 send5 sending: 1
