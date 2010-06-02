@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/env python3
 
 """
 Simple oscilloscope traces for python-csp.
@@ -61,13 +61,13 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
     pygame.surfarray.blit_array(screen, blank)      # Blit the screen buffer
     pygame.display.flip()                           # Flip the double buffer
     # ydata stores data for the trace.
-    ydata = [0.0 for i in xrange(WIDTH)] # assert len(ydata) <= WIDTH
+    ydata = [0.0 for i in range(WIDTH)] # assert len(ydata) <= WIDTH
     QUIT = False
     while not QUIT:
         pixels = copy.copy(blank)
         ydata.append(inchan.read() * scale)
         ydata.pop(0)
-        for x in xrange(WIDTH):
+        for x in range(WIDTH):
             try: pixels[x][xaxis - int(ydata[x])] = TRACE
             except: pass
         pygame.surfarray.blit_array(screen, pixels)     # Blit the screen buffer
@@ -79,13 +79,13 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
                 QUIT = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
-                print 'Saving oscope image in:', filename
+                print('Saving oscope image in:' + str ( filename ) )
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 scale += 10.0
-                print 'Oscilloscope scaling by %f' % scale
+                print('Oscilloscope scaling by %f' % scale)
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
                 if scale - 10.0 > 0.0: scale -= 10.0
-                print 'Oscilloscope scaling by %f' % scale
+                print('Oscilloscope scaling by %f' % scale)
         yield
     inchan.poison()
     pygame.display.quit()
@@ -99,7 +99,7 @@ def MultipleOscilloscope(inchannels, _process=None):
     # >>> pygame.display.list_modes()
     # [(1024, 600), (800, 600), (720, 400), (640, 480), (640, 400), (640, 350)]
     # >>> 
-    raise NotImplementedError, 'Not implemented just yet...'
+    raise NotImplementedError('Not implemented just yet...')
 
 
 @forever
@@ -145,7 +145,7 @@ def __test_mux():
     """
     import dsp
     from csp.builtins import Delta2, Mux2
-    channels = [Channel() for i in xrange(6)]
+    channels = [Channel() for i in range(6)]
     par = Par(dsp.GenerateFloats(channels[0]),
               Delta2(channels[0], channels[1], channels[2]),
               dsp.Cos(channels[1], channels[3]),
@@ -160,7 +160,7 @@ def __test_tan():
     """Plot a tangent wave on the oscilloscope.
     """
     import dsp
-    channels = [Channel() for i in xrange(2)]
+    channels = [Channel() for i in range(2)]
     par = Par(dsp.GenerateFloats(channels[0]),
               dsp.Tan(channels[0], channels[1]),
               Oscilloscope(channels[1]))

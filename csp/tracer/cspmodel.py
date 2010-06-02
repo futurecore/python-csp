@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Simple representation of CSP models, with graphviz and FDR2 output.
@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
-__date__ = 'April 2010'
+__date__ = '2010-05-16'
 
 
 class CSPModel(object):
@@ -125,5 +125,5 @@ class Channel(CSPModel):
 
 
 if __name__ == '__main__':
-    print 'WRITE SOME TESTS'
+    print ( 'WRITE SOME TESTS' )
  

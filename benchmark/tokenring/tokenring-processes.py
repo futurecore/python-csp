@@ -1,4 +1,4 @@
-#! /bin/env python2.6
+#! /usr/bin/env python3
 
 """
 Benchmark based on variable sized ring buffer.
@@ -51,7 +51,7 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
     if tokens == 1 and index == 0:
         token = 1
         outchan.write(token)
-    for i in xrange(TRIALS):
+    for i in range(TRIALS):
         token = inchan.read()
         token += 1
         outchan.write(token)
@@ -81,15 +81,15 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.exp:
-        print 'All times measured in microseconds.'
-        for size in xrange(2, 10):
+        print('All times measured in microseconds.')
+        for size in range(2, 10):
             try:
-                print 'Token ring with %i nodes.' % size
+                print('Token ring with %i nodes.' % size)
                 starttime = time.time()
                 TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
                 elapsed = time.time() - starttime
                 mu = elapsed * 1000000 / float((TRIALS * (2 ** size)))
-                print '%gms' % mu
+                print('%gms' % mu)
             except:
                 continue
     else:

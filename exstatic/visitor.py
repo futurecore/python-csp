@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Visitor pattern for ICODE.
@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
-__date__ = 'May 2010'
+__date__ = '2010-05-16'
 
 
 # Names exported by this module
@@ -100,20 +100,20 @@ class ExampleIcodeVisitor(IcodeVisitor):
             meth = getattr(self.visitor, 'visit' + className, 0)
             self._cache[node.__class__] = meth
         if self.VERBOSE > 1:
-            print "dispatch", className, (meth and meth.__name__ or '')
+            print ( "dispatch", className, (meth and meth.__name__ or '') )
         if meth:
             meth(node, *args)
         elif self.VERBOSE > 0:
             klass = node.__class__
             if klass not in self.examples:
                 self.examples[klass] = klass
-                print
-                print self.visitor
-                print klass
+                print ( )
+                print ( self.visitor )
+                print ( klass )
                 for attr in dir(node):
                     if attr[0] != '_':
-                        print "\t", "%-12.12s" % attr, getattr(node, attr)
-                print
+                        print ( "\t", "%-12.12s" % attr, getattr(node, attr) )
+                print ( )
             return self.default(node, *args)
 
 

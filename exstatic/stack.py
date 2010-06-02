@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Generic stack type for Python.
@@ -45,7 +45,7 @@ class Stack:
         Order matters.
         """
         size = min(len(self.__stack), len(other))
-        for i in xrange(size):
+        for i in range(size):
             if not self.__stack[i] == other[i]:
                 return False
         return True

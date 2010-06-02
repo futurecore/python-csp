@@ -1,6 +1,4 @@
-#!/usr/bin/env python2.5
-
-from __future__ import division
+#! /usr/bin/env python3
 
 import copy, math, struct, time
 from csp.cspprocess import *
@@ -146,29 +144,29 @@ def create_run(n, level, ss, filename='scene.pgm'):
     fp.write('P5\n%i %i\n255\n' % (n, n))
     channels, procs = [] , []
     sofar = 0
-    for y in xrange(0, n, +1):
-        for x in xrange(0, n):
+    for y in range(0, n, +1):
+        for x in range(0, n):
             channels.append(Channel())
             procs.append(perpixel(ss,n,x,y,scene,channels[sofar]))
             sofar += 1
-            print ' made proccess for pixel ' , y , x
+            print(' made proccess for pixel ' + str ( y ) + ' ' + str ( x ) )
             
 
     rayy = Par(*procs)
     rayy.start()
-    print len(procs)
+    print(len(procs))
     alt = Alt(*channels)
      
     while len(alt.guards) >0:   
-        print 'top of loop, #guards:', len(alt.guards)
+        print('top of loop, #guards: ' + str ( len(alt.guards) ) )
         if len(alt.guards) == 1:
-            print 'can only read from channel', alt.guards[0].name
+            print('can only read from channel ' + str ( alt.guards[0].name ) )
         chn = alt.select() 
         fp.write(struct.pack('B', chn))
-        print 'About to poison ' ,alt.last_selected.name
+        print('About to poison ' + str ( alt.last_selected.name ) )
         alt.poison() 
-        print len(alt.guards) 
-    print 'about to close'        
+        print(len(alt.guards)) 
+    print('about to close')        
     fp.close()
     return
 
@@ -180,15 +178,15 @@ def perpixel(ss, n, x, y, scene, chnl):
     writeset = chnl
     """
     g = 0.0
-    for dx in xrange(0, ss):
-        for dy in xrange(0, ss):
+    for dx in range(0, ss):
+        for dy in range(0, ss):
             d = Vector(x + dx * 1.0 / ss - n / 2.0,
                        y + dy * 1.0 / ss - n / 2.0,
                        n)
             ray = Ray(Vector(0.0, 0.0, -4.0), d.unitise())
             g += ray_trace(Vector(-1.0, -3.0, 2.0).unitise(),
                            ray, scene)    
-    print 'Value ' ,    int(0.5 + 255.0 * g / ss**2), 'writing to:', chnl.name
+    print('Value ' + str ( int(0.5 + 255.0 * g / ss**2) ) + ' writing to: ' + str ( chnl.name ) )
     chnl.write(int(0.5 + 255.0 * g / ss**2))
     return
 
@@ -197,11 +195,11 @@ def run(n, scene, ss, filename='scene.pgm'):
     """
     fp = file(filename, 'w')
     fp.write('P5\n%i %i\n255\n' % (n, n))
-    for y in xrange(n-1, -1, -1):
-        for x in xrange(0, n):
+    for y in range(n-1, -1, -1):
+        for x in range(0, n):
             g = 0.0
-            for dx in xrange(0, ss):
-                for dy in xrange(0, ss):
+            for dx in range(0, ss):
+                for dy in range(0, ss):
                     d = Vector(x + dx * 1.0 / ss - n / 2.0,
                                y + dy * 1.0 / ss - n / 2.0,
                                n)
@@ -242,11 +240,11 @@ if __name__ == '__main__':
         t0 = time.time()
         run(int(options.size), scene,  3, filename=options.out)
         t = time.time() - t0
-        print 'Time taken:', t, 'seconds.'
+        print('Time taken: ' + str ( t ) + 'seconds.')
     else:
         t0 = time.time()
         create_run(int(options.size), int(options.level), 3,
                    filename=options.out)
         t = time.time() - t0
-        print 'Time taken:', t, 'seconds.'
+        print('Time taken: ' + str ( t ) + 'seconds.')
         

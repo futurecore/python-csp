@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 #
 # Example oscilloscope traces.
@@ -50,7 +50,7 @@ def trace_cos():
 def trace_mux():
     """Plot sine and cosine waves on the oscilloscope.
     """
-    channels = [Channel() for i in xrange(6)]
+    channels = [Channel() for i in range(6)]
     par = Par(GenerateFloats(channels[0]),
               Delta2(channels[0], channels[1], channels[2]),
               Cos(channels[1], channels[3]),

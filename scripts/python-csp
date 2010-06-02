@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """Interactive interpreter for python-csp, with online help.
 
@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 try:
     import readline
 except ImportError:
-    print "Module readline not available."
+    print("Module readline not available.")
 else:
     import rlcompleter
     readline.parse_and_bind("tab: complete")
@@ -59,17 +59,17 @@ class _Printer(object):
         while True:
             try:
                 for i in range(lineno, lineno + self.MAXLINES):
-                    print self.__lines[i]
+                    print(self.__lines[i])
             except IndexError:
                 break
             else:
                 lineno += self.MAXLINES
                 key = None
                 while key not in ('', 'q', 'Q'):
-                    key = raw_input(prompt)
+                    key = input(prompt)
                 if key == 'q':
                     break
-                print 
+                print() 
 
 
 class TabSafeCompleter(rlcompleter.Completer):
@@ -123,10 +123,10 @@ class CSPConsole(code.InteractiveConsole):
             _Printer(_INFO[line][1])()
             return ''
         elif line.startswith('info '):
-            print
-            print 'No info available on that topic. Try one of these:'
-            print 
-            print _commands
+            print()
+            print('No info available on that topic. Try one of these:')
+            print() 
+            print(_commands)
             return ''
         else:
             return line
@@ -150,8 +150,7 @@ def _createBuiltinDocs():
     # Names imported by builtins
     imports = ['copy', 'gc', 'inspect', 'operator', 'os', 'process', 'random', 
                'socket', 'sys', 'tempfile', 'threading', 'time', 'hmac', 
-               'wraps', 'hashlib', 'psyco', 'pickle', 'logging', 'uuid',
-               'mypickle']
+               'wraps', 'hashlib', 'psyco', 'pickle', 'logging', 'uuid']
     exceptions = ['CorruptedData', 'NoGuardInAlt', 'ChannelPoison',
                   'ChannelAbort', 'ProcessSuspend']
     baseclasses = ['CSPOpMixin', 'CSPProcess', 'Guard',
@@ -165,7 +164,7 @@ def _createBuiltinDocs():
         if eval(qualname+'.__doc__'):
             docstrings[name] = eval(qualname+'.__doc__')
     del csp.cspprocess
-    names = docstrings.keys()
+    names = list(docstrings.keys())
     names.sort()
     for name in names:
         docs += '\n' + name + ':\n' + docstrings[name]

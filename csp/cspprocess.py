@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """Communicating sequential processes, in Python.
 
 When using CSP Python as a DSL, this module will normally be imported
 via the statement 'from csp.cspprocess import *'.
 
-Copyright (C) Sarah Mount, 2008.
+Copyright (C) Sarah Mount, 2008, 2010.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,10 +22,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
-from __future__ import with_statement
-
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
-__date__ = 'December 2008'
+__date__ = '2010-05-16'
 
 #DEBUG = True
 DEBUG = False
@@ -42,12 +40,13 @@ import sys
 import tempfile
 import time
 import uuid
+import pickle
 
 try: # Python optimisation compiler
     import psyco
     psyco.full()
 except ImportError:
-    print 'No available optimisation'
+    print ( 'No available optimisation' )
 
 # Multiprocessing libary -- name changed between versions.
 try:
@@ -58,12 +57,6 @@ try:
 except ImportError:
     raise ImportError('No library available for multiprocessing.\n'+
                       'csp.cspprocess is only compatible with Python 2. 6 and above.')
-
-try:
-    import cPickle as mypickle # Faster pickle
-except ImportError:
-    import pickle as mypickle
-
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
@@ -173,12 +166,12 @@ class _CSPOpMixin(object):
             if isinstance(obj, Channel):
                 obj.poison()
             elif ((hasattr(obj, '__getitem__') or hasattr(obj, '__iter__')) and
-                  not isinstance(obj, basestring)):
+                  not isinstance(obj, str)):
                 self.referent_visitor(obj)
             elif isinstance(obj, CSPProcess):
                 self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
             elif hasattr(obj, '__dict__'):
-                self.referent_visitor(obj.__dict__.values())
+                self.referent_visitor(list(obj.__dict__.values()))
         return
 
     def terminate(self):
@@ -196,7 +189,7 @@ class _CSPOpMixin(object):
     def __mul__(self, n):
         assert n > 0
         clone = None
-        for i in xrange(n):
+        for i in range(n):
             clone = copy.copy(self)
             clone.start()
         return
@@ -204,7 +197,7 @@ class _CSPOpMixin(object):
     def __rmul__(self, n):
         assert n > 0
         clone = None
-        for i in xrange(n):
+        for i in range(n):
             clone = copy.copy(self)
             clone.start()
         return
@@ -224,7 +217,7 @@ class CSPProcess(processing.Process, _CSPOpMixin):
         assert not inspect.ismethod(func) # Check we aren't using objects
 
         _CSPOpMixin.__init__(self)
-        for arg in list(self._args) + self._kwargs.values():
+        for arg in list(self._args) + list(self._kwargs.values()):
             if _is_csp_type(arg):
                 arg.enclosing = self
         self.enclosing = None
@@ -300,10 +293,10 @@ class CSPServer(CSPProcess):
         try:
             generator = self._target(*self._args, **self._kwargs)
             while sys.gettrace() is None:
-                generator.next()
+                next(generator)
             else:
                 # If the tracer is running execute the target only once.
-                generator.next()
+                next(generator)
                 logging.info('Server process detected a tracer running.')
                 return
         except ChannelPoison:
@@ -432,13 +425,13 @@ class Alt(_CSPOpMixin):
 
     def __mul__(self, n):
         assert n > 0
-        for i in xrange(n):
+        for i in range(n):
             yield self.select()
         return
 
     def __rmul__(self, n):
         assert n > 0
-        for i in xrange(n):
+        for i in range(n):
             yield self.select()
         return
 
@@ -716,7 +709,7 @@ class Channel(Guard):
         """Put C{item} on a process-safe store.
         """
         self.checkpoison()
-        os.write(self._itemw, mypickle.dumps(item, protocol=1))
+        os.write(self._itemw, pickle.dumps(item, protocol=1))
 
     def get(self):
         """Get a Python object from a process-safe store.
@@ -734,8 +727,8 @@ class Channel(Guard):
                 break
         logging.debug('Left read loop')
         logging.debug('About to unmarshall this data: %s' % ''.join(data)) 
-        obj = None if data == [] else mypickle.loads(''.join(data))
-        logging.debug('mypickle library has unmarshalled data.')
+        obj = None if data == [] else pickle.loads(''.join(data))
+        logging.debug('pickle library has unmarshalled data.')
         return obj
 
     def __del__(self):
@@ -905,11 +898,11 @@ class FileChannel(Channel):
 
     def __getstate__(self):
         """Return state required for pickling."""
-        state = [mypickle.dumps(self._available, protocol=1),
-                 mypickle.dumps(self._taken, protocol=1),
-                 mypickle.dumps(self._is_alting, protocol=1),
-                 mypickle.dumps(self._is_selectable, protocol=1),
-                 mypickle.dumps(self._has_selected, protocol=1),
+        state = [pickle.dumps(self._available, protocol=1),
+                 pickle.dumps(self._taken, protocol=1),
+                 pickle.dumps(self._is_alting, protocol=1),
+                 pickle.dumps(self._is_selectable, protocol=1),
+                 pickle.dumps(self._has_selected, protocol=1),
                  self._fname]
         if self._available.get_value() > 0:
             obj = self.get()
@@ -922,11 +915,11 @@ class FileChannel(Channel):
         """Restore object state after unpickling."""
         self._wlock = processing.RLock()	# Write lock.
         self._rlock = processing.RLock()	# Read lock.
-        self._available = mypickle.loads(state[0])
-        self._taken = mypickle.loads(state[1])
-        self._is_alting = mypickle.loads(state[2])
-        self._is_selectable = mypickle.loads(state[3])
-        self._has_selected = mypickle.loads(state[4])
+        self._available = pickle.loads(state[0])
+        self._taken = pickle.loads(state[1])
+        self._is_alting = pickle.loads(state[2])
+        self._is_selectable = pickle.loads(state[3])
+        self._has_selected = pickle.loads(state[4])
         self._fname = state[5]
         if state[6] is not None:
             self.put(state[6])
@@ -936,7 +929,7 @@ class FileChannel(Channel):
         """Put C{item} on a process-safe store.
         """
         file_d = file(self._fname, 'w')
-        file_d.write(mypickle.dumps(item, protocol=1))
+        file_d.write(pickle.dumps(item, protocol=1))
         file_d.flush()
         file_d.close()
         return
@@ -952,7 +945,7 @@ class FileChannel(Channel):
         # Unlinking here ensures that FileChannel objects exhibit the
         # same semantics as Channel objects.
         os.unlink(self._fname)
-        obj = mypickle.loads(stored)
+        obj = pickle.loads(stored)
         return obj
 
     def __del__(self):
