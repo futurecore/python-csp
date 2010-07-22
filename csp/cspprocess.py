@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python
 
 """Communicating sequential processes, in Python.
 

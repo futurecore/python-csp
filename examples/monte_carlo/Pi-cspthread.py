@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python
 
 from csp.cspthread import *
 from math import sqrt

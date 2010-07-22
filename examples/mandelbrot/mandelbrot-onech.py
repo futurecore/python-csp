@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python
 
 """Mandelbrot set computed in parallel using python-csp.
 Multiple-producer, single consumer architecture.
@@ -37,7 +37,7 @@ def get_colour(mag, cmin=0, cmax=100):
 
 
 @process
-def mandelbrot(xcoord, xxx_todo_changeme, cout, acorn=-2.0, bcorn=-1.250):
+def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
     """Calculate pixel values for a single column of a Mandelbrot set.
 
     Writes an image column to C{cout}. An image column is a list of
@@ -61,7 +61,7 @@ def mandelbrot(xcoord, xxx_todo_changeme, cout, acorn=-2.0, bcorn=-1.250):
     @type bcorn: C{float}
     @keyword bcorn: Seed value for fractal generation (imaginary part).
     """
-    (width, height) = xxx_todo_changeme
+    (width, height) = dimension
     # nu implements the normalized iteration count algorithm
     nu = lambda zz, n: n + 1 - math.log(math.log(abs(zz)))/math.log(2)
     imgcolumn = [0. for i in range(height)]

@@ -29,15 +29,15 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'October 2009'
 
 
-def distance(xxx_todo_changeme, xxx_todo_changeme1): (x1, y1) = xxx_todo_changeme; (x2, y2) = xxx_todo_changeme1; return math.sqrt((x1-x2)**2 + (y1-y2)**2)
+def distance(first_point, second_point): (x1, y1) = first_point; (x2, y2) = second_point; return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
-def dot_add(xxx_todo_changeme2, xxx_todo_changeme3): (x1, y1) = xxx_todo_changeme2; (x2, y2) = xxx_todo_changeme3; return [x1 + x2, y1 + y2]
+def dot_add(first_point, second_point): (x1, y1) = first_point; (x2, y2) = second_point; return [x1 + x2, y1 + y2]
 
-def dot_minus(xxx_todo_changeme4, xxx_todo_changeme5): (x1, y1) = xxx_todo_changeme4; (x2, y2) = xxx_todo_changeme5; return [x1 - x2, y1 - y2]
+def dot_minus(first_point, second_point): (x1, y1) = first_point; (x2, y2) = second_point; return [x1 - x2, y1 - y2]
 
-def dot_prod(xxx_todo_changeme6, xxx_todo_changeme7): (x1, y1) = xxx_todo_changeme6; (x2, y2) = xxx_todo_changeme7; return [x1 * x2, y1 * y2]
+def dot_prod(first_point, second_point): (x1, y1) = first_point; (x2, y2) = second_point; return [x1 * x2, y1 * y2]
 
-def scale(xxx_todo_changeme8, scalar): (x, y) = xxx_todo_changeme8; return [x * scalar, y * scalar]
+def scale(point, scalar): (x, y) = point; return [x * scalar, y * scalar]
 
 
 def match_neighbour_velocities(near_vel):
@@ -106,9 +106,9 @@ def simulate(infochan, SIZE):
     return
 
 
-def nearby(xxx_todo_changeme9, xxx_todo_changeme10):
-    (pos1, vel1) = xxx_todo_changeme9
-    (pos2, vel2) = xxx_todo_changeme10
+def nearby(first_point, second_point):
+    (pos1, vel1) = first_point
+    (pos2, vel2) = second_point
     if pos1 == pos2 and vel1 == vel2: return False
     return distance(pos1, pos2) <= 20
 

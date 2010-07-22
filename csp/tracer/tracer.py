@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python
 
 """
 Tracer for python-csp, intended for generating models of a python-csp

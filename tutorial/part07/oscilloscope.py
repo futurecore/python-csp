@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python
 
 """
 Simple oscilloscope traces for python-csp.
@@ -51,7 +51,7 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
     # Create a blank chart with vertical ticks, etc
     blank = Numeric.zeros((WIDTH, HEIGHT, 3))
     # Draw x-axis
-    xaxis = HEIGHT/2
+    xaxis = HEIGHT // 2
     blank[::, xaxis] = GREY
     # Draw vertical ticks
     vticks = [-100, -50, +50, +100]

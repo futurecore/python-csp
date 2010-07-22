@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python
 
 from csp.cspprocess import * 
 from csp.builtins import Generate, Plus, Printer
