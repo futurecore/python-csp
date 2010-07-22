@@ -727,8 +727,8 @@ class Channel(Guard):
             if len(sval) < _BUFFSIZE:
                 break
         logging.debug('Left read loop')
-        logging.debug('About to unmarshall this data: %s' % ''.join(data)) 
-        obj = None if data == [] else pickle.loads(''.join(data))
+        logging.debug('About to unmarshall this data: %s' % b''.join(data)) 
+        obj = None if data == [] else pickle.loads(b''.join(data))
         logging.debug('pickle library has unmarshalled data.')
         return obj
 
