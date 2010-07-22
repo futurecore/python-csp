@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from csp.cspprocess import *
 
 import copy
-import Numeric
+import numpy.oldnumeric as Numeric
 import pygame
 
 
@@ -38,7 +38,7 @@ __version__ = '0.2'
 
 
 @forever
-def Oscilloscope(inchan, scale=1.0, _process=None):
+def Oscilloscope(inchan, scale=80.0, _process=None):
     # Constants
     WIDTH, HEIGHT = 512, 256
     TRACE, GREY = (80, 255, 100), (110, 110, 110)
@@ -75,7 +75,8 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
         #pygame.display.update(0, xaxis-100, WIDTH, 201) # Flip the double buffer
         del pixels # Use constant space.
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT \
+            or event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 QUIT = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
@@ -91,3 +92,6 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
     pygame.display.quit()
     return
 
+
+if __name__ == '__main__':
+    print('For this tutorial run traces.py')
