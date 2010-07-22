@@ -402,7 +402,7 @@ Mul = _applybinop(operator.__mul__,
                   """Writes out the multiplication of two input events.
 """)
 
-Div = _applybinop(operator.__div__,
+Div = _applybinop(operator.__truediv__,
                   """Writes out the division of two input events.
 """)
 
