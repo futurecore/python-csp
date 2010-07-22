@@ -40,7 +40,10 @@ import sys
 import tempfile
 import time
 import uuid
-import pickle
+try:
+    import cPickle as pickle    # Faster, only in Python 2.x
+except ImportError:
+    import pickle
 
 try: # Python optimisation compiler
     import psyco
