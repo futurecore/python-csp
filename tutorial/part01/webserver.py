@@ -17,6 +17,7 @@
 
 import time
 from csp.cspprocess import *
+import socket
 
 
 def response(code, reason, page):
@@ -49,6 +50,8 @@ def response(code, reason, page):
 def server(host, port):
     """Simple CSP based web server.
     """
+    print('Running tutorial web-server on port {0}...'.format(port))
+    print('Interrupt with CTRL-C')
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((host, port))
