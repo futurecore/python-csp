@@ -62,8 +62,8 @@ def trace_mux():
 
 
 if __name__ == '__main__':
-#    trace_mux()
+    trace_mux()
 #    trace_cos()
 #    trace_sin()
-    trace_random()
+#    trace_random()
 
