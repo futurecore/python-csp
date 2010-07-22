@@ -22,7 +22,7 @@
 
 from csp.cspprocess import *
 import math
-import Numeric
+import numpy
 import pygame
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
@@ -117,7 +117,7 @@ def consume(size, filename, cins):
     @param cins: Input channels from which image columns will be read.
     """
     # Create initial pixel data
-    pixmap = Numeric.zeros((size[0], size[1], 3))
+    pixmap = numpy.zeros((size[0], size[1], 3), dtype=numpy.int8)
     pygame.init()
     screen = pygame.display.set_mode((size[0], size[1]), 0)
     pygame.display.set_caption('python-csp Mandelbrot fractal example.')

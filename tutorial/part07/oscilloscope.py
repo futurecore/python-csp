@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from csp.cspprocess import *
 
 import copy
-import numpy.oldnumeric as Numeric
+import numpy
 import pygame
 
 
@@ -49,14 +49,14 @@ def Oscilloscope(inchan, scale=80.0, _process=None):
     screen = pygame.display.set_mode((WIDTH, HEIGHT), 0)
     pygame.display.set_caption(caption)
     # Create a blank chart with vertical ticks, etc
-    blank = Numeric.zeros((WIDTH, HEIGHT, 3))
+    blank = numpy.zeros((WIDTH, HEIGHT, 3), dtype=numpy.int8)
     # Draw x-axis
-    xaxis = HEIGHT/2
+    xaxis = HEIGHT // 2
     blank[::, xaxis] = GREY
     # Draw vertical ticks
     vticks = [-100, -50, +50, +100]
     for vtick in vticks: blank[::5, xaxis + vtick] = GREY # Horizontals
-    for vtick in vticks: blank[::50, ::5] = GREY          # Verticals
+    blank[::50, ::5] = GREY          # Verticals
     # Draw the 'blank' screen.
     pygame.surfarray.blit_array(screen, blank)      # Blit the screen buffer
     pygame.display.flip()                           # Flip the double buffer
