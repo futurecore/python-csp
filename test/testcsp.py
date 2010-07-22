@@ -260,11 +260,11 @@ def testAltLRep(cin1, cin2, cin3):
 
 def _printHeader(name):
     random.seed(time.clock()) # Introduce a bit more randomness...    
-    print()
+    print('')
     print('****************************************************')
     print('* Testing %s...' % name)
     print('****************************************************')
-    print()
+    print('')
     return
 
 
@@ -272,7 +272,7 @@ def testSeq():
     _printHeader('Seq')
     print('With operator overloading...')
     foo(1) > foo(2) > foo(3)
-    print()
+    print('')
     print('With process objects...')
     Seq(foo(1), foo(2), foo(3)).start()
     return
@@ -281,11 +281,11 @@ def testSeq():
 def testPar():
     _printHeader('Par')
     print('5 processes with operator overloading...')
-    foo(1) // foo(2), foo(3),  foo(4),  foo(5)
-    print()
+    foo(1) // (foo(2), foo(3), foo(4), foo(5))
+    print('')
     print('8 processes with operator overloading...')
-    foo(1) //  foo(2),  foo(3),  foo(4),  foo(5),  foo(6),  foo(7),  foo(8)
-    print()
+    foo(1) // (foo(2), foo(3), foo(4), foo(5), foo(6), foo(7), foo(8))
+    print('')
     print('5 processes with process objects...')
     Par(foo(1), foo(2), foo(3), foo(4), foo(5)).start()
     return
@@ -297,13 +297,13 @@ def testChan():
     c1 = Channel()
     p = Par(recv(c1), send(c1))
     p.start()
-    print()
+    print('')
     print('5 producers, 5 consumers, 5 channels...')
     chans = [Channel() for i in range(5)]
     p = [send(chan) for chan in chans] + [recv(chan) for chan in chans]
     pp = Par(*p)
     pp.start()
-    print()
+    print('')
     print('5 producers, 5 consumers, 1 channel...')
     chan = Channel()
     p = [send(chan) for i in range(5)] + [recv(chan) for i in range(5)]
@@ -330,18 +330,18 @@ def testAlt():
     print('Alt with 3 SKIPs:')
     ta0 = testAlt0()
     ta0.start()
-    print()
+    print('')
     print('Alt with 1 channel read:')
     ch1 = Channel()
     Par(testAlt1(ch1), sendAlt(ch1, 100)).start()
-    print()
+    print('')
     print('Alt with 1 SKIP, 3 channel reads:')
     ch2, ch3, ch4 = Channel(), Channel(), Channel()
     Par(testAlt2(ch2, ch3, ch4),
 		sendAlt(ch2, 100),
 		sendAlt(ch3, 200),
 		sendAlt(ch4, 300)).start()
-    print()
+    print('')
     print('Alt with priSelect on 1 SKIP, 3 channel reads:')
     ch5, ch6, ch7 = Channel(), Channel(), Channel()
     ta3 = Par(testAlt3(ch5, ch6, ch7),
@@ -349,7 +349,7 @@ def testAlt():
               sendAlt(ch6, 200),
               sendAlt(ch7, 300))
     ta3.start()
-    print()
+    print('')
     print('Alt with fairSelect on 1 SKIP, 3 channel reads:')
     ch8, ch9, ch10 = Channel(), Channel(), Channel()
     Par(testAlt4(ch8, ch9, ch10),
@@ -373,7 +373,7 @@ def testRep():
     ch1, ch2, ch3 = Channel(), Channel(), Channel()
     Par(sendAlt(ch1, 100), sendAlt(ch2, 200), sendAlt(ch3, 300),
         testAltRRep(ch1, ch2, ch3)).start()
-    print()
+    print('')
     print('Repetition with Alt * int:')
     ch1, ch2, ch3 = Channel(), Channel(), Channel()
     Par(sendAlt(ch1, 100), sendAlt(ch2, 200), sendAlt(ch3, 300),

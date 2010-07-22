@@ -233,10 +233,8 @@ class CSPProcess(processing.Process, _CSPOpMixin):
         """
         Run this process in parallel with a list of others.
         """
-        assert hasattr(proclist, '__iter__')
-        par = Par(self, *proclist)
+        par = Par(self, *list(proclist))
         par.start()
-        return
 
     def __str__(self):
         return 'CSPProcess running in PID %s' % self.getPid()
