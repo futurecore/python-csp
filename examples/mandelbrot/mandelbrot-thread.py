@@ -53,7 +53,7 @@ def get_colour(mag, cmin=0, cmax=100):
 
 
 @process
-def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
+def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
     """Calculate pixel values for a single column of a Mandelbrot set.
 
     Writes an image column to C{cout}. An image column is a list of
@@ -77,6 +77,7 @@ def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
     @type bcorn: C{float}
     @keyword bcorn: Seed value for fractal generation (imaginary part).
     """
+    (width, height) = dimension
     # nu implements the normalized iteration count algorithm
     nu = lambda zz, n: n + 1 - math.log(math.log(abs(zz)))/math.log(2)
     imgcolumn = [0. for i in range(height)]
@@ -141,7 +142,7 @@ def consume(IMSIZE, filename, cins):
                 pygame.quit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
-    print 'TIME TAKEN:', time.time() - t0, 'seconds.'
+    print('TIME TAKEN: ' + str(time.time() - t0) + 'seconds.')
     logging.debug('Consumer drawing image on screen')
     # With ALT poisoning 320 cols: 211.819334984 seconds
     # Without poisoning 320 cols: 212.845579147 seconds
@@ -156,7 +157,7 @@ def consume(IMSIZE, filename, cins):
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
-                print 'Saving fractal image in:', filename
+                print('Saving fractal image in: ' + str(filename))
 
 
 @process
@@ -176,7 +177,7 @@ def main(IMSIZE, filename, level='info'):
               'warning': logging.WARNING,
               'error': logging.ERROR,
               'critical': logging.CRITICAL}
-    assert(level in LEVELS.keys())
+    assert(level in list(LEVELS.keys()))
     logging.basicConfig(level=LEVELS[level]) 
     # Channel and process lists.
     channels, processes = [], []

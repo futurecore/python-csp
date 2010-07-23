@@ -20,18 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+from functools import reduce
 
-if os.environ.has_key('CSP'):
-    if os.environ['CSP'] == 'PROCESSES':
-        from csp.cspprocess import *
-    elif os.environ['CSP'] == 'THREADS':
-        from csp.cspthread import *
-    else:
-        from csp.cspprocess import *   
+if os.environ.get('CSP') == 'THREADS':
+    from csp.cspthread import *
 else:
-    from csp.cspprocess import *   
-
-del os
+    from csp.cspprocess import *
 
 import operator
 
@@ -56,7 +50,7 @@ def fact(outchan):
         if n == 1:
             outchan.write(1)
         else:
-            f = reduce(operator.mul, xrange(1, n))
+            f = reduce(operator.mul, list(range(1, n)))
             outchan.write(f)
         n += 1
         yield

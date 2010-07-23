@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 """
 Digital signal processing for python-csp.
@@ -46,7 +46,7 @@ def Unzip(inchan, outchans, _process=None):
     """
     while True:
         data = inchan.read()
-        for i in xrange(data):
+        for i in range(data):
             outchans[i].write(data[i])
         yield
     return

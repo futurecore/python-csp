@@ -44,7 +44,7 @@ def consumer(cins):
         t = alt.select()
         total += t
         
-    print "Pi aproximation: " , Decimal((total/(perProcess*workers))*4)
+    print("Pi aproximation: " + str( Decimal((total/(perProcess*workers))*4) ) )
         
 def main():
     Chnls, procs = [],[]
@@ -62,4 +62,4 @@ if __name__ == '__main__':
     t0 = time.time()
     main()
     t1 = time.time()
-    print "Time Taken: " , (t1-t0)
+    print("Time Taken: " + str ( t1 - t0 ) )

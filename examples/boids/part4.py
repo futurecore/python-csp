@@ -23,38 +23,39 @@ from csp.cspprocess import *
 
 import math
 import operator
+from functools import reduce
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'October 2009'
 
 
-def distance((x1, y1), (x2, y2)): return math.sqrt((x1-x2)**2 + (y1-y2)**2)
+def distance(first_point, second_point): (x1, y1) = first_point; (x2, y2) = second_point; return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 
-def dot_add((x1, y1), (x2, y2)): return [x1 + x2, y1 + y2]
+def dot_add(first_point, second_point): (x1, y1) = first_point; (x2, y2) = second_point; return [x1 + x2, y1 + y2]
 
-def dot_minus((x1, y1), (x2, y2)): return [x1 - x2, y1 - y2]
+def dot_minus(first_point, second_point): (x1, y1) = first_point; (x2, y2) = second_point; return [x1 - x2, y1 - y2]
 
-def dot_prod((x1, y1), (x2, y2)): return [x1 * x2, y1 * y2]
+def dot_prod(first_point, second_point): (x1, y1) = first_point; (x2, y2) = second_point; return [x1 * x2, y1 * y2]
 
-def scale((x, y), scalar): return [x * scalar, y * scalar]
+def scale(point, scalar): (x, y) = point; return [x * scalar, y * scalar]
 
 
 def match_neighbour_velocities(near_vel):
-    xs, ys = zip(*near_vel)
+    xs, ys = list(list(zip(*near_vel)))
     n = len(near_vel)
     return [reduce(operator.add, xs) / n, reduce(operator.add, ys) / n]
 
 def avoid_collision(near_pos):
     VCLOSE = 7        # Boids are very close if they are within VCLOSE pixels.
-    isclose = lambda (x,y): math.sqrt(x**2 + y**2) < VCLOSE
-    vclose = filter(isclose, near_pos)
+    isclose = lambda x_y: math.sqrt(x_y[0]**2 + x_y[1]**2) < VCLOSE
+    vclose = list(filter(isclose, near_pos))
     if len(vclose) == 0: return (0.0, 0.0)
-    neg_vclose = map(lambda vector: dot_prod((-1.0, -1.0), vector), vclose)
-    close_x, close_y = zip(*neg_vclose)
+    neg_vclose = [dot_prod((-1.0, -1.0), vector) for vector in vclose]
+    close_x, close_y = list(zip(*neg_vclose))
     return (reduce(operator.add, close_x), reduce(operator.add, close_y))
 
 def stay_with_flock(near_pos, numnear):
-    xs, ys = zip(*near_pos)
+    xs, ys = list(zip(*near_pos))
     return [reduce(operator.add, xs) / numnear,
             reduce(operator.add, ys) / numnear]
 
@@ -89,7 +90,7 @@ def simulate(infochan, SIZE):
         if not possible_flockmates:
             velocity = default_velocity
         else:
-            near_pos, near_vel = zip(*possible_flockmates)
+            near_pos, near_vel = list(zip(*possible_flockmates))
             numnear = len(near_pos)
             accel = scale(match_neighbour_velocities(near_vel), ALIGNMENT)
             accel = dot_add(accel, scale(avoid_collision(near_pos), AVOIDANCE))
@@ -105,7 +106,9 @@ def simulate(infochan, SIZE):
     return
 
 
-def nearby((pos1, vel1), (pos2, vel2)):
+def nearby(first_point, second_point):
+    (pos1, vel1) = first_point
+    (pos2, vel2) = second_point
     if pos1 == pos2 and vel1 == vel2: return False
     return distance(pos1, pos2) <= 20
 
@@ -117,13 +120,13 @@ def FlockManager(channels, drawchan, NUMBOIDS):
     writeset = drawchan, channels
     """
     info = [(0,0) for i in range(len(channels))]
-    relify = lambda ((x,y), vel): ([info[i][0][0]-x, info[i][0][1]-y], vel)
+    relify = lambda x_y_vel: ([info[i][0][0]-x_y_vel[0][0], info[i][0][1]-x_y_vel[0][1]], x_y_vel[1])
     while True:
         for i in range(NUMBOIDS): info[i] = channels[i].read()
         drawchan.write(info)
         for i in range(NUMBOIDS):
-            near = filter(lambda posvel: nearby(info[i], posvel), info)
-            rel = map(relify, near)
+            near = [posvel for posvel in info if nearby(info[i], posvel)]
+            rel = list(map(relify, near))
             channels[i].write(rel)
     return
 
@@ -156,7 +159,7 @@ def drawboids(drawchan, SIZE):
         dirty = last
         for rect in last: screen.fill(BGCOL, rect)
         last = []
-        positions, vels = zip(*drawchan.read())
+        positions, vels = list(zip(*drawchan.read()))
         for (x, y) in positions:
             rect = pygame.draw.circle(screen, FGCOL, (int(x), int(y)), 2, 0)
             dirty.append(rect)
@@ -167,7 +170,7 @@ def drawboids(drawchan, SIZE):
                 QUIT = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, FILENAME)
-                print 'Saving boids in:', FILENAME
+                print('Saving boids in:' + str(FILENAME))
     drawchan.poison()
     pygame.quit()
     return

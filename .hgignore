@@ -1,0 +1,5 @@
+python_csp.egg-info
+build
+dist
+syntax: glob
+*.pyc

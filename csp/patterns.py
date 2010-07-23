@@ -25,26 +25,22 @@ __date__ = 'May 2010'
 
 
 import os
-if os.environ.has_key('CSP'):
-    if os.environ['CSP'] == 'PROCESSES':
-        from csp.cspprocess import *
-    elif os.environ['CSP'] == 'THREADS':
-        from csp.cspthread import *
+if os.environ.get('CSP') == 'THREADS':
+    from csp.cspthread import *
 else:
-    from csp.cspprocess import *   
-del os
+    from csp.cspprocess import *
 
 
 __all__ = ['TokenRing']
 
 class TokenRing(Par):
     def __init__(self, func, size, numtoks=1):
-        self.chans = [Channel() for channel in xrange(size)]
+        self.chans = [Channel() for channel in range(size)]
         self.procs = [func(index=i,
                            tokens=numtoks,
                            numnodes=size,
                            inchan=self.chans[i-1],
-                           outchan=self.chans[i]) for i in xrange(size)]
+                           outchan=self.chans[i]) for i in range(size)]
         super(TokenRing, self).__init__(*self.procs) 
         return
 

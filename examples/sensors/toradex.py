@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 """
 Generic interface to all Toradex OAK sensors.
@@ -38,9 +38,9 @@ def _debug(*args):
 
     FIXME: Replace this with the builtin logging module.
     """
-    smap = map(str, args)
+    smap = list(map(str, args))
     if DEBUG:
-        print 'DEBUG:', ' '.join(smap)
+        print('DEBUG: ' + ' '.join(smap))
 
 
 class ToradexSensor(HIDSensor):
@@ -175,7 +175,7 @@ class ToradexSensor(HIDSensor):
         Intended to be used in conjunction with _unpack and _read_data:
         _parse(_unpack(_read_data()))
         """
-        raise NotImplemented, 'Must be overridden by subclasses'
+        raise NotImplemented('Must be overridden by subclasses')
 
     def _read_data(self, size=4):
         """Perform an interrupt read on the sensor.
@@ -538,10 +538,10 @@ ToradexSensorCollection = HIDSensorCollection([Toradex8ChannelA2D,
 ### Test interfaces
 def __test(sensorclass):
     sensor = sensorclass()
-    print sensor.open()
+    print(sensor.open())
     while True:
         sensor.blink_led()
-        print sensor._debug_str() % sensor.get_data()
+        print(sensor._debug_str() % sensor.get_data())
 
 def __test_rh(): __test(ToradexRH)
 def __test_g(): __test(ToradexG)
@@ -557,7 +557,7 @@ def __test_A2D(): __test(Toradex8ChannelA2D)
 def __test_collection(n=10):
     import time
     collection = ToradexSensorCollection
-    print collection.open()
+    print(collection.open())
     while n>0:
         time.sleep(0.1)
         collection._debug()
