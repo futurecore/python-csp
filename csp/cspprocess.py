@@ -772,8 +772,8 @@ class Channel(Guard):
     def read(self):
         """Read (and return) a Python object from this channel.
         """
-        assert self._is_alting.value == Channel.FALSE
-        assert self._is_selectable.value == Channel.FALSE
+#        assert self._is_alting.value == Channel.FALSE
+#        assert self._is_selectable.value == Channel.FALSE
         self.checkpoison()
         logging.debug('+++ Read on Channel %s started.' % self.name)
         with self._rlock: # Protect from races between multiple readers.

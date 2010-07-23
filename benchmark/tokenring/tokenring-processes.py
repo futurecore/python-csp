@@ -93,4 +93,10 @@ if __name__ == '__main__':
             except:
                 continue
     else:
+        import time
+        print 'Token ring with %i nodes and %i token(s).' % (options.nodes, options.tokens)
+        starttime = time.time()
         TokenRing(ringproc, options.nodes, numtoks=options.tokens).start()
+        elapsed = time.time() - starttime
+        mu = elapsed * 1000000 / float((TRIALS * (2 ** options.nodes)))
+        print '%gms' % mu
