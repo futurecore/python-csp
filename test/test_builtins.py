@@ -28,7 +28,7 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         # ignore result
         [channel.poison() for channel in self.spare_channels]
 
-    def feedBuiltin(self, in_data, builtin):
+    def feed_builtin(self, in_data, builtin):
         """Feed the data from `in_data` into the builtin CSPProcess
         (process/thread) and return a sequence of the corresponding
         output values.
@@ -42,10 +42,20 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
             out_data.append(out_channel.read())
         return out_data
 
+    def assertListsAlmostEqual(self, list1, list2, msg=None):
+        """Compare corresponding list elements with
+        `self.assertAlmostEqual` and fail with message `msg` if
+        a comparison fails.
+        """
+        for item1, item2 in zip(list1, list2):
+            self.assertAlmostEqual(item1, item2)
+
     def test_sin(self):
-        out_data = self.feed_builtin([0, 0.1], builtins.Sin)
-        print out_data
-        
+        in_data = [0.0, 1.0, 4.0, -1.0, -4.0]
+        out_data = self.feed_builtin(in_data, builtins.Sin)
+        expected_data = [0.0, 0.841470984808, -0.756802495308,
+                         -0.841470984808, 0.756802495308,]
+        self.assertListsAlmostEqual(out_data, expected_data)
 
 # class TestBuiltinsWithThreads(unittest.TestCase):
 #     csp_process = csp.cspthread
