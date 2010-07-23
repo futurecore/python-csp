@@ -21,12 +21,13 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
 
     def setUp(self):
         csp = self.csp_process
-        # Get us some channels for later use
+        # Get us some channels for later use.
         self.spare_channels = [csp.Channel() for i in xrange(3)]
 
     def tearDown(self):
-        # Ignore result
+        # Destroy channels and processes; ignore result.
         [channel.poison() for channel in self.spare_channels]
+        self.spare_channels[:] = []
 
     def producer(self):
         @self.csp_process.process
@@ -40,11 +41,31 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         def _consumer(channel, reads, result_channel):
             result = []
             for i in xrange(reads):
-                result.append(channel.read())
+                value = channel.read()
+                result.append(value)
             result_channel.write(result)
         return _consumer
 
-    def feedBuiltin(self, in_data, builtin, args=None, excess_reads=0):
+    def coordinator(self):
+        @self.csp_process.process
+        def _coordinator(in_channel, out_channel, result_channel,
+                         in_data, builtin, builtin_args, excess_reads):
+            # Use positional arguments if requested.
+            if builtin_args is None:
+                called_builtin = builtin(in_channel, out_channel)
+            else:
+                called_builtin = builtin(in_channel, out_channel,
+                                         *builtin_args)
+            parallel_processes = self.csp_process.Par(
+              called_builtin,
+              self.producer()(in_channel, in_data),
+              self.consumer()(out_channel, reads=len(in_data)+excess_reads,
+                              result_channel=result_channel),
+              )
+            parallel_processes.start()
+        return _coordinator
+
+    def feedBuiltin(self, in_data, builtin, builtin_args=None, excess_reads=0):
         """Feed the data from `in_data` into the builtin CSPProcess
         (process/thread) and return a sequence of the corresponding
         output values. If `args` isn't `None`, use this tuple as the
@@ -55,26 +76,13 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         """
         csp = self.csp_process
         in_channel, out_channel, result_channel = self.spare_channels[:3]
-        # Use positional arguments if requested
-        if args is None:
-            called_builtin = builtin(in_channel, out_channel)
-        else:
-            called_builtin = builtin(in_channel, out_channel, *args)
-        parallel_processes = csp.Par(
-          called_builtin,
-          self.producer()(in_channel, in_data),
-          self.consumer()(out_channel, reads=len(in_data)+excess_reads,
-                          result_channel=result_channel)
-          )
-        parallel_processes.start()
-        # Collect output data from builtin
-#         out_data = []
-#         for data_item in in_data:
-#             in_channel.write(data_item)
-#             out_data.append(out_channel.read())
-#         for i in xrange(excess_reads):
-#             out_data.append(out_channel.read())
-        #return out_data
+        coordinator = self.coordinator()(in_channel, out_channel,
+                                         result_channel, in_data,
+                                         builtin, builtin_args,
+                                         excess_reads)
+        coordinator.start()
+        result = result_channel.read()
+        return result
 
     def assertListsAlmostEqual(self, list1, list2, msg=None):
         """Compare corresponding list elements with
@@ -96,8 +104,7 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         in_data = [0.0, 1.0, 4.0, -1.0, -4.0, 10.0]
         expected_data = [0.0, 0.841470984808, -0.756802495308,
                          -0.841470984808, 0.756802495308, -0.544021110889]
-        self.feedBuiltin(in_data, builtins.Sin)
-        #self.feedUnaryFloatOperation(in_data, expected_data, builtins.Sin)
+        self.feedUnaryFloatOperation(in_data, expected_data, builtins.Sin)
 
     def testCos(self):
         in_data = [0.0, 1.0, 4.0, -1.0, -4.0]
@@ -115,31 +122,30 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         expected_data = [0.0, 1.1, 99.123, 1e4, -1.0]
         self.feedUnaryFloatOperation(in_data, expected_data, builtins.Pred)
 
-    #XXX Something like this is defined in Python 2.7
+    #XXX Something like this is defined in Python 2.7.
     def assertListsEqual(self, list1, list2, msg=None):
         """See `assertListsAlmostEqual`, but compare exactly."""
         for item1, item2 in zip(list1, list2):
-            self.assertAlmostEqual(item1, item2)
+            self.assertEqual(item1, item2)
 
     def feedUnaryOperation(self, in_data, expected_out_data, builtin,
-                           args=None):
+                           builtin_args=None, excess_reads=0):
         """Test an unary floating point operation `builtin`, for
         example `builtins.Sin`. Check if items in the sequence
         `in_data` have corresponding results in `expected_out_data`.
         If `args` is given and not `None`, use the tuple as the
         positional arguments in the call of `builtin`.
         """
-        # `args` is handled appropriately by `feedBuiltin`
-        out_data = self.feedBuiltin(in_data, builtin, args)
+        # `args` is handled appropriately by `feedBuiltin`.
+        out_data = self.feedBuiltin(in_data, builtin, builtin_args,
+                                    excess_reads)
         self.assertListsEqual(out_data, expected_out_data)
 
     def testPrefix(self):
         in_data = [1, 2, -3, "a", u"abc", ()]
         expected_data = [7] + in_data
-        out_data = self.feedBuiltin(in_data, builtins.Prefix, args=(7,),
-                                    excess_reads=1)
-        print out_data
-        #self.feedUnaryOperation(in_data, expected_data, builtins.Prefix, (7,))
+        self.feedUnaryOperation(in_data, expected_data, builtins.Prefix,
+                                builtin_args=(7,))
 
 
 
@@ -148,4 +154,6 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(TestBuiltinsWithProcesses, 'testSin')
+    unittest.main()
+    #unittest.main(TestBuiltinsWithProcesses, 'testSin')
+
