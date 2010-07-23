@@ -84,7 +84,6 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         values corresponding to the input and include them in the
         returned output data.
         """
-        csp = self.csp_process
         in_channel, out_channel, result_channel = self.spare_channels[:3]
         coordinator = self.coordinator()(in_channel, out_channel,
                                          result_channel, in_data,
