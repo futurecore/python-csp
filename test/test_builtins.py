@@ -70,6 +70,16 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
                          0.540302305868, -0.653643620864, -0.839071529076,]
         self.feedUnaryFloatOperation(in_data, expected_data, builtins.Cos)
 
+    def testSucc(self):
+        in_data = [0.0, 1.1, 99.123, 1e4, -1.0]
+        expected_data = [1.0, 2.1, 100.123, 1e4+1.0, 0.0]
+        self.feedUnaryFloatOperation(in_data, expected_data, builtins.Succ)
+
+    def testPred(self):
+        in_data = [1.0, 2.1, 100.123, 1e4+1.0, 0.0]
+        expected_data = [0.0, 1.1, 99.123, 1e4, -1.0]
+        self.feedUnaryFloatOperation(in_data, expected_data, builtins.Pred)
+
 
 # class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
 #     csp_process = csp.cspthread
