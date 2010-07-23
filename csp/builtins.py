@@ -100,8 +100,9 @@ def GenerateFloats(outchan, epsilon=0.1):
 
 
 @forever
+#FIXME This should be `Zeros`. Don't forget to fix depending code.
 def Zeroes(cout):
-    """Writes out a stream of zeroes.
+    """Writes out a stream of zeros.
 
     readset =
     writeset = cout
