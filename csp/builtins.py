@@ -33,23 +33,16 @@ import sys
 
 from csp.guards import Timer
 
-if 'CSP' in os.environ:
-    if os.environ['CSP'] == 'PROCESSES':
-        from csp.cspprocess import *
-    elif os.environ['CSP'] == 'THREADS':
-        from csp.cspthread import *
-    else:
-        from csp.cspprocess import *   
+if os.environ.get('CSP') == 'THREADS':
+    from csp.cspthread import *
 else:
-    from csp.cspprocess import *   
-
-del os
+    from csp.cspprocess import *
 
 
 # Names exported by this module.
 
 __all__ = ['Sin', 'Cos', 'GenerateFloats',
-           'Zeroes', 'Id', 'Succ', 'Pred', 'Prefix', 'Delta2',
+           'Zeroes', 'Id', 'Succ', 'Pred', 'Prefix', 'Delta2', 'Splitter',
            'Mux2', 'Multiply', 'Clock', 'Printer', 'Pairs',
            'Mult', 'Generate', 'FixedDelay', 'Fibonacci',
            'Blackhole', 'Sign',
@@ -59,30 +52,6 @@ __all__ = ['Sin', 'Cos', 'GenerateFloats',
            'Or', 'Nand', 'Nor', 'Xor', 'Land', 'Lor', 'Lnot',
            'Lnand', 'Lnor', 'Lxor', 'Eq', 'Ne', 'Geq', 'Leq',
            'Gt', 'Lt', 'Is', 'Is_Not']
-
-
-@forever
-def Sin(inchan, outchan):
-    """
-    readset = inchan
-    writeset = outchan
-    """
-    while True:
-        outchan.write(math.sin(inchan.read()))
-        yield
-    return
-
-
-@forever
-def Cos(inchan, outchan):
-    """
-    readset = inchan
-    writeset = outchan
-    """
-    while True:
-        outchan.write(math.cos(inchan.read()))
-        yield
-    return
 
 
 @forever
@@ -172,8 +141,8 @@ def Prefix(cin, cout, prefix_item=None):
 
 
 @forever
-def Delta2(cin, cout1, cout2):
-    """Delta2 sends input values down two output channels.
+def Splitter(cin, cout1, cout2):
+    """Splitter sends input values down two output channels.
 
     readset = cin
     writeset = cout1, cout2
@@ -184,6 +153,7 @@ def Delta2(cin, cout1, cout2):
         cout2.write(val)
         yield
     return
+Delta2 = Splitter
 
 
 @forever
@@ -193,24 +163,9 @@ def Mux2(cin1, cin2, cout):
     readset = cin1, cin2
     writeset = cout
     """
-#    alt = Alt(cin1, cin2)
     while True:
         cout.write(cin1.read())
         cout.write(cin2.read())
-#        cout.write(alt.pri_select())
-        yield
-    return
-
-
-@forever
-def Multiply(cin0, cin1, cout):
-    """
-    
-    readset = cin0, cin1
-    writeset = cout
-    """
-    while True:
-        cout.write(cin0.read() * cin1.read())
         yield
     return
 
@@ -241,22 +196,6 @@ def Printer(cin, out=sys.stdout):
     while True:
         msg = str(cin.read()) + '\n'
         out.write(msg)
-        yield
-    return
-
-
-@forever
-def Pairs(cin1, cin2, cout):
-    """Read values from L{cin1} and L{cin2} and write their addition
-    to L{cout}.
-
-    readset = cin1, cin2
-    writeset = cout
-    """
-    while True:
-        in1 = cin1.read()
-        in2 = cin2.read()
-        cout.write(in1 + in2)
         yield
     return
 
@@ -393,6 +332,7 @@ def _applybinop(binop, docstring):
 Plus = _applybinop(operator.__add__,
                    """Writes out the addition of two input events.
 """)
+Pairs = Plus
 
 Sub = _applybinop(operator.__sub__,
                   """Writes out the subtraction of two input events.
@@ -401,6 +341,7 @@ Sub = _applybinop(operator.__sub__,
 Mul = _applybinop(operator.__mul__,
                   """Writes out the multiplication of two input events.
 """)
+Multiply = Mul
 
 Div = _applybinop(operator.__truediv__,
                   """Writes out the division of two input events.
@@ -430,6 +371,9 @@ RShift = _applybinop(operator.__rshift__,
 Neg = _applyunop(operator.__neg__,
                  """Writes out the negation of input events.
 """)
+
+Sin = _applyunop(math.sin, 'Calculates the sine of input events.\n')
+Cos = _applyunop(math.cos, 'Calculates the cosine of input events.\n')
 
 # Bitwise operators
 
