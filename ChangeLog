@@ -1,3 +1,20 @@
+8 May 2010
+	Introduced documented readsets and writesets. Added lint-like
+	static checker to determine whether readsets and writesets are
+	correctly documented.
+2 May 2010
+	Introduced CSPServer processes and a @forever decorator to easily
+	create them.
+1 May 2010
+	Removed the _process keyword from CSPProcess objects.
+	Refactored builtin processes to their own library.
+	Updated documentation in the python-csp shell.
+9 Apr 2010:
+	Moved documentation to Sphinx.
+	Added new project logo.
+6 Apr 2010:
+	Added packages for bulk synchronous processing and reactive
+	programming. Added directory structure for tutorial examples.
 15 Nov 2009:
 	Major poisoning bug fixed. Other bug fixes in test scripts and
 	synchronisation fixed.

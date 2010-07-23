@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Mandelbrot example &mdash; python-csp v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python-csp v0.1 documentation" href="index.html" />
+    <link rel="prev" title="Debugging with the tracer module" href="tracer.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="tracer.html" title="Debugging with the tracer module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-mandelbrot">
+<h1>Mandelbrot example<a class="headerlink" href="#module-mandelbrot" title="Permalink to this headline">¶</a></h1>
+<p>Mandelbrot set computed in parallel using python-csp.
+Multiple-producer, single consumer architecture.</p>
+<p>Copyright (C) Sarah Mount, 2009.</p>
+<p>This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+<p>You should have rceeived a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA</p>
+<dl class="data">
+<dt id="mandelbrot.MAXITER">
+<tt class="descclassname">mandelbrot.</tt><tt class="descname">MAXITER</tt><a class="headerlink" href="#mandelbrot.MAXITER" title="Permalink to this definition">¶</a></dt>
+<dd>&#64;var: Number of iterations used to determine each pixel of the
+fractal image.
+&#64;see: L{mandelbrot}</dd></dl>
+
+<dl class="function">
+<dt id="mandelbrot.consume">
+<tt class="descclassname">mandelbrot.</tt><tt class="descname">consume</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mandelbrot.consume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Consumer process to aggregate image data for Mandelbrot fractal.</p>
+<p>readset = cins
+writeset =</p>
+<p>&#64;type IMSIZE: C{tuple}
+&#64;param IMSIZE: Width and height of generated fractal image.
+&#64;type filename: C{str}
+&#64;param filename: File in which to save generated fractal image.
+&#64;type cins: C{list}
+&#64;param cins: Input channels from which image columns will be read.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mandelbrot.get_colour">
+<tt class="descclassname">mandelbrot.</tt><tt class="descname">get_colour</tt><big>(</big><em>mag</em>, <em>cmin=0</em>, <em>cmax=100</em><big>)</big><a class="headerlink" href="#mandelbrot.get_colour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a float, returns an RGB triple.
+Recipe 9.10 from the Python Cookbook.</p>
+<p>&#64;type mag: C{int}
+&#64;param mag: Magnitude value from which to calculate RGB triple.
+&#64;type cmin: C{int}
+&#64;keyword cmin: Minimum possible value for C{mag}.
+&#64;type cmax: C{int}
+&#64;keyword cmax: Maximum possible value for C{mag}.
+&#64;rtype: C{tuple}
+&#64;return: An integer tuple representing an RGB value.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mandelbrot.main">
+<tt class="descclassname">mandelbrot.</tt><tt class="descname">main</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mandelbrot.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manage all processes and channels required to generate fractal.</p>
+<p>&#64;type IMSIZE: C{tuple}
+&#64;param IMSIZE: Size of generated Mandelbrot fractal image.
+&#64;type filename: C{str}
+&#64;param filename: Name of file in which to store generated fractal image.
+&#64;type level: C{str}
+&#64;precondition: C{level in [&#8216;debug&#8217;, &#8216;info&#8217;, &#8216;warning&#8217;, &#8216;error&#8217;, &#8216;critical&#8217;]}
+&#64;param level: Level of log output (written to L{sys.stdout}).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mandelbrot.mandelbrot">
+<tt class="descclassname">mandelbrot.</tt><tt class="descname">mandelbrot</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mandelbrot.mandelbrot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate pixel values for a single column of a Mandelbrot set.</p>
+<p>Writes an image column to C{cout}. An image column is a list of
+RGB triples. The list should be of length C{height}. Uses the
+normalized iteration count algorithm to smooth the colour
+gradients of the area outside the set.</p>
+<p>readset =
+writeset = cout</p>
+<p>&#64;type xcoord: C{int}
+&#64;param xcoord: x-coordinate of this image column.
+&#64;type width: C{int}
+&#64;param width: Width of the overall Mandelbrot fractal.
+&#64;type height: C{int}
+&#64;param height: Height of the overall Mandelbrot fractal.
+&#64;type cout: L{csp.csp.Channel}
+&#64;param cout: Channel down which image column will be sent.
+&#64;type acorn: C{float}
+&#64;keyword acorn: Seed value for fractal generation (real part).
+&#64;type bcorn: C{float}
+&#64;keyword bcorn: Seed value for fractal generation (imaginary part).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pythoncsp-docs.png" alt="Logo"/>
+            </a></p>
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Mandelbrot example</a></li>
+<li><a class="reference external" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="tracer.html"
+                                  title="previous chapter">Debugging with the tracer module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/mandelbrot.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tracer.html" title="Debugging with the tracer module"
+             >previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Sarah Mount.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>

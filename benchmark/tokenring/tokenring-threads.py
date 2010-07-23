@@ -36,9 +36,14 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'November 2009'
 
 from csp.cspthread import *
+from csp.patterns import TokenRing
 
 @process
-def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None, _process=None):
+def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
+    """
+    readset = inchan
+    writeset = outchan
+    """
     trials = 10000
     if tokens == 1 and index == 0:
         token = 1
@@ -62,6 +67,7 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None, _process
         microsecs = cumtime * 1000000.0 / float((trials * numnodes))
         print microsecs
     return
+
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -94,4 +100,10 @@ if __name__ == '__main__':
                 TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
             except: continue
     else:
+        import time
+        print 'Token ring with %i nodes and %i token(s).' % (options.nodes, options.tokens)
+        starttime = time.time()
         TokenRing(ringproc, options.nodes, numtoks=options.tokens).start()
+        elapsed = time.time() - starttime
+        mu = elapsed * 1000000 / float((TRIALS * (2 ** options.nodes)))
+        print '%gms' % mu

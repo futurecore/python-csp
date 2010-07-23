@@ -61,8 +61,7 @@ def get_colour(mag, cmin=0, cmax=100):
 
 
 @process
-def mandelbrot(xcoord, (width, height), cout,
-               acorn=-2.0, bcorn=-1.250, _process=None):
+def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
     """Calculate pixel values for a single column of a Mandelbrot set.
 
     Writes an image column to C{cout}. An image column is a list of
@@ -70,6 +69,9 @@ def mandelbrot(xcoord, (width, height), cout,
     normalized iteration count algorithm to smooth the colour
     gradients of the area outside the set.
 
+    readset = cout
+    writeset = cout
+    
     @type xcoord: C{int}
     @param xcoord: x-coordinate of this image column.
     @type width: C{int}
@@ -107,14 +109,16 @@ def mandelbrot(xcoord, (width, height), cout,
         #print '\nhere %d' % xcoord
         xcoord = cout.read()
         if xcoord == -1:       
-            _process._terminate()
             return
 
 
 @process
-def consume(IMSIZE, filename, cins, _process=None):
+def consume(IMSIZE, filename, cins):
     """Consumer process to aggregate image data for Mandelbrot fractal.
 
+    readset = cins
+    writeset = 
+    
     @type IMSIZE: C{tuple}
     @param IMSIZE: Width and height of generated fractal image.
     @type filename: C{str}
@@ -155,7 +159,6 @@ def consume(IMSIZE, filename, cins, _process=None):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 print 'Goodbye'                
-                _process._terminate()
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
@@ -197,7 +200,6 @@ def main(IMSIZE, filename, granularity=10, level='info'):
     logging.info('Image size: %ix%i' % IMSIZE)
     logging.info('%i producer processes, %i consumer processes' %
                  (len(processes)-1, 1))    
-    mandel._join()
     logging.info('All processes joined.')
     return
 

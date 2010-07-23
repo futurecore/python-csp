@@ -59,8 +59,7 @@ def get_colour(mag, cmin=0, cmax=100):
 
 
 @process
-def mandelbrot(xcoord, (width, height), cout,
-               acorn=-2.0, bcorn=-1.250, _process=None):
+def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
     """Calculate pixel values for a single column of a Mandelbrot set.
 
     Writes an image column to C{cout}. An image column is a list of
@@ -68,6 +67,9 @@ def mandelbrot(xcoord, (width, height), cout,
     normalized iteration count algorithm to smooth the colour
     gradients of the area outside the set.
 
+    readset =
+    writeset = cout
+    
     @type xcoord: C{int}
     @param xcoord: x-coordinate of this image column.
     @type width: C{int}
@@ -100,16 +102,18 @@ def mandelbrot(xcoord, (width, height), cout,
             # Point lies outside the Mandelbrot set.
             colour = get_colour(nu(z, i), cmax=MAXITER)
         imgcolumn[ycoord] = colour
-#    logging.debug('process %g sending column for x=%i' %
-#                  (_process.getPid(), xcoord))
+    logging.debug('sending column for x=%i' % xcoord)
     cout.write((xcoord, imgcolumn))
     return
 
 
 @process
-def consume(IMSIZE, filename, cins, _process=None):
+def consume(IMSIZE, filename, cins):
     """Consumer process to aggregate image data for Mandelbrot fractal.
 
+    readset = cins
+    writeset =
+    
     @type IMSIZE: C{tuple}
     @param IMSIZE: Width and height of generated fractal image.
     @type filename: C{str}
@@ -118,7 +122,6 @@ def consume(IMSIZE, filename, cins, _process=None):
     @param cins: Input channels from which image columns will be read.
     """
     # Create initial pixel data
-    print 'I am process...', _process.getPid()
     pixmap = Numeric.zeros((IMSIZE[0], IMSIZE[1], 3))
     pygame.init()
     screen = pygame.display.set_mode((IMSIZE[0], IMSIZE[1]), 0)
@@ -137,13 +140,13 @@ def consume(IMSIZE, filename, cins, _process=None):
         pygame.surfarray.blit_array(screen, pixmap)
         pygame.display.update(xcoord, 0, 1, IMSIZE[1])
         for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				for channel in cins:
-					channel.poison()
-				pygame.time.wait(1000)
-				pygame.quit()
-			elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-				pygame.image.save(screen, filename)
+            if event.type == pygame.QUIT:
+                for channel in cins:
+                    channel.poison()
+                pygame.time.wait(1000)
+                pygame.quit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+                pygame.image.save(screen, filename)
     print 'TIME TAKEN:', time.time() - t0, 'seconds.'
     logging.debug('Consumer drawing image on screen')
     # With ALT poisoning 320 cols: 211.819334984 seconds
@@ -153,20 +156,19 @@ def consume(IMSIZE, filename, cins, _process=None):
     pygame.image.save(screen, filename)
     logging.info('Consumer finished processing image data')
     while True:
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				for channel in cins: channel.poison()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                for channel in cins: channel.poison()
+                pygame.time.wait(1000)
+                pygame.quit()
                 return
-#			elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-#				pygame.image.save(screen, filename)
-#    return
-
-#				pygame.time.wait(1000)
-#				pygame.quit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+                pygame.image.save(screen, filename)
+                return
 
 
 @process
-def main(IMSIZE, filename, level='info', _process=None):
+def main(IMSIZE, filename, level='info'):
     """Manage all processes and channels required to generate fractal.
 
     @type IMSIZE: C{tuple}

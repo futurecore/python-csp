@@ -1,0 +1,7 @@
+
+Please find documentation on
+http://code.google.com/p/python-csp/w/list
+
+Dependencies:
+ * Numpy
+ * pygame (imageext for saving plots)

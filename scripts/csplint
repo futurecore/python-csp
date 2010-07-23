@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+from optparse import OptionParser
+
+import csp.lint.lint
+
+import sys
+
+parser = OptionParser()
+
+parser.add_option('-l', '--list', dest='listall', 
+                  action='store_true',
+                  help='List all error messages and exit')    
+
+parser.add_option('-p', '--prog', dest='program', 
+                  action='store',
+                  help='Program to be statically checked')
+
+parser.add_option('-x', '--exclude', dest='excluded', 
+                  action='store',
+                  help='Comma-separated list of error codes to exclude.')
+
+
+if __name__ == '__main__':    
+    import exstatic.cspwarnings
+
+    (options, args) = parser.parse_args()
+
+    if options.listall:
+       exstatic.cspwarnings.list_error_codes()
+       sys.exit()
+
+    # Deal with the list of excluded error codes, if used.
+    ex_list = []    
+    if options.excluded:
+        ex_list = options.excluded.strip().split(',')
+    
+    if options.program:
+        csp.lint.lint.run(options.program, excluded=ex_list)
+    else:
+        parser.print_help()
+

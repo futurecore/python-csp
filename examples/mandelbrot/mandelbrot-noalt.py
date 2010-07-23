@@ -37,8 +37,7 @@ def get_colour(mag, cmin=0, cmax=100):
 
 
 @process
-def mandelbrot(xcoord, (width, height), cout,
-               acorn=-2.0, bcorn=-1.250, _process=None):
+def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
     """Calculate pixel values for a single column of a Mandelbrot set.
 
     Writes an image column to C{cout}. An image column is a list of
@@ -46,6 +45,9 @@ def mandelbrot(xcoord, (width, height), cout,
     normalized iteration count algorithm to smooth the colour
     gradients of the area outside the set.
 
+    readset =
+    writeset = cout
+    
     @type xcoord: C{int}
     @param xcoord: x-coordinate of this image column.
     @type width: C{int}
@@ -77,16 +79,18 @@ def mandelbrot(xcoord, (width, height), cout,
             # Point lies outside the Mandelbrot set.
             colour = get_colour(nu(z, i), cmax=MAXITER)
         imgcolumn[ycoord] = colour
-    logging.debug('process %g sending column for x=%i' %
-                  (_process.getPid(), xcoord))
+    logging.debug('sending column for x=%i' % xcoord)
     cout.write((xcoord, imgcolumn))
     return
 
 
 @process
-def consume(IMSIZE, filename, cins, _process=None):
+def consume(IMSIZE, filename, cins):
     """Consumer process to aggregate image data for Mandelbrot fractal.
 
+    readset = cins
+    writeset = 
+    
     @type IMSIZE: C{tuple}
     @param IMSIZE: Width and height of generated fractal image.
     @type filename: C{str}
@@ -115,7 +119,6 @@ def consume(IMSIZE, filename, cins, _process=None):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                _process._terminate()
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
@@ -156,8 +159,6 @@ def main(IMSIZE, filename, level='info'):
     # Start and join producer processes.
     mandel = Par(*processes)
     mandel.start()
-    mandel._join()
-    con._join()
     logging.info('All processes joined.')
     return
 

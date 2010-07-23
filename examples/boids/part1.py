@@ -26,7 +26,11 @@ __date__ = 'October 2009'
 
 
 @process
-def simulate(poschan, SIZE, _process=None):
+def simulate(poschan, SIZE):
+    """
+    readset =
+    writeset = poschan
+    """
     centre = [random.randint(0, SIZE[0]), random.randint(0, SIZE[1])]
     while True:
         centre = random.randint(0, SIZE[0]), random.randint(0, SIZE[1])
@@ -35,7 +39,11 @@ def simulate(poschan, SIZE, _process=None):
 
 
 @process
-def drawboids(poschans, SIZE, _process=None):
+def drawboids(poschans, SIZE):
+    """
+    readset = poschans
+    writeset = 
+    """
     import pygame
 
     FGCOL = (137, 192, 210, 100)  # Foreground colour.
@@ -47,7 +55,7 @@ def drawboids(poschans, SIZE, _process=None):
     
     clock = pygame.time.Clock()
     dirty, last = [], []
-    chansize = len(poschans)
+#    chansize = len(poschans)
 
     pygame.init()
     screen = pygame.display.set_mode((SIZE[0], SIZE[1]), 0)
@@ -77,13 +85,13 @@ def drawboids(poschans, SIZE, _process=None):
 
 
 @process
-def main(_process=None):
+def main():
     NUMBOIDS = 100                # Number of boids in simulation.
     SIZE = (800, 600)             # Screen size.
     # Set up channels for reporting boid positions / velocities.
     poschans = [Channel() for i in range(NUMBOIDS)]
     # Draw channel for the drawboids process.
-    drawchan = Channel()
+#    drawchan = Channel()
     # Generate a list of all processes in the simulation.
     procs = [simulate(poschans[i], SIZE) for i in range(NUMBOIDS)]
     procs.append(drawboids(poschans, SIZE)) # Drawing process.

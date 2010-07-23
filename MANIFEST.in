@@ -1,7 +1,6 @@
 include README ChangeLog LICENSE
 include scripts/python-csp
+include scripts/cspdb
 
-recursive-include applications/
-recursive-include jythonsetup/
-recursive-include csp/
-recursive-include bsp/
+recursive-include csp/ *.py
+recursive-include exstatic/ *.py
