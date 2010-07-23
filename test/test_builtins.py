@@ -29,8 +29,10 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         [channel.poison() for channel in self.spare_channels]
         self.spare_channels[:] = []
 
+    #
     # The following three methods return processes factories to be started
     #  later in parallel.
+    #
     def producer(self):
         @self.csp_process.process
         def _producer(channel, values):
@@ -68,11 +70,14 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
             parallel_processes.start()
         return _coordinator
 
+    #
+    # Helper methods.
+    #
     def feedBuiltin(self, in_data, builtin, builtin_args=None, excess_reads=0):
         """Feed the data from `in_data` into the builtin CSPProcess
         (process/thread) and return a sequence of the corresponding
         output values.
-        
+
         If `builtin_args` isn't `None`, use this tuple as the
         positional arguments to the builtin. If `excess_reads` is
         greater than 0, read this many values after reading output
@@ -105,6 +110,31 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         out_data = self.feedBuiltin(in_data, builtin)
         self.assertListsAlmostEqual(out_data, expected_out_data)
 
+    #XXX Something like this is already defined in Python 2.7.
+    def assertListsEqual(self, list1, list2, msg=None):
+        """See `assertListsAlmostEqual`, but compare exactly."""
+        for item1, item2 in zip(list1, list2):
+            self.assertEqual(item1, item2)
+
+    def feedUnaryOperation(self, in_data, expected_out_data, builtin,
+                           builtin_args=None, excess_reads=0):
+        """Test an unary floating point operation `builtin`, for
+        example `builtins.Sin`. Check if items in the sequence
+        `in_data` have corresponding results in `expected_out_data`.
+
+        If `builtins_args` is given and not `None`, use the tuple as
+        the positional arguments in the call of `builtin`. If the
+        integer `excess_reads` is greater than 0, read this many
+        additional bytes after `len(in_data)` reads.
+        """
+        # `args` is handled appropriately by `feedBuiltin`.
+        out_data = self.feedBuiltin(in_data, builtin, builtin_args,
+                                    excess_reads)
+        self.assertListsEqual(out_data, expected_out_data)
+
+    #
+    # Test unary builtins which accept and deliver float values.
+    #
     def testSin(self):
         in_data = [0.0, 1.0, 4.0, -1.0, -4.0, 10.0]
         expected_data = [0.0, 0.841470984808, -0.756802495308,
@@ -127,33 +157,14 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         expected_data = [0.0, 1.1, 99.123, 1e4, -1.0]
         self.feedUnaryFloatOperation(in_data, expected_data, builtins.Pred)
 
-    #XXX Something like this is already defined in Python 2.7.
-    def assertListsEqual(self, list1, list2, msg=None):
-        """See `assertListsAlmostEqual`, but compare exactly."""
-        for item1, item2 in zip(list1, list2):
-            self.assertEqual(item1, item2)
-
-    def feedUnaryOperation(self, in_data, expected_out_data, builtin,
-                           builtin_args=None, excess_reads=0):
-        """Test an unary floating point operation `builtin`, for
-        example `builtins.Sin`. Check if items in the sequence
-        `in_data` have corresponding results in `expected_out_data`.
-        If `builtins_args` is given and not `None`, use the tuple as
-        the positional arguments in the call of `builtin`. If the
-        integer `excess_reads` is greater than 0, read this many
-        additional bytes after `len(in_data)` reads.
-        """
-        # `args` is handled appropriately by `feedBuiltin`.
-        out_data = self.feedBuiltin(in_data, builtin, builtin_args,
-                                    excess_reads)
-        self.assertListsEqual(out_data, expected_out_data)
-
+    #
+    # Test unary builtins accepting and delivering arbitrary data.
+    #
     def testPrefix(self):
         in_data = [1, 2, -3, "a", u"abc", ()]
         expected_data = [7] + in_data
         self.feedUnaryOperation(in_data, expected_data, builtins.Prefix,
                                 builtin_args=(7,))
-
 
 
 # class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
