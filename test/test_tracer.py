@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 """
 Test the new python-csp tracer.
@@ -21,7 +21,7 @@ def client(inchan):
     readset = inchan
     writeset =
     """
-    print inchan.read()
+    print(inchan.read())
     return
 
 
@@ -47,20 +47,20 @@ def alt3(inchan1, inchan2, inchan3):
         val = alt.select()
         if val != 'Skip':
             selects += 1
-        print val
+        print(val)
     return
 
 
 @process
 def simple():
-    print 'SIMPLES'
+    print('SIMPLES')
     return
 
 
 @forever
 def server():
     while True:
-        print 'server process'
+        print('server process')
         yield
     return
 
@@ -84,7 +84,7 @@ def server_read(inchan):
     writeset =
     """
     while True:
-        print inchan.read()
+        print(inchan.read())
         yield
     return
 

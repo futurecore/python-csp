@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 # -*- mode:python; coding:utf-8; -*-
 
 #  Calculation of Pi using quadrature.  Using the python-csp package by Sarah Mount.
@@ -24,11 +24,11 @@ def execute ( processCount ) :
         """
         pi = 4.0 * sum ( [ channel.read ( ) for channel in channels ] ) * delta
         elapseTime = time.time ( ) - startTime
-        print "==== Python CSP Multiple NestedDeep pi =" , pi
-        print "==== Python CSP Multiple NestedDeep iteration count =", n
-        print "==== Python CSP Multiple NestedDeep elapse =" , elapseTime
-        print "==== Python CSP Multiple NestedDeep process count = ", processCount
-        print "==== Python CSP Multiple NestedDeep processor count =" , multiprocessing.cpu_count ( )
+        print ( "==== Python CSP Multiple NestedDeep pi = " + str ( pi ) )
+        print ( "==== Python CSP Multiple NestedDeep iteration count = " + str ( n ) )
+        print ( "==== Python CSP Multiple NestedDeep elapse = " + str ( elapseTime ) )
+        print ( "==== Python CSP Multiple NestedDeep process count = " + str ( processCount ) )
+        print ( "==== Python CSP Multiple NestedDeep processor count = " + str ( multiprocessing.cpu_count ( ) ) )
     processes = [ ] 
     for i in range ( 0 , processCount ) :
         channel = Channel ( )
@@ -40,7 +40,7 @@ def execute ( processCount ) :
             writeset = channel
             """
             sum = 0.0
-            for j in xrange ( 1 + i * slice , ( i + 1 ) * slice ) :
+            for j in range ( 1 + i * slice , ( i + 1 ) * slice ) :
                 x = ( j - 0.5 ) * delta
                 sum += 1.0 / ( 1.0 + x * x )
             channel.write ( sum )
@@ -52,10 +52,10 @@ if __name__ == '__main__' :
     import gc
     gc.set_debug(True)
     execute ( 1 )
-    print
+    print ( )
     execute ( 2 )
-    print
+    print ( )
     execute ( 8 )
-    print
+    print ( )
     execute ( 32 )
 

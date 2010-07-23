@@ -1,4 +1,4 @@
-#!/bin/env python2.6
+#!/usr/bin/env python
 
 """
 Plotting results of variable ring buffer experiment.

@@ -33,7 +33,7 @@ import sys
 
 from csp.guards import Timer
 
-if os.environ.has_key('CSP'):
+if 'CSP' in os.environ:
     if os.environ['CSP'] == 'PROCESSES':
         from csp.cspprocess import *
     elif os.environ['CSP'] == 'THREADS':
@@ -402,7 +402,7 @@ Mul = _applybinop(operator.__mul__,
                   """Writes out the multiplication of two input events.
 """)
 
-Div = _applybinop(operator.__div__,
+Div = _applybinop(operator.__truediv__,
                   """Writes out the division of two input events.
 """)
 
