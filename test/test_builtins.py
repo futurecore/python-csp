@@ -29,6 +29,8 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         [channel.poison() for channel in self.spare_channels]
         self.spare_channels[:] = []
 
+    # The following three methods return processes factories to be started
+    #  later in parallel.
     def producer(self):
         @self.csp_process.process
         def _producer(channel, values):
@@ -56,9 +58,10 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
             else:
                 called_builtin = builtin(in_channel, out_channel,
                                          *builtin_args)
+            # Start producer, builtin and consumer in parallel.
             parallel_processes = self.csp_process.Par(
-              called_builtin,
               self.producer()(in_channel, in_data),
+              called_builtin,
               self.consumer()(out_channel, reads=len(in_data)+excess_reads,
                               result_channel=result_channel),
               )
@@ -68,7 +71,9 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
     def feedBuiltin(self, in_data, builtin, builtin_args=None, excess_reads=0):
         """Feed the data from `in_data` into the builtin CSPProcess
         (process/thread) and return a sequence of the corresponding
-        output values. If `args` isn't `None`, use this tuple as the
+        output values.
+        
+        If `builtin_args` isn't `None`, use this tuple as the
         positional arguments to the builtin. If `excess_reads` is
         greater than 0, read this many values after reading output
         values corresponding to the input and include them in the
@@ -122,7 +127,7 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         expected_data = [0.0, 1.1, 99.123, 1e4, -1.0]
         self.feedUnaryFloatOperation(in_data, expected_data, builtins.Pred)
 
-    #XXX Something like this is defined in Python 2.7.
+    #XXX Something like this is already defined in Python 2.7.
     def assertListsEqual(self, list1, list2, msg=None):
         """See `assertListsAlmostEqual`, but compare exactly."""
         for item1, item2 in zip(list1, list2):
@@ -133,8 +138,10 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         """Test an unary floating point operation `builtin`, for
         example `builtins.Sin`. Check if items in the sequence
         `in_data` have corresponding results in `expected_out_data`.
-        If `args` is given and not `None`, use the tuple as the
-        positional arguments in the call of `builtin`.
+        If `builtins_args` is given and not `None`, use the tuple as
+        the positional arguments in the call of `builtin`. If the
+        integer `excess_reads` is greater than 0, read this many
+        additional bytes after `len(in_data)` reads.
         """
         # `args` is handled appropriately by `feedBuiltin`.
         out_data = self.feedBuiltin(in_data, builtin, builtin_args,
