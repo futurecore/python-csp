@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#! /usr/bin/env python3
 
 """
 Tracer for python-csp, intended for generating models of a python-csp
@@ -8,7 +8,7 @@ Some source from pycallgraph.py is used here.  pycallgraph is
 published under the GNU General Public License.
 U{http://pycallgraph.slowchop.com/} (C) Gerald Kaszuba 2007
 
-Copyright (C) Sarah Mount, 2009.
+Copyright (C) Sarah Mount, 2009-10.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __credits__ = 'Sarah Mount, Gerald Kaszuba'
-__date__ = 'June 2009'
+__date__ = '2010-05-16'
 
 
 import exstatic.icode
@@ -36,7 +36,7 @@ import os
 import sys
 import types
 
-if os.environ.has_key('CSP'):
+if 'CSP' in os.environ:
     if os.environ['CSP'] == 'PROCESSES':
         import csp.cspprocess
     elif os.environ['CSP'] == 'THREADS':
@@ -187,32 +187,32 @@ def is_safe_type(ttype):
     would be to look inside each sequence and decide whether or not
     its members are safe types.
     """
-    safe = (types.NoneType,
-            types.TypeType,
-            types.BooleanType,
-            types.IntType,
-            types.LongType,
-            types.FloatType,
-            types.ComplexType,
-            types.StringType,
-            types.UnicodeType,
-            types.TupleType, 
-            types.ListType,
-            types.DictType,
-            types.DictionaryType,
+    safe = (type(None),
+            type,
+            bool,
+            int,
+            int,
+            float,
+            complex,
+            bytes,
+            str,
+            tuple, 
+            list,
+            dict,
+            dict,
             # Note that lambdas are forbidden from side-effecting
             # by the language specification.
             types.LambdaType, 
             types.GeneratorType,
             types.CodeType,
             types.ModuleType,
-            types.XRangeType,
-            types.SliceType,
-            types.EllipsisType,
-            types.BufferType,
+            range,
+            slice,
+            type(Ellipsis),
+            memoryview,
             types.DictProxyType,
-            types.NotImplementedType,
-            types.StringTypes)
+            type(NotImplemented),
+            str)
     if ttype in safe: return True
     return False
                
@@ -356,14 +356,14 @@ def _get_arguments(param, frame):
         return targets
 
     # Deal with types defined outside the csp library.
-    elif bound_value in frame.f_locals.values():
+    elif bound_value in list(frame.f_locals.values()):
         if is_safe_type(type(bound_value)):
             arg, ty = (bound_value, type(bound_value))
         else:
             arg, ty = (_find_name_in_outer_scope(bound_value, frame),
                                 type(bound_value))
 
-    elif bound_value in frame.f_globals.values():
+    elif bound_value in list(frame.f_globals.values()):
         if is_safe_type(type(bound_value)):
             arg, ty = (bound_value, type(bound_value))
         else:
@@ -447,12 +447,12 @@ class Tracer(object):
         func_args = {}
 
         # Gather formal parameter names, their values and types.
-        for i in xrange(code.co_argcount):
+        for i in range(code.co_argcount):
             func_args[code.co_varnames[i]] = None
         for param in func_args:
             func_args[param] = _get_arguments(param, frame)
 
-        if DEBUG: print _pprint_func(full_name, func_args)
+        if DEBUG: print ( _pprint_func(full_name, func_args) )
         callgraph.append(exstatic.icode.Call(frame.f_lineno, full_name, func_args, []))
 
         return self

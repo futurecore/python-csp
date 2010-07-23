@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """Mandelbrot set computed in parallel using python-csp.
 Multiple-producer, single consumer architecture.
@@ -59,7 +59,7 @@ def get_colour(mag, cmin=0, cmax=100):
 
 
 @process
-def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
+def mandelbrot(xcoord, xxx_todo_changeme, cout, acorn=-2.0, bcorn=-1.250):
     """Calculate pixel values for a single column of a Mandelbrot set.
 
     Writes an image column to C{cout}. An image column is a list of
@@ -83,6 +83,7 @@ def mandelbrot(xcoord, (width, height), cout, acorn=-2.0, bcorn=-1.250):
     @type bcorn: C{float}
     @keyword bcorn: Seed value for fractal generation (imaginary part).
     """
+    (width, height) = xxx_todo_changeme
     # nu implements the normalized iteration count algorithm
     nu = lambda zz, n: n + 1 - math.log(math.log(abs(zz)))/math.log(2)
     imgcolumn = [0. for i in range(height)]
@@ -132,7 +133,7 @@ def consume(IMSIZE, filename, cins):
     gen = len(cins) * Alt(*cins)
     logging.debug('Consumer about to begin ALT loop')
     for i in range(len(cins)):
-        xcoord, column = gen.next() #alt.select()
+        xcoord, column = next(gen) #alt.select()
         logging.debug('Consumer got some data for column %i' % xcoord)
         # Update column of blit buffer
         pixmap[xcoord] = column
@@ -147,7 +148,7 @@ def consume(IMSIZE, filename, cins):
                 pygame.quit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
-    print 'TIME TAKEN:', time.time() - t0, 'seconds.'
+    print('TIME TAKEN: ' +str(time.time() - t0) + 'seconds.')
     logging.debug('Consumer drawing image on screen')
     # With ALT poisoning 320 cols: 211.819334984 seconds
     # Without poisoning 320 cols: 212.845579147 seconds
@@ -184,7 +185,7 @@ def main(IMSIZE, filename, level='info'):
               'warning': logging.WARNING,
               'error': logging.ERROR,
               'critical': logging.CRITICAL}
-    assert(level in LEVELS.keys())
+    assert(level in list(LEVELS.keys()))
     logging.basicConfig(level=LEVELS[level]) 
     # Channel and process lists.
     channels, processes = [], []

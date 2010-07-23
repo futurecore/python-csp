@@ -51,7 +51,7 @@ class IcodeNode(object):
         """Convert dict of annotations to xml.
         """
         x = '<annote lineno=' + str(self.lineno) + ' '
-        for key, val in self.annote.itervalues():
+        for key, val in self.annote.values():
             x+= str(key) + '=' + str(val) + ' '
         return x + '/>\n'
 

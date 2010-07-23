@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Test the @forever process decorator which creates server processes.
@@ -20,8 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+from functools import reduce
 
-if os.environ.has_key('CSP'):
+if 'CSP' in os.environ:
     if os.environ['CSP'] == 'PROCESSES':
         from csp.cspprocess import *
     elif os.environ['CSP'] == 'THREADS':
@@ -56,7 +57,7 @@ def fact(outchan):
         if n == 1:
             outchan.write(1)
         else:
-            f = reduce(operator.mul, xrange(1, n))
+            f = reduce(operator.mul, list(range(1, n)))
             outchan.write(f)
         n += 1
         yield

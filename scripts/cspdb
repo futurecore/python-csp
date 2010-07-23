@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Debugger for the pyyhon-csp library.
@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
     if options.program:
         with tracer.csptrace():
-            execfile(options.program)
+            exec(compile(open(options.program).read(), options.program, 'exec'))
     else:
         parser.print_help()
     

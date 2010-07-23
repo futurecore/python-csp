@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/env python3
 
 """
 Simple oscilloscope traces for python-csp.
@@ -61,13 +61,13 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
     pygame.surfarray.blit_array(screen, blank)      # Blit the screen buffer
     pygame.display.flip()                           # Flip the double buffer
     # ydata stores data for the trace.
-    ydata = [0.0 for i in xrange(WIDTH)] # assert len(ydata) <= WIDTH
+    ydata = [0.0 for i in range(WIDTH)] # assert len(ydata) <= WIDTH
     QUIT = False
     while not QUIT:
         pixels = copy.copy(blank)
         ydata.append(inchan.read() * scale)
         ydata.pop(0)
-        for x in xrange(WIDTH):
+        for x in range(WIDTH):
             try: pixels[x][xaxis - int(ydata[x])] = TRACE
             except: pass
         pygame.surfarray.blit_array(screen, pixels)     # Blit the screen buffer
@@ -79,13 +79,13 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
                 QUIT = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
-                print 'Saving oscope image in:', filename
+                print('Saving oscope image in: ' + str ( filename ) )
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 scale += 10.0
-                print 'Oscilloscope scaling by %f' % scale
+                print('Oscilloscope scaling by %f' % scale)
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
                 if scale - 10.0 > 0.0: scale -= 10.0
-                print 'Oscilloscope scaling by %f' % scale
+                print('Oscilloscope scaling by %f' % scale)
         yield
     inchan.poison()
     pygame.display.quit()

@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- mode:python; coding:utf-8; -*-
 
 #  Calculation of Pi using quadrature.  Using the python-csp package by Sarah Mount.
@@ -17,7 +17,7 @@ def calculator ( channel , id , sliceSize , delta ) :
     writeset = channel
     """
     sum = 0.0
-    for i in xrange ( 1 + id * sliceSize , ( id + 1 ) * sliceSize + 1 ) :
+    for i in range ( 1 + id * sliceSize , ( id + 1 ) * sliceSize + 1 ) :
         x = ( i - 0.5 ) * delta
         sum += 1.0 / ( 1.0 + x * x )
     channel.write ( sum )
@@ -28,13 +28,13 @@ def accumulator ( channel , n , delta , startTime , processCount ) :
     readset = channel
     writeset =
     """
-    pi = 4.0 * sum ( [ channel.read ( ) for i in xrange ( 0 , processCount ) ] ) * delta
+    pi = 4.0 * sum ( [ channel.read ( ) for i in range ( 0 , processCount ) ] ) * delta
     elapseTime = time.time ( ) - startTime
-    print "==== Python CSP Single pi =" , pi
-    print "==== Python CSP Single iteration count =", n
-    print "==== Python CSP Single elapse =" , elapseTime
-    print "==== Python CSP Single process count = ", processCount
-    print "==== Python CSP Single processor count =" , multiprocessing.cpu_count ( )
+    print ( "==== Python CSP Single pi = " + str ( pi ) )
+    print ( "==== Python CSP Single iteration count = " + str ( n ) )
+    print ( "==== Python CSP Single elapse = " + str ( elapseTime ) )
+    print ( "==== Python CSP Single process count = " + str ( processCount ) )
+    print ( "==== Python CSP Single processor count = " + str ( multiprocessing.cpu_count ( ) ) )
 
 def execute ( processCount ) :
     n = 100000000 # 10 times fewer due to speed issues.
@@ -43,15 +43,15 @@ def execute ( processCount ) :
     sliceSize = n / processCount
     channel = Channel ( )
     processes = [ ] 
-    for i in xrange ( 0 , processCount ) : processes.append ( calculator ( channel , i , sliceSize , delta ) )
+    for i in range ( 0 , processCount ) : processes.append ( calculator ( channel , i , sliceSize , delta ) )
     processes.append ( accumulator ( channel , n , delta , startTime , processCount ) )
     Par ( *processes ).start ( )
 
 if __name__ == '__main__' :
     execute ( 1 )
-    print
+    print ( )
     execute ( 2 )
-    print
+    print ( )
     execute ( 8 )
-    print
+    print ( )
     execute ( 32 )

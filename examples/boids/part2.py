@@ -73,7 +73,7 @@ def drawboids(poschans, SIZE):
 
     while not QUIT:
         ms_elapsed = clock.tick(FPS)
-        print ms_elapsed
+        print(ms_elapsed)
         dirty = last
         for rect in last: screen.fill(BGCOL, rect)
         last = []
@@ -88,7 +88,7 @@ def drawboids(poschans, SIZE):
                 QUIT = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, FILENAME)
-                print 'Saving boids in:', FILENAME
+                print('Saving boids in:', FILENAME)
     for chan in poschans: chan.poison()
     pygame.quit()
     return

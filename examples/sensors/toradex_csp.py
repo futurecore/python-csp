@@ -1,4 +1,4 @@
-#!/bin/env python
+#! /usr/bin/env python3
 
 """
 python-csp process for Toradex Oak sensors.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#! /usr/bin/env python3
 
 """
 py2icode.py produces an ICODE representation of a Python file.
@@ -11,6 +11,9 @@ ICODE translation of <in_file>.  If no name is given STDOUT is used.
 """
 
 __author__ = 'Sarah Mount <s.mount@coventry.ac.uk>'
+__date__ = '2010-05-16'
+
+
 DEBUG = True
 
 import ast, sys
@@ -42,10 +45,10 @@ class Ast2IcodeVisitor(ast.NodeTransformer):
 
 
 if __name__ == '__main__':
-    if DEBUG: print 'Debugging: ON. Script arguments:', sys.argv
+    if DEBUG: print ( 'Debugging: ON. Script arguments:' + str ( sys.argv ) )
     # Determine the input file.
     if len(sys.argv) == 1: 
-        print 'You must specify a Python file for processing.'
+        print ( 'You must specify a Python file for processing.' )
         sys.exit(1)
     else:
         i_file = sys.argv[1]
@@ -53,9 +56,9 @@ if __name__ == '__main__':
     if len(sys.argv) > 2: 
         o_file = sys.argv[2]
         o_fd = open(sys.argv[2], 'w')
-        if DEBUG: print 'Output file:', sys.argv[2]
+        if DEBUG: print ( 'Output file:' + str ( sys.argv[2] ) )
     else:
-        if DEBUG: print 'Using STDOUT for output.'
+        if DEBUG: print ( 'Using STDOUT for output.' )
         o_file = ''
         o_fd = sys.stdout
     # This is the important stuff.

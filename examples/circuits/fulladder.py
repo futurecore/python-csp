@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """Python CSP full adder.
 
@@ -85,7 +85,7 @@ def fulladder(A_in, B_in, C_in, Sum_in, Carry_in):
                Or(i2, i3, Carry_in))
 
 if __name__ == '__main__':
-    print '\nFull adder implemented in Python CSP\n'
+    print('\nFull adder implemented in Python CSP\n')
     # Inputs to full adder
     A = Channel()
     B = Channel()

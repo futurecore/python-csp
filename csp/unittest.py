@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Unit testing framework for python-csp. Same API as unittest.py in the
@@ -23,10 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __credits__ = 'Steve Purcell, author of unittest.py in stdlib'
-__date__ = 'May 2010'
+__date__ = '2010-05-16'
 
 
-import unittest
+from . import unittest
 
 
 # Exported classes and functions
@@ -61,15 +61,15 @@ class TestCase(unittest.TestCase):
 
     def fail(self, msg=None):
         """Fail immediately, with the given message."""
-        raise self.failureException, msg
+        raise self.failureException(msg)
 
     def failIf(self, expr, msg=None):
         "Fail the test if the expression is true."
-        if expr: raise self.failureException, msg
+        if expr: raise self.failureException(msg)
 
     def failUnless(self, expr, msg=None):
         """Fail the test unless the expression is true."""
-        if not expr: raise self.failureException, msg
+        if not expr: raise self.failureException(msg)
 
     def failUnlessRaises(self, excClass, callableObj, *args, **kwargs):
         """Fail unless an exception of class excClass is thrown
@@ -86,23 +86,21 @@ class TestCase(unittest.TestCase):
         else:
             if hasattr(excClass,'__name__'): excName = excClass.__name__
             else: excName = str(excClass)
-            raise self.failureException, "%s not raised" % excName
+            raise self.failureException("%s not raised" % excName)
 
     def failUnlessEqual(self, channel, expected, msg=None):
         """Fail if the two objects are unequal as determined by the '=='
            operator.
         """
         if not first == second:
-            raise self.failureException, \
-                  (msg or '%r != %r' % (channel.read(), expected))
+            raise self.failureException((msg or '%r != %r' % (channel.read(), expected)))
 
     def failIfEqual(self, channel, expected, msg=None):
         """Fail if the two objects are equal as determined by the '=='
            operator.
         """
         if first == second:
-            raise self.failureException, \
-                  (msg or '%r == %r' % (channel.read(), expected))
+            raise self.failureException((msg or '%r == %r' % (channel.read(), expected)))
 
     def failUnlessAlmostEqual(self, channel, expected, places=7, msg=None):
         """Fail if the two objects are unequal as determined by their
@@ -113,8 +111,7 @@ class TestCase(unittest.TestCase):
            as significant digits (measured from the most signficant digit).
         """
         if round(abs(second-first), places) != 0:
-            raise self.failureException, \
-                  (msg or '%r != %r within %r places' % (channel.read(), expected, places))
+            raise self.failureException((msg or '%r != %r within %r places' % (channel.read(), expected, places)))
 
     def failIfAlmostEqual(self, channel, expected, places=7, msg=None):
         """Fail if the two objects are equal as determined by their
@@ -125,8 +122,7 @@ class TestCase(unittest.TestCase):
            as significant digits (measured from the most signficant digit).
         """
         if round(abs(second-first), places) == 0:
-            raise self.failureException, \
-                  (msg or '%r == %r within %r places' % (channel.read(), expected, places))
+            raise self.failureException((msg or '%r == %r within %r places' % (channel.read(), expected, places)))
 
     # Synonyms for assertion methods
 

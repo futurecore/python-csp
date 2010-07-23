@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Exstatic errors and warnings for CSP.
@@ -52,17 +52,17 @@ def list_error_codes():
     """List all available error codes.
     """
     sep = '--------------------------------------------------------------------'
-    print sep
-    print ' CODE  | MESSAGE'
-    codes = errcodes.keys()
+    print ( sep )
+    print ( ' CODE  | MESSAGE' )
+    codes = list(errcodes.keys())
     codes.sort()
     current_type = ''
     for key in codes:
         if key[0] != current_type:
-            print sep
-        print '', key + ': |', errcodes[key]
+            print ( sep )
+        print ( str ( key ) + ': |' + str ( errcodes[key] ) )
         current_type = key[0]
-    print sep
+    print ( sep )
     return
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python3
 
 """
 Builtin guard types. For builtin processes see csp.builtins.
@@ -28,7 +28,7 @@ import multiprocessing
 import threading
 import time
 
-if os.environ.has_key('CSP'):
+if 'CSP' in os.environ:
     if os.environ['CSP'] == 'PROCESSES':
         from csp.cspprocess import *
     elif os.environ['CSP'] == 'THREADS':
@@ -161,7 +161,7 @@ class BarrierProcessing(AbstractBarrier):
         return
 
 
-if os.environ.has_key('CSP'):
+if 'CSP' in os.environ:
     if os.environ['CSP'] == 'PROCESSES':
         Barrier = BarrierProcessing
     elif os.environ['CSP'] == 'THREADS':
