@@ -1,78 +1,84 @@
-from csp.cspprocess import Guard
 import Channel as chnl
 import cPickle
 import uuid
-
-
-DEBUG = False
+from csp.guards import Guard 
 
 class CChannel(Guard):
 
-    def __init__(self):
-        Guard.__init__(self)
-        p = uuid.uuid4().int & 0xffffff
-        av = uuid.uuid4().int & 0xffffff
-        tak = uuid.uuid4().int & 0xffffff
-        shm = uuid.uuid4().int & 0xffffff
-        
-        self.channel = chnl.getChannel(p, av, tak, shm)
-        return
+	def __init__(self):
+		p = uuid.uuid4().int & 0xffffff
+		av = uuid.uuid4().int & 0xffffff
+		tak = uuid.uuid4().int & 0xffffff
+		shm = uuid.uuid4().int & 0xffffff
+		
+		self.channel = chnl.getChannel(p,av,tak,shm)
+		self.name = uuid.uuid1()
+		return
 
-    def put(self,item):
-        a = cPickle.dumps(item)
-        chnl.put(self.channel,a)
-        return
+	def __del__(self):
+		chnl.removeChannel(self.channel)
+		self.channel = None
+		return
 
-    def get(self):
-        ret = None
-        chnl.get(self.channel, ret)
-        item = cPickle.loads(ret)
-        if DEBUG: print item
-        return item
+	def put(self,item):
+		a = cPickle.dumps(item)
+		chnl.put(self.channel,a);
+		return
 
-    def is_selectable(self):
-        a = chnl.is_selectable(self.channel)
+	def get(self):
+		chnl.get(self.channel,ret)
+		item = cPickle.loads(ret)
+		print item
+		return item
 
-        if a == 1:
-            return True
-        else:
-            return False
-        return
+	def is_selectable(self):
+		#print "is_selectable has been called"
+		a = chnl.is_selectable(self.channel)
+		#print "is_selectable got ", a
+		if a == 1:
+			return True
+		else:
+			return False;
+		
 
-    def write(self,item):
-        a = cPickle.dumps(item)
-        chnl._write(self.channel,a,len(a))
-        return
+	def write(self,item):
+		a = cPickle.dumps(item)
+		chnl._write(self.channel,a,len(a));
+		return
 
-    def read(self):
-        ret = chnl._read(self.channel)
-        if DEBUG: print ret
-        item = cPickle.loads(ret)
-        if DEBUG: print item
-        return item
+	def read(self):
+		print "invoked read";
+		ret = chnl._read(self.channel)
+		print ret
+		item = cPickle.loads(ret)
+		print item
+		return item
 
-    def enable(self):
-        chnl.enable(self.channel)
-        return
+	def enable(self):
+		#print "ENABLED CALLED"
+		chnl.enable(self.channel)
+		#print "returning from enable"
+		return
 
-    def disable(self):
-        chnl.disable(self.channel)
-        return
+	def disable(self):
+		chnl.disable(self.channel)
+		return
 
-    def select(self):
-        ret = chnl._select(self.channel)
-        item = cPickle.loads(ret)
-        if DEBUG: print item
-        return item
+	def select(self):
+		#print "calling _select"
+		ret = chnl._select(self.channel)
+		item = cPickle.loads(ret)
+		print item
+		return item
 
-    def poison(self):
-        chnl.poison(self.channel);
-        return
+	def poison(self):
+		chnl.poison(self.channel);
+		return
 
-    def getStatus(self):
-        chnl.getStatus(self.channel)
-        return
+	def getStatus(self):
+		chnl.getStatus(self.channel)
+		return
 
-    def checkpoison(self):
-        chnl.checkpoison()
-        return
+	def checkpoison(self):
+		chnl.checkpoison()
+		return

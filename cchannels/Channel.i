@@ -7,7 +7,8 @@
 
  extern int sq(int i);
  extern void getStatus(Channel *c);
-extern Channel getChannel(long int p,long int av,long int tak,long int shm);
+ extern Channel getChannel(long int p,long int av,long int tak,long int shm);
+ extern void removeChannel(Channel *c);
  extern void checkpoison(Channel *c);
  extern void put(Channel *c, char *ptr, int len);
  extern void get(Channel *c, char *ptr);
@@ -24,7 +25,8 @@ extern Channel getChannel(long int p,long int av,long int tak,long int shm);
 
  extern int sq(int i);
  extern void getStatus(Channel *c);
-extern Channel getChannel(long int p,long int av,long int tak,long int shm);
+ extern Channel getChannel(long int p,long int av,long int tak,long int shm);
+ extern void removeChannel(Channel *c);
  extern void checkpoison(Channel *c);
  extern void put(Channel *c, char *ptr, int len);
  extern void get(Channel *c, char *ptr);

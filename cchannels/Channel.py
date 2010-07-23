@@ -79,6 +79,10 @@ def getChannel(*args):
   return _Channel.getChannel(*args)
 getChannel = _Channel.getChannel
 
+def removeChannel(*args):
+  return _Channel.removeChannel(*args)
+removeChannel = _Channel.removeChannel
+
 def checkpoison(*args):
   return _Channel.checkpoison(*args)
 checkpoison = _Channel.checkpoison
