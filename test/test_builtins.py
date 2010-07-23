@@ -58,11 +58,17 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         out_data = self.feedBuiltin(in_data, builtin)
         self.assertListsAlmostEqual(out_data, expected_out_data)
 
-    def test_sin(self):
-        in_data = [0.0, 1.0, 4.0, -1.0, -4.0]
+    def testSin(self):
+        in_data = [0.0, 1.0, 4.0, -1.0, -4.0, 10.0]
         expected_data = [0.0, 0.841470984808, -0.756802495308,
-                         -0.841470984808, 0.756802495308,]
+                         -0.841470984808, 0.756802495308, -0.544021110889]
         self.feedUnaryFloatOperation(in_data, expected_data, builtins.Sin)
+
+    def testCos(self):
+        in_data = [0.0, 1.0, 4.0, -1.0, -4.0]
+        expected_data = [1.0, 0.540302305868, -0.653643620864,
+                         0.540302305868, -0.653643620864, -0.839071529076,]
+        self.feedUnaryFloatOperation(in_data, expected_data, builtins.Cos)
 
 
 # class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
