@@ -41,11 +41,10 @@ major, minor = sys.version_info[:2]
 
 # If multiprocessing is not available then import threads.
 if major < 2 or (major == 2 and minor < 6):
-    for name in sys.modules:
-        if name is 'processing' or name is 'multiprocessing':
-            from .os_process import *
-            break
-    from .os_thread import *
+    try:
+        from .os_process import *
+    except:
+        from .os_thread import *
 
 # If multiprocessing is likely to be available then let the user
 # choose which version of the implementation they wish to use.
