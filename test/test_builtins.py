@@ -165,12 +165,18 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         self.feedUnaryOperation(in_data, expected_data, builtins.Prefix,
                                 builtin_args=(7,))
 
+    def testId(self):
+        in_data = [1, 2, -3, "a", u"abc", ()]
+        expected_data = in_data
+        self.feedUnaryOperation(in_data, expected_data, builtins.Id)
 
+#XXX This doesn't work at the moment; it seems to block even after the
+#  first test completed.
 # class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
 #     csp_process = csp.cspthread
 
 
 if __name__ == '__main__':
     unittest.main()
-    #unittest.main(TestBuiltinsWithProcesses, 'testSin')
+    #unittest.main(TestBuiltinsWithThreads, 'testSin')
 
