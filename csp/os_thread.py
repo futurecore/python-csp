@@ -55,7 +55,7 @@ except ImportError:
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever', 'Skip']
+           'process', 'forever', 'Skip', '_CSPTYPES']
 
 ### Seeded random number generator (16 bytes)
 

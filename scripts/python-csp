@@ -163,7 +163,7 @@ def _createBuiltinDocs():
         qualname = 'csp.builtins' + '.' + name 
         if eval(qualname+'.__doc__'):
             docstrings[name] = eval(qualname+'.__doc__')
-    del csp.cspprocess
+    del csp.csp
     names = list(docstrings.keys())
     names.sort()
     for name in names:
