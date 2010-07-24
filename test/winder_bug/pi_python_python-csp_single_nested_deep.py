@@ -8,6 +8,9 @@
 import time
 import multiprocessing
 
+import sys
+sys.path.insert(0, "../..")
+
 from csp.csp import *
 
 def execute ( processCount ) :

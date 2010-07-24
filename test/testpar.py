@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+import sys
+
+sys.path.insert(0, "..")
+
 from csp.csp import * 
 from csp.builtins import Generate, Plus, Printer
 

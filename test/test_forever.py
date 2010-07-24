@@ -21,7 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import operator
 import os
+import sys
+
 from functools import reduce
+
+sys.path.insert(0, "..")
 
 from csp.csp import *
 from csp.builtins import Generate, Printer

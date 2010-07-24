@@ -25,8 +25,9 @@ import random
 import sys
 import time
 
-from csp.csp import *
+sys.path.insert(0, "..")
 
+from csp.csp import *
 from csp.guards import Timer
 
 @process

@@ -7,17 +7,18 @@ writing for an input value is done, the builtin `yield`s and continues
 to run.
 """
 
+import sys
 import unittest
 
-# Make shortcuts. Don't use `from ... import *`, so we can still
-#  access both the process and the threading variety
-import csp.cspprocess
-import csp.cspthread
+sys.path.insert(0, "..")
+
+import csp.os_process
+import csp.os_thread
 import csp.builtins as builtins
 
 
 class TestBuiltinsWithProcesses(unittest.TestCase):
-    csp_process = csp.cspprocess
+    csp_process = csp.os_process
 
     def setUp(self):
         csp = self.csp_process
@@ -173,7 +174,7 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
 #XXX This doesn't work at the moment; it seems to block even after the
 #  first test completed.
 # class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
-#     csp_process = csp.cspthread
+#     csp_process = csp.os_thread
 
 
 if __name__ == '__main__':

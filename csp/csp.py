@@ -37,7 +37,6 @@ import sys
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'July 2010'
 
-
 major, minor = sys.version_info[:2]
 
 # If multiprocessing is not available then import threads.

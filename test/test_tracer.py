@@ -9,6 +9,9 @@ Includes regular and server processes and ALTing.
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
+import sys
+
+sys.path.insert(0, "..")
 
 from csp.csp import *
 from csp.guards import Skip
