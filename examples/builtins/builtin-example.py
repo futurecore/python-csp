@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-from csp.cspthread import *
+from csp.csp import *
 from csp.builtins import Fibonacci, Generate, Multiply, Printer
 
 

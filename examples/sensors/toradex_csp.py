@@ -19,7 +19,7 @@ You should have rceeived a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from csp.cspprocess import *
+from csp.csp import *
 
 from toradex import ToradexCurrent, ToradexMagR, ToradexMotion, ToradexDist
 from toradex import ToradexTilt, ToradexLux, ToradexG, ToradexRH, ToradexP

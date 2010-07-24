@@ -145,7 +145,7 @@ def _createBuiltinDocs():
     docs = """ """
     docstrings = {}
     import csp.builtins
-    from csp.cspprocess import _CSPTYPES
+    from csp.csp import _CSPTYPES
     cspnames = [klass.__name__ for klass in _CSPTYPES]
     # Names imported by builtins
     imports = ['copy', 'gc', 'inspect', 'operator', 'os', 'process', 'random', 
@@ -602,6 +602,6 @@ _cspinfo += _commands
 if __name__ == '__main__':
     c = CSPConsole(locals=locals())
     # Don't expect the csp types to be available in locals()
-    c.push('from csp.cspprocess import *')
+    c.push('from csp.csp import *')
     c.push('from csp.builtins import *')
     c.interact(banner=_ban)

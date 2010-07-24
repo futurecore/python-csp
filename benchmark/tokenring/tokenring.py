@@ -35,7 +35,7 @@ along with this program; if not, write to the Free Software
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'November 2009'
 
-from csp.cspprocess import *
+from csp.csp import *
 from csp.patterns import TokenRing
 
 

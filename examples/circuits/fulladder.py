@@ -28,7 +28,7 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
 
 
-from csp.cspprocess import *
+from csp.csp import *
 from csp.builtins import *
 
 @process

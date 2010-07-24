@@ -21,12 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+from __future__ import absolute_import
+
+from . import unittest
+
+
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __credits__ = 'Steve Purcell, author of unittest.py in stdlib'
 __date__ = '2010-05-16'
-
-
-from . import unittest
 
 
 # Exported classes and functions

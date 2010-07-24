@@ -8,7 +8,7 @@
 import time
 import multiprocessing
 
-from csp.cspprocess import *
+from csp.csp import *
 
 @process
 def calculator ( channel , id , sliceSize , delta ) :

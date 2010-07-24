@@ -19,16 +19,18 @@ You should have rceeived a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-__author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
-__date__ = 'May 2010'
-
+from __future__ import absolute_import 
 
 import os
 import multiprocessing
 import threading
 import time
 
-from csp.cspprocess import *
+from .csp import *
+
+
+__author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
+__date__ = 'May 2010'
 
 
 ### Names exported by this module
@@ -153,6 +155,9 @@ class BarrierProcessing(AbstractBarrier):
         return
 
 
+# FIXME: This is no longer always work.
+# FIXME: Add a function in csp/csp.py to tell you which version of the
+# library you are using.
 if 'CSP' in os.environ:
     if os.environ['CSP'] == 'PROCESSES':
         Barrier = BarrierProcessing

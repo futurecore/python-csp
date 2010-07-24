@@ -36,7 +36,7 @@ import os
 import sys
 import types
 
-from csp.cspprocess import *
+from csp.csp import *
 
 from distutils import sysconfig
 #from exstatic.stack import Stack

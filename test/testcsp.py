@@ -25,7 +25,7 @@ import random
 import sys
 import time
 
-from csp.cspprocess import *
+from csp.csp import *
 
 from csp.guards import Timer
 

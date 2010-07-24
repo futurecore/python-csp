@@ -5,7 +5,7 @@
 #
 
 import sys
-from csp.cspprocess import *
+from csp.csp import *
 from csp.builtins import Sin, Cos, GenerateFloats, Mux2, Delta2
 from oscilloscope import Oscilloscope
 

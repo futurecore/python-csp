@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from csp.cspprocess import * 
+from csp.csp import * 
 from csp.builtins import Generate, Plus, Printer
 
 in1, in2, out = Channel(), Channel(), Channel()  

@@ -13,7 +13,7 @@ Bjorndalen, Brian Vinter, Otto Anshus.  CPA 2007, Surrey, UK, July
 Systems Engineering Series (ISSN 1383-7575).
 """
 
-from csp.cspprocess import Par, process #, Channel
+from csp.csp import Par, process #, Channel
 from csp.builtins import Prefix, Delta2, Succ
 
 import sys

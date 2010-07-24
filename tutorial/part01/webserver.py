@@ -15,9 +15,10 @@
 # You should have rceeived a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
-from csp.cspprocess import *
 import socket
+import time
+
+from csp.csp import *
 
 
 def response(code, reason, page):

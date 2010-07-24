@@ -1,8 +1,9 @@
+
 #!/usr/bin/env python
 
 # FIXME: Nowhere near PEP8 compatible :(
 
-from csp.cspthread import  *
+from csp.csp import  *
 
 
 def calculateRowColumnProduct(self, A, row, B, col):

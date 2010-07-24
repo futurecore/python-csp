@@ -9,7 +9,7 @@ Welcome to python-csp's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    cspprocess.rst
    cspthread.rst

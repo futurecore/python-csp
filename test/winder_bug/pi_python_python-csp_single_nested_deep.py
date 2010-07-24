@@ -8,7 +8,7 @@
 import time
 import multiprocessing
 
-from csp.cspprocess import *
+from csp.csp import *
 
 def execute ( processCount ) :
     n = 10000000 # 100 times fewer due to speed issues.

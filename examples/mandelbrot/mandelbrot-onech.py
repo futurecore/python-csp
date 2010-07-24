@@ -4,7 +4,7 @@
 Multiple-producer, single consumer architecture.
 """
 
-from csp.cspprocess import *
+from csp.csp import *
 import logging, math, Numeric, pygame, time
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'

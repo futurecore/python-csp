@@ -1,4 +1,4 @@
-from csp.cspprocess import *
+from csp.csp import *
 import random, time
 
 @process

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from csp.cspprocess import *
+from csp.csp import *
 from math import sqrt
 from decimal import Decimal
 

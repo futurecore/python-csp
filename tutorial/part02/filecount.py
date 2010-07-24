@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from csp.cspprocess import *
+from csp.csp import *
 
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'

@@ -21,19 +21,19 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
-
-__author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
-__date__ = 'May 2010'
-
+from __future__ import absolute_import 
 
 import math
 import operator
 import os
 import sys
 
-from csp.guards import Timer
+from .guards import Timer
 
-from csp.cspprocess import *
+from .csp import *
+
+__author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
+__date__ = 'May 2010'
 
 
 # Names exported by this module.

@@ -19,11 +19,11 @@ You should have rceeived a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import operator
 import os
 from functools import reduce
 
-from csp.cspprocess import *
-import operator
+from csp.csp import *
 from csp.builtins import Generate, Printer
 
 

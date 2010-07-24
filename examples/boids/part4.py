@@ -19,7 +19,7 @@ You should have rceeived a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 """
 
-from csp.cspprocess import *
+from csp.csp import *
 
 import math
 import operator

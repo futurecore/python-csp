@@ -24,7 +24,7 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
 
-from csp.cspprocess import Par
+from csp.csp import Par
 
 from CChannel import CChannel as Channel
 

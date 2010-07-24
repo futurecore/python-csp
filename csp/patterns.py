@@ -20,11 +20,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
 
+from __future__ import absolute_import
+
+from .csp import *
+
+
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
-
-
-from csp.cspprocess import *
 
 
 __all__ = ['TokenRing']

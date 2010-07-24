@@ -10,7 +10,7 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
 
-from csp.cspprocess import *
+from csp.csp import *
 from csp.guards import Skip
 
 ch = Channel()

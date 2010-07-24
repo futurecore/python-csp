@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 import copy, math, struct, time
-from csp.cspprocess import *
-import psyco
-psyco.full()
+from csp.csp import *
+
 
 INFINITY = float('infinity')
 delta = 0.000000001 # in Java this is java.lang.Math.ulp(1.0)
