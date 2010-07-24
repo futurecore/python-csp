@@ -161,7 +161,9 @@ class memoized(object):
         self.cache = {}
     def __call__(self, *args):
         try:
-            return self.cache.setdefault(args,self.func(*args))
+            if not args in self.cache:
+                self.cache[args] = self.func(*args)
+            return self.cache[args]
         except TypeError:
             # uncachable -- for instance, passing a list as an argument.
             # Better to not cache than to blow up entirely.
