@@ -25,10 +25,7 @@ import random
 import sys
 import time
 
-if os.environ.get('CSP') == 'THREADS':
-    from csp.cspthread import *
-else:
-    from csp.cspprocess import *
+from csp.cspprocess import *
 
 from csp.guards import Timer
 

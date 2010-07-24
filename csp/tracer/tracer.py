@@ -36,10 +36,7 @@ import os
 import sys
 import types
 
-if os.environ.get('CSP') == 'THREADS':
-    from csp.cspthread import *
-else:
-    from csp.cspprocess import *
+from csp.cspprocess import *
 
 from distutils import sysconfig
 #from exstatic.stack import Stack

@@ -28,10 +28,7 @@ import multiprocessing
 import threading
 import time
 
-if os.environ.get('CSP') == 'THREADS':
-    from csp.cspthread import *
-else:
-    from csp.cspprocess import *
+from csp.cspprocess import *
 
 
 ### Names exported by this module

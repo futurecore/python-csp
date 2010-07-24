@@ -24,11 +24,7 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
 
-import os
-if os.environ.get('CSP') == 'THREADS':
-    from csp.cspthread import *
-else:
-    from csp.cspprocess import *
+from csp.cspprocess import *
 
 
 __all__ = ['TokenRing']

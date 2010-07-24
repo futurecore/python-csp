@@ -22,14 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from functools import reduce
 
-if os.environ.get('CSP') == 'THREADS':
-    from csp.cspthread import *
-else:
-    from csp.cspprocess import *
-
-import operator
-
 from csp.cspprocess import *
+import operator
 from csp.builtins import Generate, Printer
 
 

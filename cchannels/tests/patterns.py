@@ -24,15 +24,7 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
 
-import os
-if os.environ.has_key('CSP'):
-    if os.environ['CSP'] == 'PROCESSES':
-        from csp.cspprocess import Par
-    elif os.environ['CSP'] == 'THREADS':
-        from csp.cspthread import Par
-else:
-    from csp.cspprocess import Par
-del os
+from csp.cspprocess import Par
 
 from CChannel import CChannel as Channel
 

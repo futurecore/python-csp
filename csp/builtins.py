@@ -33,10 +33,7 @@ import sys
 
 from csp.guards import Timer
 
-if os.environ.get('CSP') == 'THREADS':
-    from csp.cspthread import *
-else:
-    from csp.cspprocess import *
+from csp.cspprocess import *
 
 
 # Names exported by this module.
