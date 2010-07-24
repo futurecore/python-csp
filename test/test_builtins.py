@@ -112,7 +112,7 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
 
     #XXX Something like this is already defined in Python 2.7.
     def assertListsEqual(self, list1, list2, msg=None):
-        """See `assertListsAlmostEqual`, but compare exactly."""
+        """Similar to `assertListsAlmostEqual`, but compare exactly."""
         for item1, item2 in zip(list1, list2):
             self.assertEqual(item1, item2)
 
