@@ -145,6 +145,7 @@ def _createBuiltinDocs():
     docs = """ """
     docstrings = {}
     import csp.builtins
+    import csp.guards
     from csp.csp import _CSPTYPES
     cspnames = [klass.__name__ for klass in _CSPTYPES]
     # Names imported by builtins
@@ -161,6 +162,14 @@ def _createBuiltinDocs():
             or name == 'SECURITY_ON'):
             continue
         qualname = 'csp.builtins' + '.' + name 
+        if eval(qualname+'.__doc__'):
+            docstrings[name] = eval(qualname+'.__doc__')
+    for name in dir(csp.guards):
+        if (name in cspnames or name.startswith('_') or name in imports
+            or name in exceptions or name in baseclasses or name == 'DEBUG'
+            or name == 'SECURITY_ON'):
+            continue
+        qualname = 'csp.guards' + '.' + name 
         if eval(qualname+'.__doc__'):
             docstrings[name] = eval(qualname+'.__doc__')
     del csp.csp
@@ -604,4 +613,5 @@ if __name__ == '__main__':
     # Don't expect the csp types to be available in locals()
     c.push('from csp.csp import *')
     c.push('from csp.builtins import *')
+    c.push('from csp.guards import *')    
     c.interact(banner=_ban)
