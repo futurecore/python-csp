@@ -191,18 +191,18 @@ class _CSPOpMixin(object):
 
     def __mul__(self, n):
         assert n > 0
-        clone = None
-        for i in range(n):
-            clone = copy.copy(self)
-            clone.start()
+        procs = [self]
+        for i in range(n-1):
+            procs.append(copy.copy(self))
+        Seq(*procs).start()
         return
 
     def __rmul__(self, n):
         assert n > 0
-        clone = None
-        for i in range(n):
-            clone = copy.copy(self)
-            clone.start()
+        procs = [self]
+        for i in range(n-1):
+            procs.append(copy.copy(self))
+        Seq(*procs).start()
         return
 
 
