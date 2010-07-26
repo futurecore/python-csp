@@ -755,7 +755,7 @@ class Channel(Guard):
             # _has_selected will be True, blocking other readers. If a
             # new write is performed that flag needs to be reset for
             # the new write transaction.
-            self._has_selected = False
+            self._has_selected.value = Channel.FALSE
             # Make the object available to the reader.
             self.put(obj)
             # Announce the object has been released to the reader.
