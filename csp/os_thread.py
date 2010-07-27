@@ -3,7 +3,7 @@
 """Communicating sequential processes, in Python.
 
 When using CSP Python as a DSL, this module will normally be imported
-via the statement 'from csp.cspthread import *'. 
+via the statement 'from csp.csp import *' and should not be imported directly.
 
 Copyright (C) Sarah Mount, 2009-10.
 
@@ -116,7 +116,7 @@ class _CSPOpMixin(object):
     """
 
     def __init__(self):
-        pass
+        return
 
     def spawn(self):
         """Start only if self is not running."""
@@ -166,17 +166,17 @@ class _CSPOpMixin(object):
 
     def __mul__(self, n):
         assert n > 0
-        clone = None
-        for i in range(n):
-            clone = copy.copy(self)
-            clone.start()
+        procs = [self]
+        for i in range(n-1):
+            procs.append(copy.copy(self))
+        Seq(*procs).start()
 
     def __rmul__(self, n):
         assert n > 0
-        clone = None
-        for i in range(n):
-            clone = copy.copy(self)
-            clone.start()
+        procs = [self]
+        for i in range(n-1):
+            procs.append(copy.copy(self))
+        Seq(*procs).start()
 
 
 class CSPProcess(threading.Thread, _CSPOpMixin):
@@ -193,8 +193,7 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         assert not inspect.ismethod(func) # Check we aren't using objects
 
         _CSPOpMixin.__init__(self)
-
-        for arg in list(args) + list(kwargs.values()):
+        for arg in list(self._args) + list(self._kwargs.values()):
             if _is_csp_type(arg):
                 arg.enclosing = self
         self.enclosing = None
@@ -208,12 +207,11 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         """
         return self.ident
 
-    def __ifloordiv__(self, proclist):
+    def __floordiv__(self, proclist):
         """
         Run this process in parallel with a list of others.
         """
-        assert hasattr(proclist, '__iter__')
-        par = Par(self, *proclist)
+        par = Par(self, *list(proclist))
         par.start()
 
     def __str__(self):
@@ -485,6 +483,8 @@ class Par(threading.Thread, _CSPOpMixin):
             logging.debug('%s got ChannelPoison exception in %g' %
                           (str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
+        except KeyboardInterrupt:
+            sys.exit()
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
@@ -533,9 +533,10 @@ class Seq(threading.Thread, _CSPOpMixin):
                 _CSPOpMixin.start(proc)
                 proc.join()
         except ChannelPoison:
-            logging.debug('%s in %g got ChannelPoison exception' %
+            logging.debug('%s got ChannelPoison exception in %g' %
                           (str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
+            if self._popen is not None: self.terminate()
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
@@ -641,32 +642,6 @@ class Channel(Guard):
         # from being re-enabled). If values were really process safe
         # we could just have writers set _is_selectable and read that.
         self._has_selected = False
-
-    def __getstate__(self):
-        """Return state required for pickling."""
-        state = [self._available._Semaphore__value,
-                 self._taken._Semaphore__value,
-                 self._is_alting,
-                 self._is_selectable,
-                 self._has_selected]
-        if self._available._Semaphore__value > 0:
-            obj = self.get()
-        else:
-            obj = None
-        state.append(obj)
-        return state
-
-    def __setstate__(self, state):
-        """Restore object state after unpickling."""
-        self._wlock = threading.RLock()	# Write lock.
-        self._rlock = threading.RLock()	# Read lock.
-        self._available = threading.Semaphore(state[0])
-        self._taken = threading.Semaphore(state[1])
-        self._is_alting = state[2]
-        self._is_selectable = state[3]
-        self._has_selected = state[4]
-        if state[5] is not None:
-            self.put(state[5])
 
     def put(self, item):
         """Put C{item} on a process-safe store.

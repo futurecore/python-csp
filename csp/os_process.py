@@ -3,9 +3,9 @@
 """Communicating sequential processes, in Python.
 
 When using CSP Python as a DSL, this module will normally be imported
-via the statement 'from csp.cspprocess import *'.
+via the statement 'from csp.csp import *' and should not be imported directly.
 
-Copyright (C) Sarah Mount, 2008, 2010.
+Copyright (C) Sarah Mount, 2008-10.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -196,7 +196,7 @@ class CSPProcess(processing.Process, _CSPOpMixin):
         processing.Process.__init__(self,
                                     target=func,
                                     args=(args),
-                                    kwargs=kwargs)        
+                                    kwargs=kwargs)
         assert inspect.isfunction(func) # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
 
@@ -446,7 +446,6 @@ class Par(processing.Process, _CSPOpMixin):
         logging.debug('%i processes added to Par by //=:' % len(self.procs))
         self.start()
 
-
     def __str__(self):
         return 'CSP Par running in process %i.' % self.getPid()
 
@@ -644,33 +643,6 @@ class Channel(Guard):
         # Is this channel poisoned?
         self._poisoned = processing.Value('h', Channel.FALSE,
                                           lock=processing.Lock())
-
-    def __getstate__(self):
-        """Return state required for pickling."""
-        state = [self._available.get_value(),
-                 self._taken.get_value(),
-                 self._is_alting,
-                 self._is_selectable,
-                 self._has_selected]
-        if self._available.get_value() > 0:
-            obj = self.get()
-        else:
-            obj = None
-        state.append(obj)
-        return state
-
-    def __setstate__(self, state):
-        """Restore object state after unpickling."""
-        self._wlock = processing.RLock()    # Write lock.
-        self._rlock = processing.RLock()    # Read lock.
-        self._itemr, self._itemw = os.pipe()
-        self._available = processing.Semaphore(state[0])
-        self._taken = processing.Semaphore(state[1])
-        self._is_alting = processing.Value('h', state[2], processing.Lock())
-        self._is_selectable = processing.Value('h', state[3], processing.Lock())
-        self._has_selected = processing.Value('h', state[4], processing.Lock())
-        if state[5] is not None:
-            self.put(state[5])
 
     def put(self, item):
         """Put C{item} on a process-safe store.
