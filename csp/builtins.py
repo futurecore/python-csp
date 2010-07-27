@@ -57,10 +57,10 @@ def GenerateFloats(outchan, epsilon=0.1):
     readset =
     writeset =    
     """
-    x = 0.0
+    counter = 0
     while True:
-        outchan.write(x)
-        x += epsilon
+        outchan.write(counter * epsilon)
+        counter += 1
         yield
 
 
