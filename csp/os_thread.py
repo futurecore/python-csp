@@ -929,12 +929,9 @@ def forever(func):
 _CSPTYPES = [CSPProcess, Par, Seq, Alt]
 
 
-def _is_csp_type(name):
-    """Return True if name is any type of CSP process."""
-    for typ in _CSPTYPES:
-        if isinstance(name, typ):
-            return True
-    return False
+def _is_csp_type(obj):
+    """Return True if obj is any type of CSP process."""
+    return isinstance(obj, tuple(_CSPTYPES))
 
 
 def _nop():
