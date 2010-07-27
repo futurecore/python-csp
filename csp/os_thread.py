@@ -497,6 +497,7 @@ class Par(threading.Thread, _CSPOpMixin):
     def __getitem__(self, index):
         try:
             return self.procs[index]
+        # XXX: Why?
         except IndexError:
             raise IndexError
 
@@ -885,6 +886,8 @@ class FileChannel(Channel):
         return obj
 
     def __del__(self):
+        # XXX: Should use EAFP idiom instead of LBYL to avoid race
+        # conditions.
         if os.path.exists(self._fname):
             # Necessary if the Channel has been deleted by poisoning.
             os.unlink(self._fname)

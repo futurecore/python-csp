@@ -490,8 +490,8 @@ class Par(processing.Process, _CSPOpMixin):
     def __getitem__(self, index):
         try:
             return self.procs[index]
+        # XXX: Why?
         except IndexError:
-            #XXX Is this intentional? If yes, it should be explained.
             raise IndexError
 
     def __setitem__(self, index, value):
@@ -912,6 +912,8 @@ class FileChannel(Channel):
         return obj
 
     def __del__(self):
+        # XXX: Should use EAFP idiom instead of LBYL to avoid race
+        # conditions.
         if os.path.exists(self._fname):
             # Necessary if the Channel has been deleted by poisoning.
             os.unlink(self._fname)
