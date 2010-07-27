@@ -499,7 +499,7 @@ class Par(processing.Process, _CSPOpMixin):
         try:
             return self.procs[index]
         except IndexError:
-            #XXX Is this intentional? If yes, it should be stated.
+            #XXX Is this intentional? If yes, it should be explained.
             raise IndexError
 
     def __setitem__(self, index, value):
