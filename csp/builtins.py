@@ -65,7 +65,6 @@ def GenerateFloats(outchan, increment=0.1):
 
 
 @forever
-#FIXME This should be `Zeros`. Don't forget to fix depending code.
 def Zeroes(cout):
     """Writes out a stream of zeros.
 
