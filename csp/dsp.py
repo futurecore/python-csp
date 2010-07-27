@@ -38,7 +38,6 @@ def Zip(outchan, inchannels, _process=None):
     while True:
         outchan.write([chan.read() for chan in inchannels])
         yield
-    return
 
 
 @forever
@@ -51,7 +50,6 @@ def Unzip(inchan, outchans, _process=None):
         for i in xrange(data):
             outchans[i].write(data[i])
         yield
-    return
 
 
 @forever
@@ -59,7 +57,6 @@ def Sin(inchan, outchan, _process=None):
     while True:
         outchan.write(math.sin(inchan.read()))
         yield
-    return
 
 
 @forever
@@ -67,7 +64,6 @@ def Cos(inchan, outchan, _process=None):
     while True:
         outchan.write(math.cos(inchan.read()))
         yield
-    return
 
 
 @forever
@@ -75,7 +71,6 @@ def Tan(inchan, outchan, _process=None):
     while True:
         outchan.write(math.tan(inchan.read()))
         yield
-    return
 
 
 @forever
@@ -85,7 +80,6 @@ def GenerateFloats(outchan, _process=None):
         outchan.write(x)
         x += 0.1
         yield
-    return
 
 
 @forever
@@ -96,7 +90,6 @@ def Magnitude(inchan, outchan, _process=None):
         for axis in acceldata: mag += axis ** 2
         outchan.write(math.sqrt(mag))
         yield
-    return
 
 
 @forever
@@ -110,7 +103,6 @@ def Difference(inchan, outchan, window=1, _process=None):
         except IndexError:
             pass
         yield
-    return
 
 
 @forever
@@ -119,7 +111,6 @@ def Square(inchan, outchan, _process=None):
         data = inchan.read()
         outchan.write(data ** 2)
         yield
-    return
 
 
 @forever
@@ -128,7 +119,6 @@ def Normalise(inchan, outchan, _process=None, start=0.0, end=100.0):
     while True:
         outchan.write(inchan.read() / scale)
         yield    
-    return
 
 
 @forever
@@ -138,6 +128,4 @@ def Threshold(thresh, inchan, outchan, _process=None):
         if mag >= thresh:
             outchan.write(mag)
         yield
-    return
-
 
