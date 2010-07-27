@@ -130,6 +130,9 @@ class AbstractBarrier(object):
                 self.lock.notifyAll()
 
 
+# TODO: Move these two classes to the modules corresponding to
+# their CSP process implementation (i. e. os_process/os_thread).
+
 class BarrierThreading(AbstractBarrier):
 
     def __init__(self):

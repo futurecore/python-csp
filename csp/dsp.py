@@ -75,10 +75,11 @@ def Tan(inchan, outchan, _process=None):
 
 @forever
 def GenerateFloats(outchan, _process=None):
-    x = 0.0
+    counter = 0
+    increment = 0.1
     while True:
-        outchan.write(x)
-        x += 0.1
+        outchan.write(counter * increment)
+        counter += 1
         yield
 
 

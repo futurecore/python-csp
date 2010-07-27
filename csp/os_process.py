@@ -59,7 +59,7 @@ try:
         import multiprocessing.reduction
 except ImportError:
     raise ImportError('No library available for multiprocessing.\n'+
-                      'csp.cspprocess is only compatible with Python 2. 6 and above.')
+                      'csp.os_process is only compatible with Python 2. 6 and above.')
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
