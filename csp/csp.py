@@ -45,19 +45,25 @@ __date__ = 'July 2010'
 major, minor = sys.version_info[:2]
 if (major, minor) < (2, 6):
     try:
+        
         from .os_thread import *
+        _IMPLEMENTATION = 'os_thread'
     except:
         from .os_process import *
+        _IMPLEMENTATION = 'os_process'
 
 # If multiprocessing is likely to be available then let the user
 # choose which version of the implementation they wish to use.
 elif 'CSP' in os.environ:
     if os.environ['CSP'].upper() == 'PROCESSES':
         from .os_process import *
+        _IMPLEMENTATION = 'os_process'
     elif os.environ['CSP'].upper() == 'THREADS':
         from .os_thread import *
+        _IMPLEMENTATION = 'os_thread'
     else:
         from .os_process import *
+        _IMPLEMENTATION = 'os_process'
 
 # If no useful information is available then try to import the
 # multiprocessing version of the code else catch the resulting
@@ -65,8 +71,10 @@ elif 'CSP' in os.environ:
 else: 
     try:
         from .os_process import *
+        _IMPLEMENTATION = 'os_process'
     except:
         from .os_thread import *
+        _IMPLEMENTATION = 'os_thread'
 
 del os
 del sys
@@ -74,5 +82,6 @@ del sys
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever', 'Skip', '_CSPTYPES']
+           'process', 'forever', 'Skip', '_CSPTYPES',
+           '_IMPLEMENTATION']
 
