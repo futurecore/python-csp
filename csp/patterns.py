@@ -31,7 +31,9 @@ __date__ = 'May 2010'
 
 __all__ = ['TokenRing']
 
+
 class TokenRing(Par):
+
     def __init__(self, func, size, numtoks=1):
         self.chans = [Channel() for channel in range(size)]
         self.procs = [func(index=i,
@@ -40,5 +42,4 @@ class TokenRing(Par):
                            inchan=self.chans[i-1],
                            outchan=self.chans[i]) for i in range(size)]
         super(TokenRing, self).__init__(*self.procs) 
-        return
 
