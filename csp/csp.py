@@ -37,9 +37,14 @@ import sys
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'July 2010'
 
-major, minor = sys.version_info[:2]
+
+# XXX: Why don't we just try to import os_process? If we have
+# the separate processing module, the import should work even
+# when we're on a Python version before 2.6. By the way, the
+# whole decision logic can probably be simplified.
 
 # If multiprocessing is not available then import threads.
+major, minor = sys.version_info[:2]
 if major < 2 or (major == 2 and minor < 6):
     try:
         from .os_process import *
