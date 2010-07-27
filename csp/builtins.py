@@ -280,6 +280,7 @@ def _applyunop(unaryop, docstring):
     readset = cin
     writeset = cout
     """
+
     @forever
     def _myproc(cin, cout):
         while True:
@@ -298,6 +299,7 @@ def _applybinop(binop, docstring):
     readset = cin1, cin2
     writeset = cout
     """
+
     @forever
     def _myproc(cin1, cin2, cout):
         while True:

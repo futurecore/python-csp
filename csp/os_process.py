@@ -80,9 +80,6 @@ class CorruptedData(Exception):
     """Used to verify that data has come from an honest source.
     """
 
-    def __init__(self):
-        super(CorruptedData, self).__init__()
-
     def __str__(self):
         return 'Data sent with incorrect authentication key.'
 
@@ -90,9 +87,6 @@ class CorruptedData(Exception):
 class NoGuardInAlt(Exception):
     """Raised when an Alt has no guards to select.
     """
-
-    def __init__(self):
-        super(NoGuardInAlt, self).__init__()
 
     def __str__(self):
         return 'Every Alt must have at least one guard.'
@@ -109,9 +103,6 @@ _POISON = ';;;__POISON__;;;'
 class ChannelPoison(Exception):
     """Used to poison a processes and propagate to all known channels.
     """
-
-    def __init__(self):
-        super(ChannelPoison, self).__init__()
 
     def __str__(self):
         return 'Posioned channel exception.'
@@ -710,6 +701,7 @@ class Channel(Guard):
         return obj
 
     def __del__(self):
+        # XXX: Put this in a try ... except OSError: pass ?
         os.close(self._itemr)
         os.close(self._itemw)
 
