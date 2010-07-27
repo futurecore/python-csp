@@ -313,136 +313,94 @@ def _applybinop(binop, docstring):
     _myproc.__doc__ = docstring + chandoc
     return _myproc
 
+
 # Numeric operators
 
-Plus = _applybinop(operator.__add__,
-                   """Writes out the addition of two input events.
-""")
+Plus = _applybinop(operator.add, "Emits the sum of two input events.")
 Pairs = Plus
 
-Sub = _applybinop(operator.__sub__,
-                  """Writes out the subtraction of two input events.
-""")
+Sub = _applybinop(operator.sub, "Emits the difference of two input events.")
 
-Mul = _applybinop(operator.__mul__,
-                  """Writes out the multiplication of two input events.
-""")
+Mul = _applybinop(operator.mul, "Emits the product of two input events.")
 Multiply = Mul
 
-Div = _applybinop(operator.__truediv__,
-                  """Writes out the division of two input events.
-""")
+Div = _applybinop(operator.truediv, "Emits the division of two input events.")
 
+FloorDiv = _applybinop(operator.floordiv,
+                       "Emits the floor div of two input events.")
 
-FloorDiv = _applybinop(operator.__floordiv__,
-                       """Writes out the floor div of two input events.
-""")
+Mod = _applybinop(operator.mod, "Emits the modulo of two input events.")
 
-Mod = _applybinop(operator.__mod__,
-                  """Writes out the modulo of two input events.
-""")
+Pow = _applybinop(operator.pow, "Emits the power of two input events.")
 
-Pow = _applybinop(operator.__pow__,
-                  """Writes out the power of two input events.
-""")
+LShift = _applybinop(operator.lshift,
+                     "Emits the left shift of two input events.")
 
-LShift = _applybinop(operator.__lshift__,
-                     """Writes out the left shift of two input events.
-""")
+RShift = _applybinop(operator.rshift,
+                     "Emits the right shift of two input events.")
 
-RShift = _applybinop(operator.__rshift__,
-                     """Writes out the right shift of two input events.
-""")
+Neg = _applyunop(operator.neg, "Emits the negation of input events.")
 
-Neg = _applyunop(operator.__neg__,
-                 """Writes out the negation of input events.
-""")
-
-Sin = _applyunop(math.sin, 'Calculates the sine of input events.\n')
-Cos = _applyunop(math.cos, 'Calculates the cosine of input events.\n')
+Sin = _applyunop(math.sin, "Emit the sine of input events.")
+Cos = _applyunop(math.cos, "Emit the cosine of input events.")
 
 # Bitwise operators
 
-Not = _applyunop(operator.__inv__,
-                 """Writes out the inverse of input events.
-""")
+Not = _applyunop(operator.invert, "Emits the inverse of input events.")
 
-And = _applybinop(operator.__and__,
-                  """Writes out the bitwise and of two input events.
-""")
+And = _applybinop(operator.and_, "Emits the bitwise and of two input events.")
 
-Or = _applybinop(operator.__or__,
-                 """Writes out the bitwise or of two input events.
-""")
+Or = _applybinop(operator.or_, "Emits the bitwise or of two input events.")
 
-Nand = _applybinop(lambda x, y: ~ (x & y),
-                   """Writes out the bitwise nand of two input events.
-""")
+Nand = _applybinop(lambda x, y: ~(x & y),
+                   "Emits the bitwise nand of two input events.")
 
-Nor = _applybinop(lambda x, y: ~ (x | y),
-                  """Writes out the bitwise nor of two input events.
-""")
+Nor = _applybinop(lambda x, y: ~(x | y),
+                  "Emits the bitwise nor of two input events.")
 
-Xor = _applybinop(operator.xor,
-                  """Writes out the bitwise xor of two input events.
-""")
+Xor = _applybinop(operator.xor, "Emits the bitwise xor of two input events.")
 
 # Logical operators
 
 Land = _applybinop(lambda x, y: x and y,
-                   """Writes out the logical and of two input events.
-""")
+                   "Emits the logical and of two input events.")
 
 Lor = _applybinop(lambda x, y: x or y,
-                  """Writes out the logical or of two input events.
-""")
+                  "Emits the logical or of two input events.")
 
-Lnot = _applyunop(operator.__not__,
-                  """Writes out the logical not of input events.
-""")
+Lnot = _applyunop(operator.not_, "Emits the logical not of input events.")
 
 Lnand = _applybinop(lambda x, y: not (x and y),
-                    """Writes out the logical nand of two input events.
-""")
+                    "Emits the logical nand of two input events.")
 
 Lnor = _applybinop(lambda x, y: not (x or y),
-                   """Writes out the logical nor of two input events.
-""")
+                   "Emits the logical nor of two input events.")
 
 Lxor = _applybinop(lambda x, y: (x or y) and (not x and y),
-                   """Writes out the logical xor of two input events.
-""")
+                   "Emits the logical xor of two input events.")
 
 # Comparison operators
 
-Eq = _applybinop(operator.__eq__,
-                 """Writes True if two input events are equal (==).
-""")
+Eq = _applybinop(operator.eq,"Emits True if two input events are equal (==).")
 
-Ne = _applybinop(operator.__ne__,
-                   """Writes True if two input events are not equal (not ==).
-""")
+Ne = _applybinop(operator.ne,
+                 "Emits True if two input events are not equal (not ==).")
 
-Geq = _applybinop(operator.__ge__,
-                   """Writes True if 'right' input event is >= 'left'.
-""")
+# XXX: Shouldn't this be the other way around? `operator.ge` -> True
+# means that the first operand is >= the second operand. Similarly for
+# le, gt, and lt.
+Geq = _applybinop(operator.ge,
+                  "Emits True if 'right' input event is >= 'left'.")
 
-Leq = _applybinop(operator.__le__,
-                   """Writes True if 'right' input event is <= 'left'.
-""")
+Leq = _applybinop(operator.le,
+                   "Emits True if 'right' input event is <= 'left'.")
 
-Gt = _applybinop(operator.__gt__,
-                   """Writes True if 'right' input event is > 'left'.
-""")
+Gt = _applybinop(operator.gt,"Emits True if 'right' input event is > 'left'.")
 
-Lt = _applybinop(operator.__lt__,
-                   """Writes True if 'right' input event is < 'left'.
-""")
+Lt = _applybinop(operator.lt, "Emits True if 'right' input event is < 'left'.")
 
-Is = _applybinop(lambda x, y: x is y,
-                 """Writes True if two input events are the same (is).
-""")
+Is = _applybinop(operator.is_, "Emits True if two input events are identical.")
 
-Is_Not = _applybinop(lambda x, y: not (x is y),
-                   """Writes True if two input events are not the same (is).
-""")
+Is_Not = _applybinop(operator.is_not,
+                     "Emits True if two input events are not identical.")
+
