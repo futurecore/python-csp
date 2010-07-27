@@ -51,6 +51,9 @@ __all__ = ['Sin', 'Cos', 'GenerateFloats',
            'Gt', 'Lt', 'Is', 'Is_Not']
 
 
+# XXX: `epsilon` should be `increment`; "epsilon" usually means
+# something else; see
+# http://en.wikipedia.org/wiki/Machine_epsilon .
 @forever
 def GenerateFloats(outchan, epsilon=0.1):
     """
