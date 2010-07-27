@@ -247,6 +247,7 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         behaviour which is difficult to debug, such as a program
         pausing indefinitely on Channel creation.
         """
+        # XXX: When can `gc` ever be `None`?
         if gc is not None:
             gc.collect()
 
