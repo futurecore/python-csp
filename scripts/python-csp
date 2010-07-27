@@ -52,7 +52,7 @@ class _Printer(object):
     def __init__(self, documentation):
         self.__lines = documentation.split('\n')
         self.__linecnt = len(self.__lines)
-        return
+
     def __call__(self):
         prompt = '\n*** Hit Return for more, or q (and Return) to quit: '
         lineno = 0
@@ -100,10 +100,10 @@ class CSPConsole(code.InteractiveConsole):
         self.init_history(histfile)
 
     def init_history(self, histfile):
-	readline.parse_and_bind("tab: complete")
+        readline.parse_and_bind("tab: complete")
         delims = ' \t\n`!@#$%^&*()-=+[{]}\\|;:,<>?'
         readline.set_completer_delims(delims)
-	readline.set_completer(TabSafeCompleter().complete)
+        readline.set_completer(TabSafeCompleter().complete)
         if hasattr(readline, "read_history_file"):
             try:
                 readline.read_history_file(histfile)
