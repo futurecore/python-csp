@@ -73,7 +73,6 @@ class CorruptedData(Exception):
 
     def __init__(self):
         super(CorruptedData, self).__init__()
-        return
 
     def __str__(self):
         return 'Data sent with incorrect authentication key.'
@@ -85,7 +84,6 @@ class NoGuardInAlt(Exception):
 
     def __init__(self):
         super(NoGuardInAlt, self).__init__()
-        return
 
     def __str__(self):
         return 'Every Alt must have at least one guard.'
@@ -119,7 +117,6 @@ def set_debug(status):
     logging.basicConfig(level=logging.NOTSET,
                         stream=sys.stdout)
     logging.info("Using multiprocessing version of python-csp.")
-    return
 
 
 ### Fundamental CSP concepts -- Processes, Channels, Guards
@@ -129,13 +126,12 @@ class _CSPOpMixin(object):
     """
 
     def __init__(self):
-        return
+        pass
 
     def spawn(self):
         """Start only if self is not running."""
         if not self._Thread__started.is_set():
             threading.Thread.start(self)
-        return
 
     def start(self):
         """Start only if self is not running."""
@@ -161,7 +157,6 @@ class _CSPOpMixin(object):
                 self.referent_visitor(obj.args + tuple(obj.kwargs.values()))
             elif hasattr(obj, '__dict__'):
                 self.referent_visitor(list(obj.__dict__.values()))
-        return
 
     def terminate(self):
         """Terminate only if self is running.
@@ -185,7 +180,6 @@ class _CSPOpMixin(object):
         for i in range(n):
             clone = copy.copy(self)
             clone.start()
-        return
 
     def __rmul__(self, n):
         assert n > 0
@@ -193,7 +187,6 @@ class _CSPOpMixin(object):
         for i in range(n):
             clone = copy.copy(self)
             clone.start()
-        return
 
 
 class CSPProcess(threading.Thread, _CSPOpMixin):
@@ -215,7 +208,6 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
             if _is_csp_type(arg):
                 arg.enclosing = self
         self.enclosing = None
-        return
 
     def getPid(self):
         """Return thread ident.
@@ -233,7 +225,6 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         assert hasattr(proclist, '__iter__')
         par = Par(self, *proclist)
         par.start()
-        return
 
     def __str__(self):
         return 'CSPProcess running in TID %s' % self.getName()
@@ -253,7 +244,6 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
-        return
 
     def __del__(self):
         """Run the garbage collector automatically on deletion of this
@@ -269,7 +259,6 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         """
         if gc is not None:
             gc.collect()
-        return
 
 
 class CSPServer(CSPProcess):
@@ -279,7 +268,6 @@ class CSPServer(CSPProcess):
 
     def __init__(self, func, *args, **kwargs):
         CSPProcess.__init__(self, func, *args, **kwargs)
-        return
 
     def __str__(self):
         return 'CSPServer running in PID %s' % self.getPid()
@@ -295,7 +283,8 @@ class CSPServer(CSPProcess):
                 # If the tracer is running execute the target only once.
                 next(generator)
                 logging.info('Server process detected a tracer running.')
-                return
+                # Be explicit.
+                return None
         except ChannelPoison:
             logging.debug('%s in %g got ChannelPoison exception' %
                           (str(self), self.getPid()))
@@ -306,7 +295,6 @@ class CSPServer(CSPProcess):
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
-        return
 
 
 class Alt(_CSPOpMixin):
@@ -350,6 +338,7 @@ class Alt(_CSPOpMixin):
             while not self.guards[0].is_selectable():
                 self.guards[0].enable()
             return self.guards[0].select()
+        #XXX What is the semantics of returning `None`?
         return None
 
     def select(self):
@@ -424,13 +413,11 @@ class Alt(_CSPOpMixin):
         assert n > 0
         for i in range(n):
             yield self.select()
-        return
 
     def __rmul__(self, n):
         assert n > 0
         for i in range(n):
             yield self.select()
-        return
 
 
 class Par(threading.Thread, _CSPOpMixin):
@@ -449,7 +436,6 @@ class Par(threading.Thread, _CSPOpMixin):
         for proc in self.procs:
             proc.enclosing = self
         logging.debug('%i processes in Par:' % len(self.procs))
-        return
 
     def __ifloordiv__(self, proclist):
         """
@@ -467,7 +453,6 @@ class Par(threading.Thread, _CSPOpMixin):
             proc.enclosing = self
         logging.debug('%i processes added to Par by //=:' % len(self.procs))
         self.start()
-        return
 
     def __str__(self):
         return 'CSP Par running in process %i.' % self.getPid()
@@ -497,7 +482,6 @@ class Par(threading.Thread, _CSPOpMixin):
     def join(self):
         for proc in self.procs:
             proc.join()
-        return
 
     def start(self):
         """Start then synchronize with the execution of parallel processes.
@@ -515,7 +499,6 @@ class Par(threading.Thread, _CSPOpMixin):
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
-        return
 
     def __len__(self):
         return len(self.procs)
@@ -529,7 +512,6 @@ class Par(threading.Thread, _CSPOpMixin):
     def __setitem__(self, index, value):
         assert isinstance(value, CSPProcess)
         self.procs[index] = value
-        return
 
     def __contains__(self, proc):
         return proc in self.procs
@@ -550,7 +532,6 @@ class Seq(threading.Thread, _CSPOpMixin):
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
-        return
 
     def __str__(self):
         return 'CSP Seq running in process %i.' % self.getPid()
@@ -571,7 +552,6 @@ class Seq(threading.Thread, _CSPOpMixin):
         except Exception:
             typ, excn, tback = sys.exc_info()
             sys.excepthook(typ, excn, tback)
-        return
 
 
 ### Guards and channels
@@ -653,7 +633,6 @@ class Channel(Guard):
         self._setup()
         super(Channel, self).__init__()
         logging.debug('Channel created: %s' % self.name)
-        return
 
     def _setup(self):
         """Set up synchronisation.
@@ -699,7 +678,6 @@ class Channel(Guard):
         self._has_selected = state[4]
         if state[5] is not None:
             self.put(state[5])
-        return
 
     def put(self, item):
         """Put C{item} on a process-safe store.
@@ -745,7 +723,6 @@ class Channel(Guard):
             self._taken.acquire()
             # Remove the object from the channel.
         logging.debug('+++ Write on Channel %s finished.' % self.name)
-        return
 
     def read(self):
         """Read (and return) a Python object from this channel.
@@ -785,7 +762,6 @@ class Channel(Guard):
         logging.debug('Enable on guard %s _is_selectable: %s _available: %s'
                       % (self.name, str(self._is_selectable),
                          str(self._available)))
-        return
 
     def disable(self):
         """Disable this channel for Alt selection.
@@ -798,7 +774,6 @@ class Channel(Guard):
             with self._rlock:
                 self._available.release()
             self._is_selectable = False
-        return
 
     def select(self):
         """Complete a Channel read for an Alt select.
@@ -832,7 +807,6 @@ class Channel(Guard):
         with self._plock:
             if self._poisoned:
                 raise ChannelPoison()
-        return
 
     def poison(self):
         """Poison a channel causing all processes using it to terminate.
@@ -842,7 +816,6 @@ class Channel(Guard):
             # Avoid race conditions on any waiting readers / writers.
             self._available.release() 
             self._taken.release()
-        return
 
 
 class FileChannel(Channel):
@@ -869,7 +842,6 @@ class FileChannel(Channel):
         file_d, self._fname = tempfile.mkstemp()
         os.close(file_d)
         self._setup()
-        return
 
     def __getstate__(self):
         """Return state required for pickling."""
@@ -898,7 +870,6 @@ class FileChannel(Channel):
         self._fname = state[5]
         if state[6] is not None:
             self.put(state[6])
-        return
 
     def put(self, item):
         """Put C{item} on a process-safe store.
@@ -907,7 +878,6 @@ class FileChannel(Channel):
         file_d.write(pickle.dumps(item, protocol=1))
         file_d.flush()
         file_d.close()
-        return
 
     def get(self):
         """Get a Python object from a process-safe store.
@@ -927,7 +897,6 @@ class FileChannel(Channel):
         if os.path.exists(self._fname):
             # Necessary if the Channel has been deleted by poisoning.
             os.unlink(self._fname)
-        return
 
     def __str__(self):
         return 'Channel using files for IPC.'
@@ -977,7 +946,7 @@ def _is_csp_type(name):
 
 
 def _nop():
-    return
+    pass
 
 
 class Skip(Guard, CSPProcess):
@@ -990,7 +959,6 @@ class Skip(Guard, CSPProcess):
         Guard.__init__(self)
         CSPProcess.__init__(self, _nop)
         self.name = '__Skip__'
-        return
 
     def is_selectable(self):
         """Skip is always selectable."""
@@ -998,11 +966,11 @@ class Skip(Guard, CSPProcess):
 
     def enable(self):
         """Has no effect."""
-        return
+        pass
 
     def disable(self):
         """Has no effect."""
-        return
+        pass
 
     def select(self):
         """Has no effect."""
