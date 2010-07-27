@@ -1,0 +1,28 @@
+-- (c) Michael Sparks
+
+PROC box_with_maxsize(CHAN in, out) = 
+    CHAN pass_through, send_next
+    PAR
+        VAR head, tail, count, queue[n]:
+        SEQ
+            head := 0
+            tail := 0
+            count := 0
+            WHILE TRUE:
+                ALT
+                    (count < n) & in ? queue[tail] -- Input process - always ready to accept, for a sufficiently large value of n
+                        PAR                        -- Always accept values from sender up to queue size
+                            tail := (tail + 1) \ n
+                            count := count + 1
+                    (count > 0) & send_next ? ANY  -- Pass through process
+                        SEQ                        -- Send on messages when reciever requests one
+                            pass_through ! queue[head]
+                            PAR
+                                head := (head + 1) \n
+                                count := count - 1
+        WHILE TRUE -- Actual output process. Always ready to send if there's a value to send
+            VAR x: -- In place of an output guard. Requests messages when not waiting to send a value
+                SEQ
+                    send_next ! ANY   -- Request next message from pass through process
+                    pass_through ? x  -- Read value from pass_through process to send forward
+                    out ! x           -- Send to out the value
