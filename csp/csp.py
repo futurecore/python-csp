@@ -45,12 +45,11 @@ __date__ = 'July 2010'
 
 # If multiprocessing is not available then import threads.
 major, minor = sys.version_info[:2]
-# XXX: Shouldn't this be >= ?
 if (major, minor) < (2, 6):
     try:
-        from .os_process import *
-    except:
         from .os_thread import *
+    except:
+        from .os_process import *
 
 # If multiprocessing is likely to be available then let the user
 # choose which version of the implementation they wish to use.
