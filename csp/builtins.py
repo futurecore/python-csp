@@ -51,11 +51,8 @@ __all__ = ['Sin', 'Cos', 'GenerateFloats',
            'Gt', 'Lt', 'Is', 'Is_Not']
 
 
-# XXX: `epsilon` should be `increment`; "epsilon" usually means
-# something else; see
-# http://en.wikipedia.org/wiki/Machine_epsilon .
 @forever
-def GenerateFloats(outchan, epsilon=0.1):
+def GenerateFloats(outchan, increment=0.1):
     """
     readset =
     writeset =    
@@ -365,13 +362,10 @@ Lxor = binop(lambda x, y: (x or y) and (not x and y),
 
 Eq = binop(op.eq,"Emits True if two input events are equal (==).")
 Ne = binop(op.ne, "Emits True if two input events are not equal (not ==).")
-# XXX: Shouldn't this be the other way around? `op.ge` -> True
-# means that the first operand is >= the second operand. Similarly for
-# le, gt, and lt.
-Geq = binop(op.ge, "Emits True if 'right' input event is >= 'left'.")
-Leq = binop(op.le, "Emits True if 'right' input event is <= 'left'.")
-Gt = binop(op.gt, "Emits True if 'right' input event is > 'left'.")
-Lt = binop(op.lt, "Emits True if 'right' input event is < 'left'.")
+Geq = binop(op.ge, "Emits True if 'left' input event is >= 'right'.")
+Leq = binop(op.le, "Emits True if 'left' input event is <= 'right'.")
+Gt = binop(op.gt, "Emits True if 'left' input event is > 'right'.")
+Lt = binop(op.lt, "Emits True if 'left' input event is < 'right'.")
 Is = binop(op.is_, "Emits True if two input events are identical.")
 Is_Not = binop(op.is_not, "Emits True if two input events are not identical.")
 

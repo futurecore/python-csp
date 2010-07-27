@@ -247,7 +247,6 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         behaviour which is difficult to debug, such as a program
         pausing indefinitely on Channel creation.
         """
-        # XXX: When can `gc` ever be `None`?
         if gc is not None:
             gc.collect()
 
@@ -329,7 +328,6 @@ class Alt(_CSPOpMixin):
             while not self.guards[0].is_selectable():
                 self.guards[0].enable()
             return self.guards[0].select()
-        #XXX What is the semantics of returning `None`?
         return None
 
     def select(self):
@@ -497,7 +495,6 @@ class Par(threading.Thread, _CSPOpMixin):
     def __getitem__(self, index):
         try:
             return self.procs[index]
-        # XXX: Why?
         except IndexError:
             raise IndexError
 
@@ -886,11 +883,11 @@ class FileChannel(Channel):
         return obj
 
     def __del__(self):
-        # XXX: Should use EAFP idiom instead of LBYL to avoid race
-        # conditions.
-        if os.path.exists(self._fname):
+        try:
             # Necessary if the Channel has been deleted by poisoning.
             os.unlink(self._fname)
+        except:
+            pass
 
     def __str__(self):
         return 'Channel using files for IPC.'

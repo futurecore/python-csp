@@ -38,10 +38,8 @@ __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'July 2010'
 
 
-# XXX: Why don't we just try to import os_process? If we have
-# the separate processing module, the import should work even
-# when we're on a Python version before 2.6. By the way, the
-# whole decision logic can probably be simplified.
+# FIXME: Simplify this logic. See the thread on "Importing different
+# implementations of the library" on the mailing list.
 
 # If multiprocessing is not available then import threads.
 major, minor = sys.version_info[:2]
