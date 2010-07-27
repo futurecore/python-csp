@@ -45,12 +45,10 @@ class Timer(Guard):
         self.now = time.time()
         self.name = 'Timer guard created at:' + str(self.now)
         self.alarm = None
-        return
 
     def set_alarm(self, timeout):
         self.now = time.time()
         self.alarm = self.now + timeout
-        return
     
     def is_selectable(self):
         self.now = time.time()
@@ -70,16 +68,15 @@ class Timer(Guard):
         """Put this process to sleep for a number of seconds.
         """
         time.sleep(timeout)
-        return
     
     def enable(self):
-        return
+        pass
     
     def disable(self):
-        return
+        pass
 
     def select(self):
-        return
+        pass
 
     
 class AbstractBarrier(object):
@@ -89,20 +86,17 @@ class AbstractBarrier(object):
         self.not_ready = participants
         self.lock = None # MUST be overridden in subclass
         self.reset(participants)
-        return
 
     def reset(self, participants):
         assert participants >= 0
         with self.lock:
             self.participants = participants
             self.not_ready = participants
-        return
 
     def enrol(self):
         with self.lock:
             self.participants += 1
             self.not_ready += 1
-        return
 
     def retire(self):
         with self.lock:
@@ -112,7 +106,6 @@ class AbstractBarrier(object):
                 self.not_ready = self.participants
                 self.lock.notifyAll()
             assert self.not_ready >= 0
-        return
 
     def synchronise(self):
         with self.lock:
@@ -122,7 +115,6 @@ class AbstractBarrier(object):
             else:
                 self.not_ready = self.participants
                 self.lock.notifyAll()
-        return
 
     def synchronise_withN(self, n):
         """Only syncrhonise when N participants are enrolled.
@@ -136,7 +128,6 @@ class AbstractBarrier(object):
             else:
                 self.not_ready = self.participants
                 self.lock.notifyAll()
-        return
 
 
 class BarrierThreading(AbstractBarrier):
@@ -144,7 +135,6 @@ class BarrierThreading(AbstractBarrier):
     def __init__(self):
         super(BarrierThreading, self).__init__()
         self.lock = threading.Condition()
-        return
 
 
 class BarrierProcessing(AbstractBarrier):
@@ -152,7 +142,6 @@ class BarrierProcessing(AbstractBarrier):
     def __init__(self):
         super(BarrierProcessing, self).__init__()
         self.lock = multiprocessing.Condition()
-        return
 
 
 # FIXME: This is no longer always work.
