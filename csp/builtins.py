@@ -62,7 +62,6 @@ def GenerateFloats(outchan, epsilon=0.1):
         outchan.write(x)
         x += epsilon
         yield
-    return
 
 
 @forever
@@ -76,7 +75,6 @@ def Zeroes(cout):
     while True:
         cout.write(0)
         yield
-    return
 
 
 @forever
@@ -89,7 +87,6 @@ def Id(cin, cout):
     while True:
         cout.write(cin.read())
         yield
-    return
 
 
 @forever
@@ -103,7 +100,6 @@ def Succ(cin, cout):
     while True:
         cout.write(cin.read() + 1)
         yield
-    return
 
 
 @forever
@@ -117,7 +113,6 @@ def Pred(cin, cout):
     while True:
         cout.write(cin.read() - 1)
         yield
-    return
 
 
 @forever
@@ -135,7 +130,6 @@ def Prefix(cin, cout, prefix_item=None):
         cout.write(pre)
         pre = cin.read()
         yield
-    return
 
 
 @forever
@@ -150,7 +144,7 @@ def Splitter(cin, cout1, cout2):
         cout1.write(val)
         cout2.write(val)
         yield
-    return
+
 Delta2 = Splitter
 
 
@@ -165,7 +159,6 @@ def Mux2(cin1, cin2, cout):
         cout.write(cin1.read())
         cout.write(cin2.read())
         yield
-    return
 
 
 @forever
@@ -181,7 +174,6 @@ def Clock(cout, resolution=1):
         timer.sleep(resolution)
         cout.write(None)
         yield
-    return
 
 
 @forever
@@ -195,7 +187,6 @@ def Printer(cin, out=sys.stdout):
         msg = str(cin.read()) + '\n'
         out.write(msg)
         yield
-    return
 
 
 @forever
@@ -208,7 +199,6 @@ def Mult(cin, cout, scale):
     while True:
         cout.write(cin.read() * scale)
         yield
-    return
 
 
 @forever
@@ -223,7 +213,6 @@ def Generate(cout):
         cout.write(counter)
         counter += 1
         yield
-    return
 
 
 @forever
@@ -240,7 +229,6 @@ def FixedDelay(cin, cout, delay):
         timer.sleep(delay)
         cout.write(in1)
         yield
-    return
 
 
 @forever
@@ -255,7 +243,6 @@ def Fibonacci(cout):
         cout.write(a_int)
         a_int, b_int = b_int, a_int + b_int
         yield
-    return
 
 
 @forever
@@ -268,7 +255,6 @@ def Blackhole(cin):
     while True:
         cin.read()
         yield
-    return
 
 
 @forever
@@ -282,7 +268,6 @@ def Sign(cin, cout, prefix):
         val = cin.read()
         cout.write(prefix + str(val))
         yield
-    return
 
 
 ### Magic for processes built on Python operators
@@ -294,8 +279,7 @@ def _applyunop(unaryop, docstring):
     chandoc = """
     readset = cin
     writeset = cout
-"""
-    
+    """
     @forever
     def _myproc(cin, cout):
         while True:
@@ -313,8 +297,7 @@ def _applybinop(binop, docstring):
     chandoc = """
     readset = cin1, cin2
     writeset = cout
-"""
-    
+    """
     @forever
     def _myproc(cin1, cin2, cout):
         while True:
