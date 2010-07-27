@@ -103,7 +103,6 @@ class ChannelPoison(Exception):
 
     def __init__(self):
         super(ChannelPoison, self).__init__()
-        return
 
     def __str__(self):
         return 'Posioned channel exception.'
@@ -910,7 +909,6 @@ def process(func):
     Note that the function itself will not be a CSPProcess object, but
     will generate a CSPProcess object when called.
     """
-
     @wraps(func)
     def _call(*args, **kwargs):
         """Call the target function."""
@@ -925,7 +923,6 @@ def forever(func):
     CSP tracer to terminate correctly and produce a CSP model, or
     other debugging information.
     """
-    
     @wraps(func)
     def _call(*args, **kwargs):
         """Call the target function."""
