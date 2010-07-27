@@ -45,7 +45,8 @@ __date__ = 'July 2010'
 
 # If multiprocessing is not available then import threads.
 major, minor = sys.version_info[:2]
-if major < 2 or (major == 2 and minor < 6):
+# XXX: Shouldn't this be >= ?
+if (major, minor) < (2, 6):
     try:
         from .os_process import *
     except:
