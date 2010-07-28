@@ -186,7 +186,37 @@ class _CSPOpMixin(object):
 
 class CSPProcess(threading.Thread, _CSPOpMixin):
     """Implementation of CSP processes.
-    Not intended to be used in client code. Use @process instead.
+    
+There are two ways to create a new CSP process. Firstly, you can use
+the @process decorator to convert a function definition into a CSP
+Process. Once the function has been defined, calling it will return a
+new CSPProcess object which can be started manually, or used in an
+expression:
+
+>>> @process
+... def foo(n):
+...     print 'n:', n
+... 
+>>> foo(100).start()
+>>> n: 100
+
+>>> foo(10) // (foo(20),)
+n: 10
+n: 20
+<Par(Par-5, initial)>
+>>> 
+
+Alternatively, you can create a CSPProcess object directly and pass a
+function (and its arguments) to the CSPProcess constructor:
+
+>>> def foo(n):
+...     print 'n:', n
+... 
+>>> p = CSPProcess(foo, 100)
+>>> p.start()
+>>> n: 100
+
+>>> 
     """
 
     def __init__(self, func, *args, **kwargs):
@@ -294,7 +324,87 @@ class CSPServer(CSPProcess):
 class Alt(_CSPOpMixin):
     """CSP select (OCCAM ALT) process.
 
-    What should happen if a guard is poisoned?
+    python-csp process will often have access to several different
+    channels, or other guard types such as timer guards, and will have
+    to choose one of them to read from. For example, in a
+    producer/consumer or worker/farmer model, many producer or worker
+    processes will be writing values to channels and one consumer or
+    farmer process will be aggregating them in some way. It would be
+    inefficient for the consumer or farmer to read from each channel
+    in turn, as some channels might take longer than others. Instead,
+    python-csp provides support for ALTing (or ALTernating), which
+    enables a process to read from the first channel (or timer, or
+    other guard) in a list to become ready.
+
+    The simplest way to choose between channels (or other guards) is
+    to use choice operator: "|", as in the example below:
+
+>>> @process
+... def send_msg(chan, msg):
+...     chan.write(msg)
+... 
+>>> @process
+... def choice(chan1, chan2):
+...     # Choice chooses a channel on which to call read()
+...     print chan1 | chan2
+...     print chan1 | chan2
+... 
+>>> c1, c2 = Channel(), Channel()
+>>> choice(c1, c2) // (send_msg(c1, 'yes'), send_msg(c2, 'no'))
+yes
+no
+<Par(Par-8, initial)>
+>>>
+
+    Secondly, you can create an Alt object explicitly, and call its
+    select() method to perform a channel read on the next available
+    channel. If more than one channel is available to read from, then
+    an available channel is chosen at random (for this reason, ALTing
+    is sometimes called "non-deterministic choice":
+
+>>> @process
+... def send_msg(chan, msg):
+...     chan.write(msg)
+... 
+>>> @process
+... def alt_example(chan1, chan2):
+...     alt = Alt(chan1, chan2)
+...     print alt.select()
+...     print alt.select()
+... 
+>>> c1, c2 = Channel(), Channel()
+>>> Par(send_msg(c1, 'yes'), send_msg(c2, 'no'), alt_example(c1, c2)).start()
+yes
+no
+>>>
+
+    In addition to the select() method, which chooses an available
+    guard at random, Alt provides two similar methods, fair_select()
+    and pri_select(). fair_select() will choose not to select the
+    previously selected guard, unless it is the only guard
+    available. This ensures that no guard will be starved twice in a
+    row. pri_select() will select available channels in the order in
+    which they were passed to the Alt() constructor, giving a simple
+    implementation of guard priority.
+
+    Lastly, Alt() can be used with the repetition operator (*) to
+    create a generator:
+
+>>> @process
+... def send_msg(chan, msg):
+...     chan.write(msg)
+... 
+>>> @process
+... def gen_example(chan1, chan2):
+...     gen = Alt(chan1, chan2) * 2
+...     print gen.next()
+...     print gen.next()
+... 
+>>> c1, c2 = Channel(), Channel()
+>>> Par(send_msg(c1, 'yes'), send_msg(c2, 'no'), gen_example(c1, c2)).start()
+yes
+no
+>>> 
     """
 
     def __init__(self, *args):
@@ -416,6 +526,34 @@ class Alt(_CSPOpMixin):
 
 class Par(threading.Thread, _CSPOpMixin):
     """Run CSP processes in parallel.
+
+    There are two ways to run processes in parallel.  Firstly, given
+    two (or more) processes you can parallelize them with the //
+    operator, like this:
+
+>>> @process
+... def foo(n):
+...     print 'n:', n
+... 
+>>> foo(1) // (foo(2), foo(3))
+n: 2
+n: 1
+n: 3
+<Par(Par-5, initial)>
+>>> 
+
+    Notice that the // operator takes a CSPProcess on the left hand side
+    and a sequence of processes on the right hand side.
+
+    Alternatively, you can create a Par object which is a sort of CSP
+    process and start that process manually:
+
+>>> p = Par(foo(100), foo(200), foo(300))
+>>> p.start()
+n: 100
+n: 300
+n: 200
+>>>     
     """
 
     def __init__(self, *procs, **kwargs):
@@ -509,6 +647,31 @@ class Par(threading.Thread, _CSPOpMixin):
 
 class Seq(threading.Thread, _CSPOpMixin):
     """Run CSP processes sequentially.
+
+    There are two ways to run processes in sequence.  Firstly, given
+    two (or more) processes you can sequence them with the > operator,
+    like this:
+
+>>> @process
+... def foo(n):
+...     print 'n:', n
+... 
+>>> foo(1) > foo(2) > foo(3)
+n: 1
+n: 2
+n: 3
+<Seq(Seq-14, initial)>
+>>> 
+
+    Secondly, you can create a Seq object which is a sort of CSP
+    process and start that process manually:
+
+>>> s = Seq(foo(100), foo(200), foo(300))
+>>> s.start()
+n: 100
+n: 200
+n: 300
+>>>
     """
 
     def __init__(self, *procs):
@@ -604,7 +767,39 @@ class Channel(Guard):
 
     Subclasses of C{Channel} must call L{_setup()} in their
     constructor and override L{put}, L{get}, L{__del__}.
+
+    A CSP channel can be created with the Channel class:
+
+>>> c = Channel()
+>>>
+
+    Each Channel object should have a unique name in the network:
+
+>>> print c.name
+1ca98e40-5558-11df-8e5b-002421449824
+>>> 
+
+    The Channel can then be passed as an argument to any CSP process
+    and then be used either to read (using the .read() method) or to
+    write (using the .write() method). For example:
+
+>>> @process
+... def send(cout, data):
+...     cout.write(data)
+... 
+>>> @process
+... def recv(cin):
+...     print 'Got:', cin.read()
+... 
+>>> c = Channel()
+>>> send(c, 100) // (recv(c),)
+Got: 100
+<Par(Par-3, initial)>
+>>> 
     """
+
+    TRUE = 1
+    FALSE = 0
 
     def __init__(self):
         self.name = uuid.uuid1()
@@ -768,6 +963,50 @@ class Channel(Guard):
 
     def poison(self):
         """Poison a channel causing all processes using it to terminate.
+
+        A set of communicating processes can be terminated by
+        "poisoning" any of the channels used by those processes. This
+        can be achieved by calling the poison() method on any
+        channel. For example:
+
+>>> @process
+... def send5(cout):
+...     for i in xrange(5):
+...             print 'send5 sending:', i
+...             cout.write(i)
+...             time.sleep(random.random() * 5)
+...     return
+... 
+>>> @process
+... def recv(cin):
+...     for i in xrange(5):
+...             data = cin.read()
+...             print 'recv got:', data
+...             time.sleep(random.random() * 5)
+...     return
+... 
+>>> @process
+... def interrupt(chan):
+...     time.sleep(random.random() * 7)
+...     print 'Poisoning channel:', chan.name
+...     chan.poison()
+...     return
+... 
+>>> doomed = Channel()
+>>> send(doomed) // (recv(doomed), poison(doomed))
+send5 sending: 0
+recv got: 0
+send5 sending: 1
+recv got: 1
+send5 sending: 2
+recv got: 2
+send5 sending: 3
+recv got: 3
+send5 sending: 4
+recv got: 4
+Poisoning channel: 5c906e38-5559-11df-8503-002421449824
+<Par(Par-5, initial)>
+>>> 
         """
         with self._plock:
             self._poisoned = True
@@ -839,8 +1078,36 @@ class FileChannel(Channel):
 def process(func):
     """Decorator to turn a function into a CSP process.
 
-    Note that the function itself will not be a CSPProcess object, but
-    will generate a CSPProcess object when called.
+    There are two ways to create a new CSP process. Firstly, you can
+    use the @process decorator to convert a function definition into a
+    CSP Process. Once the function has been defined, calling it will
+    return a new CSPProcess object which can be started manually, or
+    used in an expression:
+
+>>> @process
+... def foo(n):
+...     print 'n:', n
+... 
+>>> foo(100).start()
+>>> n: 100
+
+>>> foo(10) // (foo(20),)
+n: 10
+n: 20
+<Par(Par-5, initial)>
+>>> 
+
+    Alternatively, you can create a CSPProcess object directly and pass a
+    function (and its arguments) to the CSPProcess constructor:
+
+>>> def foo(n):
+...     print 'n:', n
+... 
+>>> p = CSPProcess(foo, 100)
+>>> p.start()
+>>> n: 100
+
+>>> 
     """
     @wraps(func)
     def _call(*args, **kwargs):
@@ -855,6 +1122,57 @@ def forever(func):
     It is preferable to use this rather than @process, to enable the
     CSP tracer to terminate correctly and produce a CSP model, or
     other debugging information.
+
+    A server process is one which runs in an infinite loop. You can
+    create a "normal" process which runs in an infinite loop, but by
+    using server processes you allow the python-csp debugger to
+    correctly generate information about your programs.
+
+    There are two ways to create a new CSP server process. Firstly,
+    you can use the @forever decorator to convert a generator into a
+    CSPServer object. Once the function has been defined, calling it
+    will return a new CSPServer object which can be started manually,
+    or used in an expression:
+
+>>> @forever
+... def integers():
+...     n = 0
+...     while True:
+...             print n
+...             n += 1
+...             yield
+... 
+>>> integers().start()
+>>> 0
+1
+2
+3
+4
+5
+...
+KeyboardInterrupt
+>>>
+
+    Alternatively, you can create a CSPServer object directly and pass a
+    function (and its arguments) to the CSPServer constructor:
+
+>>> def integers():
+...     n = 0
+...     while True:
+...             print n
+...             n += 1
+...             yield
+... 
+>>> i = CSPServer(integers)
+>>> i.start()
+>>> 0
+1
+2
+3
+4
+5
+...
+KeyboardInterrupt    
     """
     @wraps(func)
     def _call(*args, **kwargs):
@@ -880,6 +1198,29 @@ class Skip(CSPProcess, Guard):
     """Guard which will always return C{True}. Useful in L{Alt}s where
     the programmer wants to ensure that L{Alt.select} will always
     synchronise with at least one guard.
+
+    Skip is a built in guard type that can be used with Alt
+    objects. Skip() is a default guard which is always ready and has
+    no effect. This is useful where you have a loop which calls
+    select(), pri_select() or fair_select() on an Alt object
+    repeatedly and you do not wish the select statement to block
+    waiting for a channel write, or other synchronisation. The
+    following is a trivial example of an Alt which uses Skip():
+
+>>> alt = Alt(Skip())
+>>> for i in xrange(5):
+...     print alt.select()
+... 
+Skip
+Skip
+Skip
+Skip
+Skip
+>>> 
+
+    Where you have an Alt() object which mixes Skip() with other guard
+    types, be sure to complete all necessary channel reads or other
+    synchronisations, otherwise your code will hang.
     """
 
     def __init__(self):

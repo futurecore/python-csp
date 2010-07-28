@@ -38,6 +38,22 @@ __all__ = ['Timer', 'Barrier']
 
 class Timer(Guard):
     """Guard which only commits to synchronisation when a timer has expired.
+
+    Timer objects are a type of CSP guard, like Channel types and Skip
+    guards. Timer objects allow code to wait for a specific period of
+    time before synchronising on a timer event. This can be done in a
+    number of ways: either by sleeping for a period of time (similar
+    to time.sleep in the standard library), or by setting the timer to
+    become selectable (by an Alt object) after a specific period of
+    time. For example:
+
+>>> timer = Timer()
+>>> timer.sleep(5) # sleep for 5 seconds
+>>> 
+>>> alt = Alt(timer)
+>>> timer.set_alarm(3) # become selectable 3 seconds from now
+>>> alt.select() # will wait 3 seconds
+>>> 
     """
 
     def __init__(self):
