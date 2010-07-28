@@ -192,11 +192,11 @@ class _CSPOpMixin(object):
 class CSPProcess(processing.Process, _CSPOpMixin):
     """Implementation of CSP processes.
     
-There are two ways to create a new CSP process. Firstly, you can use
-the @process decorator to convert a function definition into a CSP
-Process. Once the function has been defined, calling it will return a
-new CSPProcess object which can be started manually, or used in an
-expression:
+    There are two ways to create a new CSP process. Firstly, you can
+    use the @process decorator to convert a function definition into a
+    CSP Process. Once the function has been defined, calling it will
+    return a new CSPProcess object which can be started manually, or
+    used in an expression:
 
 >>> @process
 ... def foo(n):
@@ -211,8 +211,8 @@ n: 20
 <Par(Par-5, initial)>
 >>> 
 
-Alternatively, you can create a CSPProcess object directly and pass a
-function (and its arguments) to the CSPProcess constructor:
+    Alternatively, you can create a CSPProcess object directly and
+    pass a function (and its arguments) to the CSPProcess constructor:
 
 >>> def foo(n):
 ...     print 'n:', n
