@@ -27,9 +27,9 @@ import time
 
 sys.path.insert(0, "..")
 
-from csp.csp import *
+#from csp.csp import *
 #from csp.os_process import *
-#from csp.os_thread import *
+from csp.os_thread import *
 from csp.guards import Timer
 
 @process

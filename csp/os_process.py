@@ -596,9 +596,7 @@ class Channel(Guard):
     slower when performed on L{FileChannel} objects.
 
     Subclasses of C{Channel} must call L{_setup()} in their
-    constructor and override L{put}, L{get}, L{__del__},
-    L{__getstate__} and L{__setstate__}, the latter two methods for
-    pickling.
+    constructor and override L{put}, L{get}, L{__del__}.
     """
 
     TRUE = 1
