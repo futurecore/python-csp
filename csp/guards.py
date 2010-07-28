@@ -147,15 +147,8 @@ class BarrierProcessing(AbstractBarrier):
         self.lock = multiprocessing.Condition()
 
 
-# FIXME: This is no longer always work.
-# FIXME: Add a function in csp/csp.py to tell you which version of the
-# library you are using.
-if 'CSP' in os.environ:
-    if os.environ['CSP'] == 'PROCESSES':
-        Barrier = BarrierProcessing
-    elif os.environ['CSP'] == 'THREADS':
-        Barrier = BarrierThreading
-    else:
-        Barrier = BarrierProcessing
+# Use os processes unless requested otherwise.
+if CSP_IMPLEMENTATION == 'os_thread':
+    Barrier = BarrierThreading
 else:
     Barrier = BarrierProcessing
