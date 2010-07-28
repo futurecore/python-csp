@@ -14,7 +14,7 @@ sys.path.insert(0, "..")
 
 import csp.os_process
 import csp.os_thread
-csp.os_thread.set_debug(True)
+#csp.os_thread.set_debug(True)
 import csp.builtins as builtins
 
 
@@ -179,7 +179,7 @@ class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
 
 
 if __name__ == '__main__':
-#    unittest.main()
-    unittest.main(TestBuiltinsWithThreads, 'testId')
+    unittest.main()
+#    unittest.main(TestBuiltinsWithThreads, 'testId')
 #    unittest.main(TestBuiltinsWithThreads, 'testSin')
 

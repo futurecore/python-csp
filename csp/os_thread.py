@@ -646,13 +646,15 @@ class Channel(Guard):
         """Put C{item} on a process-safe store.
         """
         self.checkpoison()
-        self._store = pickle.dumps(item, protocol=1)
+        self._store = item
+#        self._store = pickle.dumps(item, protocol=1)
 
     def get(self):
         """Get a Python object from a process-safe store.
         """
-        self.checkpoison()        
-        item = pickle.loads(self._store)
+        self.checkpoison()
+        item = self._store
+#        item = pickle.loads(self._store)
         self._store = None
         return item
 
