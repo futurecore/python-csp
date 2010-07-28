@@ -172,8 +172,10 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         expected_data = in_data
         self.feedUnaryOperation(in_data, expected_data, builtins.Id)
 
-#XXX This doesn't work at the moment; it seems to block even after the
-#  first test completed.
+#
+# FIXME: This shows up a synchronisation bug. Set the debug flag to
+# see the gory details: csp.os_thread.set_debug(True)
+#
 class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
      csp_process = csp.os_thread
 
