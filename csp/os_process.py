@@ -230,7 +230,7 @@ class CSPProcess(processing.Process, _CSPOpMixin):
         try:
             self._target(*self._args, **self._kwargs)
         except ChannelPoison:
-            _debug('{0}s got ChannelPoison exception in {1}'.format((str(self), self.getPid()))
+            _debug('{0}s got ChannelPoison exception in {1}'.format((str(self), self.getPid())))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
         except KeyboardInterrupt:

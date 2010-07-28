@@ -93,7 +93,7 @@ if __name__ == '__main__':
                 TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
                 elapsed = time.time() - starttime
                 mu = elapsed * 1000000 / float((TRIALS * (2 ** size)))
-                print('{0}ms'.format(mu)
+                print('{0}ms'.format(mu))
             except:
                 continue
     else:
