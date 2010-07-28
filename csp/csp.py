@@ -51,7 +51,6 @@ __date__ = 'July 2010'
 major, minor = sys.version_info[:2]
 if (major, minor) < (2, 6):
     try:
-        
         from .os_thread import *
         _IMPLEMENTATION = 'os_thread'
     except:
