@@ -494,10 +494,10 @@ class Par(threading.Thread, _CSPOpMixin):
         return len(self.procs)
 
     def __getitem__(self, index):
-        try:
-            return self.procs[index]
-        except IndexError:
-            raise IndexError
+        """Can raise an IndexError if index is not a valid index of
+        self.procs.
+        """
+        return self.procs[index]
 
     def __setitem__(self, index, value):
         assert isinstance(value, CSPProcess)
