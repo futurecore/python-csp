@@ -85,15 +85,15 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.exp:
-        print ( 'All times measured in microseconds.' )
+        print('All times measured in microseconds.')
         for size in xrange(2, 50):
             try:
-                print ( 'Token ring with %i nodes.' % 2 ** size ) 
+                print('Token ring with %i nodes.' % 2 ** size)
                 starttime = time.time()
                 TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
                 elapsed = time.time() - starttime
                 mu = elapsed * 1000000 / float((TRIALS * (2 ** size)))
-                print ( '%gms' % mu )
+                print('%gms' % mu)
             except:
                 continue
     else:
