@@ -324,10 +324,6 @@ Div = binop(op.truediv, "Emits the division of two input events.")
 FloorDiv = binop(op.floordiv, "Emits the floor div of two input events.")
 Mod = binop(op.mod, "Emits the modulo of two input events.")
 Pow = binop(op.pow, "Emits the power of two input events.")
-# XXX: In my opinion, lshift and rshift are logical rather than
-# numeric operations.
-LShift = binop(op.lshift, "Emits the left shift of two input events.")
-RShift = binop(op.rshift, "Emits the right shift of two input events.")
 Neg = unop(op.neg, "Emits the negation of input events.")
 Sin = unop(math.sin, "Emit the sine of input events.")
 Cos = unop(math.cos, "Emit the cosine of input events.")
@@ -344,6 +340,8 @@ Nand = binop(lambda x, y: ~(x & y),
              "Emits the bitwise nand of two input events.")
 Nor = binop(lambda x, y: ~(x | y), "Emits the bitwise nor of two input events.")
 Xor = binop(op.xor, "Emits the bitwise xor of two input events.")
+LShift = binop(op.lshift, "Emits the left shift of two input events.")
+RShift = binop(op.rshift, "Emits the right shift of two input events.")
 
 # Logical operators
 
