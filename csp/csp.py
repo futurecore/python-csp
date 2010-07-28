@@ -34,6 +34,12 @@ import os
 import sys
 
 
+### Names exported by this module
+__all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
+           'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
+           'process', 'forever', 'Skip', '_IMPLEMENTATION']
+
+
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'July 2010'
 
@@ -78,9 +84,4 @@ else:
 
 del os
 del sys
-
-### Names exported by this module
-__all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
-           'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever', 'Skip', '_IMPLEMENTATION']
 
