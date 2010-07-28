@@ -1,13 +1,10 @@
 Debugging with the tracer module
 ================================
 
-.. automodule:: tracer
+.. automodule:: csp.tracer
    :members:
 
 ..
-
-Indices and tables
-==================
 
 * :ref:`genindex`
 * :ref:`modindex`

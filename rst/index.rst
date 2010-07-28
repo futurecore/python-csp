@@ -11,9 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   cspprocess.rst
-   cspthread.rst
-   tracer.rst
+   csp.rst
+   builtins.rst
+   guards.rst
+   patterns.rst
    mandelbrot.rst
 
 
