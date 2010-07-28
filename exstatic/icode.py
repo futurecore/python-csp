@@ -27,7 +27,7 @@ __all__ = ['IcodeNode', 'ETA', 'Val', 'Arith', 'Bool',
 # Functions to easily print XML.
 
 def make_tag(name, attributes):
-    tag = '< %s' % name
+    tag = '< {0}'.format(name)
     tag += '>'
     return tag
 

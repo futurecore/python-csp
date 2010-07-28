@@ -88,12 +88,12 @@ if __name__ == '__main__':
         print('All times measured in microseconds.')
         for size in xrange(2, 50):
             try:
-                print('Token ring with %i nodes.' % 2 ** size)
+                print('Token ring with {0} nodes.'.format(2 ** size))
                 starttime = time.time()
                 TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
                 elapsed = time.time() - starttime
                 mu = elapsed * 1000000 / float((TRIALS * (2 ** size)))
-                print('%gms' % mu)
+                print('{0}ms'.format(mu)
             except:
                 continue
     else:

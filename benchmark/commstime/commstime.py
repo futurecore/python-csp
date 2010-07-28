@@ -35,8 +35,7 @@ def Consumer(cin):
     t2 = ts()
     dt = t2-t1
     tchan = dt / (4 * N)
-    print("DT = %f.\nTime per ch : %f/(4*%d) = %f s = %f us" % \
-          (dt, dt, N, tchan, tchan * 1000000))
+    print("DT = {0}.\nTime per ch : {1}/(4*{2}) = {3} s = {4} us".format(dt, dt, N, tchan, tchan * 1000000))
     print("consumer done, posioning channel")
     cin.poison()
 
@@ -58,6 +57,6 @@ def CommsTimeBM():
 if __name__ == '__main__':
     N_BM = 10
     for i in range(N_BM):
-        print("----------- run %d/%d -------------" % (i+1, N_BM))
+        print("----------- run {0}/{1} -------------".format(i+1, N_BM))
         CommsTimeBM()
     print("------- Commstime finished ---------")

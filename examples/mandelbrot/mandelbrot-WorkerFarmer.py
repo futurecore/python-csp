@@ -107,7 +107,7 @@ def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
                 colour = get_colour(nu(z, i),0, cmax=MAXITER)
             imgcolumn[ycoord] = colour
         cout.write((xcoord, imgcolumn))
-        #print '\nhere %d' % xcoord
+        #print '\nhere {0}'.format(xcoord)
         xcoord = cout.read()
         if xcoord == -1:       
             return
@@ -139,7 +139,7 @@ def consume(IMSIZE, filename, cins):
     j = 0
     for i in range(IMSIZE[0]):
         xcoord, column = alt.fair_select()
-        logging.debug('Consumer got some data for column %i' % xcoord)
+        logging.debug('Consumer got some data for column {0}'.format(xcoord))
         # Update column of blit buffer
         pixmap[xcoord] = column
         # Update image on screen.
@@ -198,9 +198,8 @@ def main(IMSIZE, filename, granularity=10, level='info'):
     # Start and join producer processes.
     mandel = Par(*processes)
     mandel.start()
-    logging.info('Image size: %ix%i' % IMSIZE)
-    logging.info('%i producer processes, %i consumer processes' %
-                 (len(processes)-1, 1))    
+    logging.info('Image size: {0}x{1}'.format(*IMSIZE))
+    logging.info('{0} producer processes, {1} consumer processes'.format(len(processes)-1, 1))
     logging.info('All processes joined.')
     return
 

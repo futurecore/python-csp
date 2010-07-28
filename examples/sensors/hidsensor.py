@@ -44,7 +44,7 @@ class HIDError(Exception):
         return
 
     def __str__(self):
-        return 'Call to %s failed with return code %d' % self.value
+        return 'Call to {0} failed with return code {1}'.format(*self.value)
 
 
 class HIDMatcher(object):
@@ -110,7 +110,7 @@ class HIDSensor(object):
     #        elif hid.hid_is_opened(self._interface):
     #            hid.hid_delete_HIDInterface(self._interface)
     #        else:
-    #            print 'Closing interface %s' % self._id
+    #            print('Closing interface {1}'.format(self._id))
     #            self._check(hid.hid_close(self._interface), 'hid_close')
         return
 #    finally:
@@ -157,7 +157,7 @@ class HIDSensorCollection:
     def __init__(self, hidclasses):
         self._hidtypes = {}
         for hidclass in hidclasses:
-            print('Searching for %s sensors...' % hidclass.__name__)
+            print('Searching for {0} sensors...'.format(hidclass.__name__))
             self._hidtypes[hidclass] = HIDMatcher(hidclass.VID, hidclass.PID)
         self._interfaces = {}
         retval = hid.hid_init()
@@ -175,7 +175,7 @@ class HIDSensorCollection:
                     hidif = hidclass()
                     details = hidif.open()
                     if details:
-                        print('Found HID sensor: %s' % hidif._id)
+                        print('Found HID sensor: {0}'.format(hidif._id))
                         self._interfaces[hidif._id] = hidif
                 except HIDError as e:
                     del hidif 
@@ -189,7 +189,6 @@ class HIDSensorCollection:
     def _debug(self):
         print(len(self._interfaces), 'HID sensors attached')
         for hidif in self._interfaces:
-            print('Interface: %s,' % hidif, end=' ')
-            print(self._interfaces[hidif]._debug_str() % \
-                self._interfaces[hidif].get_data())
+            print('Interface: {0},'.format(str(hidif)), end=' ')
+            print(self._interfaces[hidif]._debug_str().format(self._interfaces[hidif].get_data()))
 

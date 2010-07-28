@@ -112,7 +112,7 @@ class ExampleIcodeVisitor(IcodeVisitor):
                 print ( klass )
                 for attr in dir(node):
                     if attr[0] != '_':
-                        print ( "\t", "%-12.12s" % attr, getattr(node, attr) )
+                        print ( "\t", "{0}-12.12s".format(attr), getattr(node, attr) )
                 print ( )
             return self.default(node, *args)
 
