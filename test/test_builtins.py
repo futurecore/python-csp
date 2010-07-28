@@ -14,7 +14,7 @@ sys.path.insert(0, "..")
 
 import csp.os_process
 import csp.os_thread
-#csp.os_thread.set_debug(True)
+csp.os_thread.set_debug(True)
 import csp.builtins as builtins
 
 
@@ -24,7 +24,7 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
     def setUp(self):
         csp = self.csp_process
         # Get us some channels for later use.
-        self.spare_channels = [csp.Channel() for i in xrange(3)]
+        self.spare_channels = [csp.Channel() for i in range(3)]
 
     def tearDown(self):
         # Destroy channels and processes; ignore result.
@@ -46,7 +46,7 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
         @self.csp_process.process
         def _consumer(channel, reads, result_channel):
             result = []
-            for i in xrange(reads):
+            for i in range(reads):
                 value = channel.read()
                 result.append(value)
             result_channel.write(result)

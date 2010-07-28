@@ -31,7 +31,7 @@ ACCEL_DUE_TO_GRAVITY = 9.80665
 
 
 @forever
-def Zip(outchan, inchannels, _process=None):
+def Zip(outchan, inchannels):
     """Take data from a number of input channels, and write that
     data as a single list to L{outchan}.
     """
@@ -41,40 +41,40 @@ def Zip(outchan, inchannels, _process=None):
 
 
 @forever
-def Unzip(inchan, outchans, _process=None):
+def Unzip(inchan, outchans):
     """Continuously read tuples of data from a single input channel and send
     each datum out down its own output channel.
     """
     while True:
         data = inchan.read()
-        for i in xrange(data):
+        for i in range(data):
             outchans[i].write(data[i])
         yield
 
 
 @forever
-def Sin(inchan, outchan, _process=None):
+def Sin(inchan, outchan):
     while True:
         outchan.write(math.sin(inchan.read()))
         yield
 
 
 @forever
-def Cos(inchan, outchan, _process=None):
+def Cos(inchan, outchan):
     while True:
         outchan.write(math.cos(inchan.read()))
         yield
 
 
 @forever
-def Tan(inchan, outchan, _process=None):
+def Tan(inchan, outchan):
     while True:
         outchan.write(math.tan(inchan.read()))
         yield
 
 
 @forever
-def GenerateFloats(outchan, _process=None):
+def GenerateFloats(outchan):
     counter = 0
     increment = 0.1
     while True:
@@ -84,7 +84,7 @@ def GenerateFloats(outchan, _process=None):
 
 
 @forever
-def Magnitude(inchan, outchan, _process=None):
+def Magnitude(inchan, outchan):
     while True:
         acceldata = inchan.read()
         mag = 0.0
@@ -94,7 +94,7 @@ def Magnitude(inchan, outchan, _process=None):
 
 
 @forever
-def Difference(inchan, outchan, window=1, _process=None):
+def Difference(inchan, outchan, window=1):
     cache = 0.0
     while True:
         acceldata = inchan.read()
@@ -107,7 +107,7 @@ def Difference(inchan, outchan, window=1, _process=None):
 
 
 @forever
-def Square(inchan, outchan, _process=None):
+def Square(inchan, outchan):
     while True:
         data = inchan.read()
         outchan.write(data ** 2)
@@ -115,7 +115,7 @@ def Square(inchan, outchan, _process=None):
 
 
 @forever
-def Normalise(inchan, outchan, _process=None, start=0.0, end=100.0):
+def Normalise(inchan, outchan, start=0.0, end=100.0):
     scale = end - start
     while True:
         outchan.write(inchan.read() / scale)
@@ -123,7 +123,7 @@ def Normalise(inchan, outchan, _process=None, start=0.0, end=100.0):
 
 
 @forever
-def Threshold(thresh, inchan, outchan, _process=None):
+def Threshold(thresh, inchan, outchan):
     while True:
         mag = inchan.read()
         if mag >= thresh:
