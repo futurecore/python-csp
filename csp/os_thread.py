@@ -106,7 +106,7 @@ def set_debug(status):
     DEBUG = status
     logging.basicConfig(level=logging.NOTSET,
                         stream=sys.stdout)
-    logging.info("Using multiprocessing version of python-csp.")
+    logging.info("Using threading version of python-csp.")
 
 
 ### Fundamental CSP concepts -- Processes, Channels, Guards
@@ -126,8 +126,11 @@ class _CSPOpMixin(object):
     def start(self):
         """Start only if self is not running."""
         if not self._Thread__started.is_set():
-            threading.Thread.start(self)
-            threading.Thread.join(self)
+            try:
+                threading.Thread.start(self)
+                threading.Thread.join(self)
+            except KeyboardInterrupt:
+                sys.exit()
 
     def join(self):
         """Join only if self is running."""
@@ -155,7 +158,7 @@ class _CSPOpMixin(object):
         """
         if self._Thread__started.is_set():
             logging.debug('%s terminating now...' % self.getName())
-            return #threading.Thread._Thread__stop(self) # Sets an event object
+            threading.Thread._Thread__stop(self) # Sets an event object
 
     def __gt__(self, other):
         """Implementation of CSP Seq."""
@@ -193,17 +196,20 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         assert not inspect.ismethod(func) # Check we aren't using objects
 
         _CSPOpMixin.__init__(self)
-        for arg in list(self._args) + list(self._kwargs.values()):
+        for arg in list(self._Thread__args) + list(self._Thread__kwargs.values()):
             if _is_csp_type(arg):
                 arg.enclosing = self
         self.enclosing = None
+
+    def getName(self):
+        return self.ident
 
     def getPid(self):
         """Return thread ident.
 
         The name of this method ensures that the CSPProcess interface
         in this module is identical to the one defined in
-        cspprocess.py.
+        os_process.py.
         """
         return self.ident
 
@@ -461,10 +467,10 @@ class Par(threading.Thread, _CSPOpMixin):
         """
         return self.ident
 
-    def start(self):
-        """Run this process. Analogue of L{CSPProcess.run}.
-        """
-        self.start()
+#    def start(self):
+#        """Run this process. Analogue of L{CSPProcess.run}.
+#        """
+#        self.start()
 
     def join(self):
         for proc in self.procs:
@@ -619,7 +625,7 @@ class Channel(Guard):
         self._is_selectable = None # True if can be selected by an Alt.
         self._has_selected = None  # True if already been committed to select.
         self._store = None # Holds value transferred by channel
-        self._poisoned = False
+        self._poisoned = None
         self._setup()
         super(Channel, self).__init__()
         logging.debug('Channel created: %s' % self.name)
@@ -714,7 +720,8 @@ class Channel(Guard):
         self.checkpoison()
         # Prevent re-synchronization.
         if (self._has_selected or self._is_selectable):
-            return
+            # Be explicit.
+            return None
         self._is_alting = True
         with self._rlock:
             # Attempt to acquire _available.
@@ -807,34 +814,6 @@ class FileChannel(Channel):
         os.close(file_d)
         self._setup()
 
-    def __getstate__(self):
-        """Return state required for pickling."""
-        state = [pickle.dumps(self._available, protocol=1),
-                 pickle.dumps(self._taken, protocol=1),
-                 pickle.dumps(self._is_alting, protocol=1),
-                 pickle.dumps(self._is_selectable, protocol=1),
-                 pickle.dumps(self._has_selected, protocol=1),
-                 self._fname]
-        if self._available.getValue() > 0:
-            obj = self.get()
-        else:
-            obj = None
-        state.append(obj)
-        return state
-
-    def __setstate__(self, state):
-        """Restore object state after unpickling."""
-        self._wlock = threading.RLock()	# Write lock.
-        self._rlock = threading.RLock()	# Read lock.
-        self._available = pickle.loads(state[0])
-        self._taken = pickle.loads(state[1])
-        self._is_alting = pickle.loads(state[2])
-        self._is_selectable = pickle.loads(state[3])
-        self._has_selected = pickle.loads(state[4])
-        self._fname = state[5]
-        if state[6] is not None:
-            self.put(state[6])
-
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
@@ -910,7 +889,7 @@ def _nop():
     pass
 
 
-class Skip(Guard, CSPProcess):
+class Skip(CSPProcess, Guard):
     """Guard which will always return C{True}. Useful in L{Alt}s where
     the programmer wants to ensure that L{Alt.select} will always
     synchronise with at least one guard.

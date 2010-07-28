@@ -14,6 +14,7 @@ sys.path.insert(0, "..")
 
 import csp.os_process
 import csp.os_thread
+csp.os_thread.set_debug(True)
 import csp.builtins as builtins
 
 
@@ -173,11 +174,12 @@ class TestBuiltinsWithProcesses(unittest.TestCase):
 
 #XXX This doesn't work at the moment; it seems to block even after the
 #  first test completed.
-# class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
-#     csp_process = csp.os_thread
+class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
+     csp_process = csp.os_thread
 
 
 if __name__ == '__main__':
-    unittest.main()
-    #unittest.main(TestBuiltinsWithThreads, 'testSin')
+#    unittest.main()
+    unittest.main(TestBuiltinsWithThreads, 'testId')
+#    unittest.main(TestBuiltinsWithThreads, 'testSin')
 

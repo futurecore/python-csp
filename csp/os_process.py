@@ -451,6 +451,7 @@ class Par(processing.Process, _CSPOpMixin):
 
     def terminate(self):
         """Terminate the execution of this process.
+        FIXME: Should not be recursive. Is this ever called?!
         """
         for proc in self.procs:
             proc.terminate()
@@ -831,34 +832,6 @@ class FileChannel(Channel):
         file_d, self._fname = tempfile.mkstemp()
         os.close(file_d)
         self._setup()
-
-    def __getstate__(self):
-        """Return state required for pickling."""
-        state = [pickle.dumps(self._available, protocol=1),
-                 pickle.dumps(self._taken, protocol=1),
-                 pickle.dumps(self._is_alting, protocol=1),
-                 pickle.dumps(self._is_selectable, protocol=1),
-                 pickle.dumps(self._has_selected, protocol=1),
-                 self._fname]
-        if self._available.get_value() > 0:
-            obj = self.get()
-        else:
-            obj = None
-        state.append(obj)
-        return state
-
-    def __setstate__(self, state):
-        """Restore object state after unpickling."""
-        self._wlock = processing.RLock()	# Write lock.
-        self._rlock = processing.RLock()	# Read lock.
-        self._available = pickle.loads(state[0])
-        self._taken = pickle.loads(state[1])
-        self._is_alting = pickle.loads(state[2])
-        self._is_selectable = pickle.loads(state[3])
-        self._has_selected = pickle.loads(state[4])
-        self._fname = state[5]
-        if state[6] is not None:
-            self.put(state[6])
 
     def put(self, item):
         """Put C{item} on a process-safe store.
