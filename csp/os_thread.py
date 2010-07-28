@@ -322,6 +322,11 @@ class Alt(_CSPOpMixin):
 
     def _preselect(self):
         """Check for special cases when any form of select() is called.
+
+        If no object can be returned from a channel read and no
+        exception is raised the return None. Any select() method
+        should work like a Channel.read() which must always return a
+        value if it does not throw an exception..
         """
         if len(self.guards) == 0:
             raise NoGuardInAlt()
