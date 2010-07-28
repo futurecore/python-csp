@@ -66,6 +66,8 @@ _RANGEN = random.Random(os.urandom(16))
 
 _BUFFSIZE = 1024
 
+_debug = logging.debug
+
 
 class CorruptedData(Exception):
     """Used to verify that data has come from an honest source.
@@ -157,7 +159,7 @@ class _CSPOpMixin(object):
         FIXME: This doesn't work yet...
         """
         if self._Thread__started.is_set():
-            logging.debug('%s terminating now...' % self.getName())
+            _debug('{0} terminating now...'.format(self.getName()))
             threading.Thread._Thread__stop(self) # Sets an event object
 
     def __gt__(self, other):
@@ -221,7 +223,7 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         par.start()
 
     def __str__(self):
-        return 'CSPProcess running in TID %s' % self.getName()
+        return 'CSPProcess running in TID {0}'.format(self.getName())
 
     def run(self): #, event=None):
         """Called automatically when the L{start} methods is called.
@@ -229,8 +231,7 @@ class CSPProcess(threading.Thread, _CSPOpMixin):
         try:
             self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
         except ChannelPoison:
-            logging.debug('%s in %g got ChannelPoison exception' %
-                          (str(self), self.getPid()))
+            _debug('{0} in {1} got ChannelPoison exception'.format(str(self), self.getPid()))
             self.referent_visitor(self._Thread__args +
                                   tuple(self._Thread__kwargs.values()))
         except KeyboardInterrupt:
@@ -264,7 +265,7 @@ class CSPServer(CSPProcess):
         CSPProcess.__init__(self, func, *args, **kwargs)
 
     def __str__(self):
-        return 'CSPServer running in PID %s' % self.getPid()
+        return 'CSPServer running in PID {0}'.format(self.getPid())
 
     def run(self): #, event=None):
         """Called automatically when the L{start} methods is called.
@@ -280,8 +281,7 @@ class CSPServer(CSPProcess):
                 # Be explicit.
                 return None
         except ChannelPoison:
-            logging.debug('%s in %g got ChannelPoison exception' %
-                          (str(self), self.getPid()))
+            _debug('{0} in {1} got ChannelPoison exception'.format(str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
 #            if self._popen is not None: self.terminate()
         except KeyboardInterrupt:
@@ -309,15 +309,15 @@ class Alt(_CSPOpMixin):
 
         Sets self.last_selected to None.
         """
-        logging.debug(str(type(self.last_selected)))
+        _debug(str(type(self.last_selected)))
         self.last_selected.disable() # Just in case
         try:
             self.last_selected.poison()
         except Exception:
             pass
-        logging.debug('Poisoned last selected.')
+        _debug('Poisoned last selected.')
         self.guards.remove(self.last_selected)
-        logging.debug('%i guards' % len(self.guards))
+        _debug('{0} guards'.format(len(self.guards)))
         self.last_selected = None
 
     def _preselect(self):
@@ -331,8 +331,7 @@ class Alt(_CSPOpMixin):
         if len(self.guards) == 0:
             raise NoGuardInAlt()
         elif len(self.guards) == 1:
-            logging.debug('Alt Selecting unique guard: %s' %
-                          self.guards[0].name)
+            _debug('Alt Selecting unique guard: {0}'.format(self.guards[0].name))
             self.last_selected = self.guards[0]
             while not self.guards[0].is_selectable():
                 self.guards[0].enable()
@@ -347,11 +346,10 @@ class Alt(_CSPOpMixin):
         while len(ready) == 0:
             for guard in self.guards:
                 guard.enable()
-                logging.debug('Alt enabled all guards')
+                _debug('Alt enabled all guards')
             time.sleep(0.01) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-            logging.debug('Alt got %i items to choose from out of %i' %
-                          (len(ready), len(self.guards)))
+            _debug('Alt got {0} items to choose from out of {1}'.format(len(ready), len(self.guards)))
         selected = _RANGEN.choice(ready)
         self.last_selected = selected
         for guard in self.guards:
@@ -370,15 +368,14 @@ class Alt(_CSPOpMixin):
         while len(ready) == 0:
             for guard in self.guards:
                 guard.enable()
-                logging.debug('Alt enabled all guards')
+                _debug('Alt enabled all guards')
             time.sleep(0.1) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-            logging.debug('Alt got %i items to choose from, out of %i' %
-                          (len(ready), len(self.guards)))
+            _debug('Alt got {0} items to choose from, out of {1}'.format(len(ready), len(self.guards)))
         selected = None
         if self.last_selected in ready and len(ready) > 1:
             ready.remove(self.last_selected)
-            logging.debug('Alt removed last selected from ready list')
+            _debug('Alt removed last selected from ready list')
         selected = _RANGEN.choice(ready)
         self.last_selected = selected
         for guard in self.guards:
@@ -397,11 +394,10 @@ class Alt(_CSPOpMixin):
         while len(ready) == 0:
             for guard in self.guards:
                 guard.enable()
-                logging.debug('Alt enabled all guards')
+                _debug('Alt enabled all guards')
             time.sleep(0.01) # Not sure about this.
             ready = [guard for guard in self.guards if guard.is_selectable()]
-            logging.debug('Alt got %i items to choose from, out of %i' %
-                          (len(ready), len(self.guards)))
+            _debug('Alt got {0} items to choose from, out of {1}'.format(len(ready), len(self.guards)))
         self.last_selected = ready[0]
         for guard in ready[1:]:
             guard.disable()
@@ -433,7 +429,7 @@ class Par(threading.Thread, _CSPOpMixin):
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
-        logging.debug('%i processes in Par:' % len(self.procs))
+        _debug('{0} processes in Par:'.format(len(self.procs)))
 
     def __ifloordiv__(self, proclist):
         """
@@ -449,11 +445,11 @@ class Par(threading.Thread, _CSPOpMixin):
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
-        logging.debug('%i processes added to Par by //=:' % len(self.procs))
+        _debug('{0} processes added to Par by //:'.format(len(self.procs)))
         self.start()
 
     def __str__(self):
-        return 'CSP Par running in process %i.' % self.getPid()
+        return 'CSP Par running in process {0}.'.format(self.getPid())
 
     def terminate(self):
         """Terminate the execution of this process.
@@ -486,8 +482,7 @@ class Par(threading.Thread, _CSPOpMixin):
             for proc in self.procs:
                 proc.join()
         except ChannelPoison:
-            logging.debug('%s got ChannelPoison exception in %g' %
-                          (str(self), self.getPid()))
+            _debug('{0} got ChannelPoison exception in {1}'.format(str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
         except KeyboardInterrupt:
             sys.exit()
@@ -529,7 +524,7 @@ class Seq(threading.Thread, _CSPOpMixin):
             proc.enclosing = self
 
     def __str__(self):
-        return 'CSP Seq running in process %i.' % self.getPid()
+        return 'CSP Seq running in process {0}.'.format(self.getPid())
 
     def start(self):
         """Start this process running.
@@ -539,8 +534,7 @@ class Seq(threading.Thread, _CSPOpMixin):
                 _CSPOpMixin.start(proc)
                 proc.join()
         except ChannelPoison:
-            logging.debug('%s got ChannelPoison exception in %g' %
-                          (str(self), self.getPid()))
+            _debug('{0} got ChannelPoison exception in {1}'.format(str(self), self.getPid()))
             self.referent_visitor(self._Thread__args + tuple(self._Thread__kwargs.values()))
             if self._popen is not None: self.terminate()
         except KeyboardInterrupt:
@@ -626,7 +620,7 @@ class Channel(Guard):
         self._poisoned = None
         self._setup()
         super(Channel, self).__init__()
-        logging.debug('Channel created: %s' % self.name)
+        _debug('Channel created: {0}'.format(self.name))
 
     def _setup(self):
         """Set up synchronisation.
@@ -666,8 +660,7 @@ class Channel(Guard):
     def is_selectable(self):
         """Test whether Alt can select this channel.
         """
-        logging.debug('Alt THINKS _is_selectable IS: %s' %
-                      str(self._is_selectable))
+        _debug('Alt THINKS _is_selectable IS: {0}'.format(str(self._is_selectable)))
         self.checkpoison()
         return self._is_selectable
 
@@ -675,7 +668,7 @@ class Channel(Guard):
         """Write a Python object to this channel.
         """
         self.checkpoison()
-        logging.debug('+++ Write on Channel %s started.' % self.name)        
+        _debug('+++ Write on Channel {0} started.'.format(self.name))
         with self._wlock: # Protect from races between multiple writers.
             # If this channel has already been selected by an Alt then
             # _has_selected will be True, blocking other readers. If a
@@ -686,30 +679,26 @@ class Channel(Guard):
             self.put(obj)
             # Announce the object has been released to the reader.
             self._available.release()
-            logging.debug('++++ Writer on Channel %s: _available: %i _taken: %i. ' %
-                   (self.name, self._available._Semaphore__value,
-                    self._taken._Semaphore__value))
+            _debug('++++ Writer on Channel {0}: _available: {1} _taken: {2}.'.format(self.name, self._available._Semaphore__value, self._taken._Semaphore__value))
             # Block until the object has been read.
             self._taken.acquire()
             # Remove the object from the channel.
-        logging.debug('+++ Write on Channel %s finished.' % self.name)
+        _debug('+++ Write on Channel {0} finished.'.format(self.name))
 
     def read(self):
         """Read (and return) a Python object from this channel.
         """
         self.checkpoison()
-        logging.debug('+++ Read on Channel %s started.' % self.name)
+        _debug('+++ Read on Channel {0} started.'.format(self.name))
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
-            logging.debug('++++ Reader on Channel %s: _available: %i _taken: %i. ' %
-                   (self.name, self._available._Semaphore__value,
-                    self._taken._Semaphore__value))
+            _debug('++++ Reader on Channel {0}: _available: {1} _taken: {2}.'.format(self.name, self._available._Semaphore__value, self._taken._Semaphore__value))
             self._available.acquire()
             # Get the item.
             obj = self.get()
             # Announce the item has been read.
             self._taken.release()
-        logging.debug('+++ Read on Channel %s finished.' % self.name)
+        _debug('+++ Read on Channel {0} finished.'.format(self.name))
         return obj
 
     def enable(self):
@@ -730,9 +719,7 @@ class Channel(Guard):
                 self._is_selectable = True
             else:
                 self._is_selectable = False
-        logging.debug('Enable on guard %s _is_selectable: %s _available: %s'
-                      % (self.name, str(self._is_selectable),
-                         str(self._available)))
+        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable), str(self._available)))
 
     def disable(self):
         """Disable this channel for Alt selection.
@@ -750,22 +737,21 @@ class Channel(Guard):
         """Complete a Channel read for an Alt select.
         """
         self.checkpoison()
-        logging.debug('channel select starting')
+        _debug('channel select starting')
         assert self._is_selectable == True
         with self._rlock:
-            logging.debug('got read lock on channel %s _available: %s'
-                          % (self.name, str(self._available._Semaphore__value)))
+            _debug('got read lock on channel {0} _available: {1}'.format(self.name, str(self._available._Semaphore__value)))
             # Obtain object on Channel.
             obj = self.get()
-            logging.debug('Writer got obj')
+            _debug('Writer got obj')
             # Notify write() that object is taken.
             self._taken.release()
-            logging.debug('Writer released _taken')
+            _debug('Writer released _taken')
             # Reset flags to ensure a future read / enable / select.
             self._is_selectable = False
             self._is_alting = False
             self._has_selected = True
-            logging.debug('reset bools')
+            _debug('reset bools')
         if obj == _POISON:
             self.poison()
             raise ChannelPoison()
@@ -777,7 +763,7 @@ class Channel(Guard):
     def checkpoison(self):
         with self._plock:
             if self._poisoned:
-                logging.debug('%s is poisoned. Raising ChannelPoison()' % self.name)
+                _debug('{0} is poisoned. Raising ChannelPoison()'.format(self.name))
                 raise ChannelPoison()
 
     def poison(self):

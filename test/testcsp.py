@@ -31,6 +31,7 @@ from csp.csp import *
 #from csp.os_process import *
 #from csp.os_thread import *
 from csp.guards import Timer
+#set_debug(True)
 
 @process
 def foo(n):
