@@ -359,10 +359,10 @@ Lxor = binop(lambda x, y: (x or y) and (not x and y),
 
 Eq = binop(op.eq,"Emits True if two input events are equal (==).")
 Ne = binop(op.ne, "Emits True if two input events are not equal (not ==).")
-Geq = binop(op.ge, "Emits True if 'left' input event is >= 'right'.")
-Leq = binop(op.le, "Emits True if 'left' input event is <= 'right'.")
-Gt = binop(op.gt, "Emits True if 'left' input event is > 'right'.")
-Lt = binop(op.lt, "Emits True if 'left' input event is < 'right'.")
+Geq = binop(op.ge, "Emits True if first input event is >= second.")
+Leq = binop(op.le, "Emits True if first input event is <= second.")
+Gt = binop(op.gt, "Emits True if first input event is > second.")
+Lt = binop(op.lt, "Emits True if first input event is < second.")
 Is = binop(op.is_, "Emits True if two input events are identical.")
 Is_Not = binop(op.is_not, "Emits True if two input events are not identical.")
 
