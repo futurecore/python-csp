@@ -82,6 +82,5 @@ del sys
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever', 'Skip', '_CSPTYPES',
-           '_IMPLEMENTATION']
+           'process', 'forever', 'Skip', '_IMPLEMENTATION']
 
