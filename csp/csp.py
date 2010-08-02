@@ -23,7 +23,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have rceeived a copy of the GNU General Public License
+You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
@@ -52,23 +52,16 @@ major, minor = sys.version_info[:2]
 if (major, minor) < (2, 6):
     try:
         from .os_thread import *
-        CSP_IMPLEMENTATION = 'os_thread'
     except:
         from .os_process import *
-        CSP_IMPLEMENTATION = 'os_process'
 
 # If multiprocessing is likely to be available then let the user
 # choose which version of the implementation they wish to use.
 elif 'CSP' in os.environ:
-    if os.environ['CSP'].upper() == 'PROCESSES':
-        from .os_process import *
-        CSP_IMPLEMENTATION = 'os_process'
-    elif os.environ['CSP'].upper() == 'THREADS':
+    if os.environ['CSP'].upper() == 'THREADS':
         from .os_thread import *
-        CSP_IMPLEMENTATION = 'os_thread'
     else:
         from .os_process import *
-        CSP_IMPLEMENTATION = 'os_process'
 
 # If no useful information is available then try to import the
 # multiprocessing version of the code else catch the resulting
@@ -76,11 +69,5 @@ elif 'CSP' in os.environ:
 else: 
     try:
         from .os_process import *
-        CSP_IMPLEMENTATION = 'os_process'
     except:
         from .os_thread import *
-        CSP_IMPLEMENTATION = 'os_thread'
-
-del os
-del sys
-

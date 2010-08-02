@@ -61,10 +61,12 @@ except ImportError:
     raise ImportError('No library available for multiprocessing.\n'+
                       'csp.os_process is only compatible with Python 2. 6 and above.')
 
+CSP_IMPLEMENTATION = 'os_process'
+
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever', 'Skip', '_CSPTYPES']
+           'process', 'forever', 'Skip', '_CSPTYPES', 'CSP_IMPLEMENTATION']
 
 ### Seeded random number generator (16 bytes)
 

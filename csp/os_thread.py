@@ -52,10 +52,12 @@ try: # Python optimisation compiler
 except ImportError:
     print ( 'No available optimisation' )
 
+CSP_IMPLEMENTATION = 'os_thread'
+
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
-           'process', 'forever', 'Skip', '_CSPTYPES']
+           'process', 'forever', 'Skip', '_CSPTYPES', 'CSP_IMPLEMENTATION']
 
 ### Seeded random number generator (16 bytes)
 
