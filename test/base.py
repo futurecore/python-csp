@@ -1,6 +1,11 @@
 from unittest import TestCase, main
 import tempfile
-from csp.csp import process
+from csp.csp import process, CSP_IMPLEMENTATION
+
+if CSP_IMPLEMENTATION == 'os_thread':
+    from threading import Event
+else:
+    from multiprocessing import Event
 
 class BaseCspTest(TestCase):
     """Provides an output mechanism for asserting the output of
@@ -9,12 +14,16 @@ class BaseCspTest(TestCase):
 
     def setUp(self):
         self.outpipe = tempfile.TemporaryFile(mode='wt+')
+        self.events = []
 
     def proc(self, x):
-        def tester():
+        event = Event()
+        self.events.append(event)
+        def tester(event):
             self.outpipe.write(str(x))
             self.outpipe.flush()
-        return process(tester)()
+            event.set()
+        return process(tester)(event)
 
     def source(self, data, channel_out):
         def tester(cout):
@@ -23,14 +32,19 @@ class BaseCspTest(TestCase):
         return process(tester)(channel_out)
 
     def sink(self, length, channel_in):
-        def tester(length, cin):
+        event = Event()
+        self.events.append(event)
+        def tester(length, cin, event):
             for ii in range(length):
                 x = cin.read()
                 self.outpipe.write(str(x))
             self.outpipe.flush()
-        return process(tester)(length, channel_in)
+            event.set()
+        return process(tester)(length, channel_in, event)
 
     def output(self):
+        for ev in self.events:
+            ev.wait()
         self.outpipe.seek(0)
         return self.outpipe.read()
 

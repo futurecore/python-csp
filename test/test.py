@@ -19,10 +19,10 @@ try:
     import csp.os_thread
     BACKENDS.append(sys.modules['csp.os_thread'])
 except: pass
-#try:
-#    import csp.os_process
-#    BACKENDS.append(sys.modules['csp.os_process'])
-#except: pass
+try:
+    import csp.os_process
+    BACKENDS.append(sys.modules['csp.os_process'])
+except: pass
 import csp.csp
 
 if len(BACKENDS) < 2:
@@ -44,10 +44,13 @@ for testcase in [os.path.basename(x) for x in sys.argv[1:]] or os.listdir('.'):
         continue
     test_module, csptest, titlename = testname.groups()
     title = 'Testing ' + titlename
+    remove_from_cache_mods = [x for x in sys.modules if x == test_module or \
+                                               (x.startswith('csp.') and \
+                                                not x.startswith('csp.os_'))]
+    for module in remove_from_cache_mods:
+        del sys.modules[module]
     if csptest:
         for backend in BACKENDS:
-            if test_module in sys.modules:
-                del sys.modules[test_module]
             sys.modules['csp.csp'] = backend
             sys.stdout.write('{0} ({1}): '.format(title,
                                                   backend.CSP_IMPLEMENTATION))
