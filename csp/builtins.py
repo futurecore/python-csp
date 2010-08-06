@@ -38,7 +38,7 @@ __date__ = 'May 2010'
 
 # Names exported by this module.
 
-__all__ = ['Sin', 'Cos', 'GenerateFloats',
+__all__ = ['unop', 'binop', 'Sin', 'Cos', 'GenerateFloats',
            'Zeroes', 'Id', 'Succ', 'Pred', 'Prefix', 'Delta2', 'Splitter',
            'Mux2', 'Multiply', 'Clock', 'Printer', 'Pairs',
            'Mult', 'Generate', 'FixedDelay', 'Fibonacci',
@@ -59,7 +59,7 @@ def GenerateFloats(outchan, increment=0.1):
     """
     counter = 0
     while True:
-        outchan.write(counter * epsilon)
+        outchan.write(counter * increment)
         counter += 1
         yield
 
@@ -271,7 +271,7 @@ def Sign(cin, cout, prefix):
 
 ### Magic for processes built on Python operators
 
-def _applyunop(unaryop, docstring):
+def unop(unaryop, docstring=''):
     """Create a process whose output is C{unaryop(cin.read())}.
     """
 
@@ -290,7 +290,7 @@ def _applyunop(unaryop, docstring):
     return _myproc
 
 
-def _applybinop(binop, docstring):
+def binop(binop, docstring=''):
     """Create a process whose output is C{binop(cin1.read(), cin2.read())}.
     """
 
@@ -311,8 +311,6 @@ def _applybinop(binop, docstring):
 
 
 # Use some abbreviations to shorten definitions.
-unop = _applyunop
-binop = _applybinop
 op = operator
 
 # Numeric operators
@@ -352,7 +350,7 @@ Lnand = binop(lambda x, y: not (x and y),
               "Emits the logical nand of two input events.")
 Lnor = binop(lambda x, y: not (x or y),
              "Emits the logical nor of two input events.")
-Lxor = binop(lambda x, y: (x or y) and (not x and y),
+Lxor = binop(lambda x, y: (x or y) and not (x and y),
              "Emits the logical xor of two input events.")
 
 # Comparison operators
@@ -365,6 +363,3 @@ Gt = binop(op.gt, "Emits True if first input event is > second.")
 Lt = binop(op.lt, "Emits True if first input event is < second.")
 Is = binop(op.is_, "Emits True if two input events are identical.")
 Is_Not = binop(op.is_not, "Emits True if two input events are not identical.")
-
-del unop, binop, op
-

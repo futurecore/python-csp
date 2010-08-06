@@ -64,7 +64,7 @@ except ImportError:
 CSP_IMPLEMENTATION = 'os_process'
 
 ### Names exported by this module
-__all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
+__all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt', 'ChannelPoison',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
            'process', 'forever', 'Skip', '_CSPTYPES', 'CSP_IMPLEMENTATION']
 
@@ -1133,6 +1133,7 @@ n: 20
     def _call(*args, **kwargs):
         """Call the target function."""
         return CSPProcess(func, *args, **kwargs)
+    _call.wrapped_function = func
     return _call
 
 
@@ -1198,6 +1199,7 @@ KeyboardInterrupt
     def _call(*args, **kwargs):
         """Call the target function."""
         return CSPServer(func, *args, **kwargs)
+    _call.wrapped_function = func
     return _call
 
 

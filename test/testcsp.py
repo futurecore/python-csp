@@ -1,35 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Simple tests for basic python-csp functionality.
-
-Copyright (C) Sarah Mount, 2009.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-"""
-
-import os
-import random
-import sys
-import time
-
-sys.path.insert(0, "..")
-
 from csp.csp import *
-#from csp.os_process import *
-#from csp.os_thread import *
 from csp.guards import Timer
 #set_debug(True)
 

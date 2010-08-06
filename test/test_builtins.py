@@ -1,187 +1,256 @@
-"""
-Test for Python-CSP's builtin functions (processes/threads).
-
-Most if not all of the builtins accept two channel arguments: One to
-receive the input from, and one to write the output to. After the
-writing for an input value is done, the builtin `yield`s and continues
-to run.
-"""
-
-import sys
 import unittest
-
-sys.path.insert(0, "..")
-
-import csp.os_process
-import csp.os_thread
-csp.os_thread.set_debug(True)
 import csp.builtins as builtins
+from math import pi
+
+class MockInputChannel():
+    def __init__(self, data):
+        self.data = data[:]
+    def read(self):
+        if not self.data:
+            raise StopIteration()
+        return self.data.pop(0)
+
+class MockOutputChannel():
+    def __init__(self):
+        self.data = []
+    def write(self, value):
+        self.data.append(value)
 
 
-class TestBuiltinsWithProcesses(unittest.TestCase):
-    csp_process = csp.os_process
+class TestUnaryBuiltins(unittest.TestCase):
 
-    def setUp(self):
-        csp = self.csp_process
-        # Get us some channels for later use.
-        self.spare_channels = [csp.Channel() for i in range(3)]
-
-    def tearDown(self):
-        # Destroy channels and processes; ignore result.
-        [channel.poison() for channel in self.spare_channels]
-        self.spare_channels[:] = []
-
-    #
-    # The following three methods return processes factories to be started
-    #  later in parallel.
-    #
-    def producer(self):
-        @self.csp_process.process
-        def _producer(channel, values):
-            for value in values:
-                channel.write(value)
-        return _producer
-
-    def consumer(self):
-        @self.csp_process.process
-        def _consumer(channel, reads, result_channel):
-            result = []
-            for i in range(reads):
-                value = channel.read()
-                result.append(value)
-            result_channel.write(result)
-        return _consumer
-
-    def coordinator(self):
-        @self.csp_process.process
-        def _coordinator(in_channel, out_channel, result_channel,
-                         in_data, builtin, builtin_args, excess_reads):
-            # Use positional arguments if requested.
-            if builtin_args is None:
-                called_builtin = builtin(in_channel, out_channel)
+    def with_values(self, builtin, input, expected_output, **func_args):
+        in_channel = MockInputChannel(input)
+        out_channel = MockOutputChannel()
+        process = builtin.wrapped_function(in_channel, out_channel, **func_args)
+        for _x in process: pass
+        for ii, value in enumerate(expected_output):
+            if isinstance(value, float):
+                self.assertAlmostEqual(out_channel.data[ii], value)
             else:
-                called_builtin = builtin(in_channel, out_channel,
-                                         *builtin_args)
-            # Start producer, builtin and consumer in parallel.
-            parallel_processes = self.csp_process.Par(
-              self.producer()(in_channel, in_data),
-              called_builtin,
-              self.consumer()(out_channel, reads=len(in_data)+excess_reads,
-                              result_channel=result_channel),
-              )
-            parallel_processes.start()
-        return _coordinator
-
-    #
-    # Helper methods.
-    #
-    def feedBuiltin(self, in_data, builtin, builtin_args=None, excess_reads=0):
-        """Feed the data from `in_data` into the builtin CSPProcess
-        (process/thread) and return a sequence of the corresponding
-        output values.
-
-        If `builtin_args` isn't `None`, use this tuple as the
-        positional arguments to the builtin. If `excess_reads` is
-        greater than 0, read this many values after reading output
-        values corresponding to the input and include them in the
-        returned output data.
-        """
-        in_channel, out_channel, result_channel = self.spare_channels[:3]
-        coordinator = self.coordinator()(in_channel, out_channel,
-                                         result_channel, in_data,
-                                         builtin, builtin_args,
-                                         excess_reads)
-        coordinator.start()
-        result = result_channel.read()
-        return result
-
-    def assertListsAlmostEqual(self, list1, list2, msg=None):
-        """Compare corresponding list elements with
-        `self.assertAlmostEqual` and fail with message `msg` if
-        a comparison fails.
-        """
-        for item1, item2 in zip(list1, list2):
-            self.assertAlmostEqual(item1, item2)
-
-    def feedUnaryFloatOperation(self, in_data, expected_out_data, builtin):
-        """Test an unary floating point operation `builtin`, for
-        example `builtins.Sin`. Check if items in the sequence
-        `in_data` have corresponding results in `expected_out_data`.
-        """
-        out_data = self.feedBuiltin(in_data, builtin)
-        self.assertListsAlmostEqual(out_data, expected_out_data)
-
-    #XXX Something like this is already defined in Python 2.7.
-    def assertListsEqual(self, list1, list2, msg=None):
-        """Similar to `assertListsAlmostEqual`, but compare exactly."""
-        for item1, item2 in zip(list1, list2):
-            self.assertEqual(item1, item2)
-
-    def feedUnaryOperation(self, in_data, expected_out_data, builtin,
-                           builtin_args=None, excess_reads=0):
-        """Test an unary floating point operation `builtin`, for
-        example `builtins.Sin`. Check if items in the sequence
-        `in_data` have corresponding results in `expected_out_data`.
-
-        If `builtins_args` is given and not `None`, use the tuple as
-        the positional arguments in the call of `builtin`. If the
-        integer `excess_reads` is greater than 0, read this many
-        additional bytes after `len(in_data)` reads.
-        """
-        # `args` is handled appropriately by `feedBuiltin`.
-        out_data = self.feedBuiltin(in_data, builtin, builtin_args,
-                                    excess_reads)
-        self.assertListsEqual(out_data, expected_out_data)
-
-    #
-    # Test unary builtins which accept and deliver float values.
-    #
-    def testSin(self):
-        in_data = [0.0, 1.0, 4.0, -1.0, -4.0, 10.0]
-        expected_data = [0.0, 0.841470984808, -0.756802495308,
-                         -0.841470984808, 0.756802495308, -0.544021110889]
-        self.feedUnaryFloatOperation(in_data, expected_data, builtins.Sin)
-
-    def testCos(self):
-        in_data = [0.0, 1.0, 4.0, -1.0, -4.0]
-        expected_data = [1.0, 0.540302305868, -0.653643620864,
-                         0.540302305868, -0.653643620864, -0.839071529076,]
-        self.feedUnaryFloatOperation(in_data, expected_data, builtins.Cos)
-
-    def testSucc(self):
-        in_data = [0.0, 1.1, 99.123, 1e4, -1.0]
-        expected_data = [1.0, 2.1, 100.123, 1e4+1.0, 0.0]
-        self.feedUnaryFloatOperation(in_data, expected_data, builtins.Succ)
-
-    def testPred(self):
-        in_data = [1.0, 2.1, 100.123, 1e4+1.0, 0.0]
-        expected_data = [0.0, 1.1, 99.123, 1e4, -1.0]
-        self.feedUnaryFloatOperation(in_data, expected_data, builtins.Pred)
-
-    #
-    # Test unary builtins accepting and delivering arbitrary data.
-    #
-    def testPrefix(self):
-        in_data = [1, 2, -3, "a", u"abc", ()]
-        expected_data = [7] + in_data
-        self.feedUnaryOperation(in_data, expected_data, builtins.Prefix,
-                                builtin_args=(7,))
+                self.assertEqual(out_channel.data[ii], value)
 
     def testId(self):
-        in_data = [1, 2, -3, "a", u"abc", ()]
-        expected_data = in_data
-        self.feedUnaryOperation(in_data, expected_data, builtins.Id)
+        input_data = [3, -8l, 4.2, (), 'abc']
+        self.with_values(builtins.Id, input_data, input_data)
 
-#
-# FIXME: This shows up a synchronisation bug. Set the debug flag to
-# see the gory details: csp.os_thread.set_debug(True)
-#
-class TestBuiltinsWithThreads(TestBuiltinsWithProcesses):
-     csp_process = csp.os_thread
+    def testPrinter(self):
+        input_data = [3, -8l, 4.2, (), 'abc']
+        self.with_values(builtins.Printer, input_data,
+                                           [str(x) + '\n' for x in input_data])
+
+    def testUnaryOperatorBuilder(self):
+        self.with_values(builtins.unop(lambda x: x*2 - 3),
+                                            [1, 2, 3, 4], [-1, 1, 3, 5])
 
 
-if __name__ == '__main__':
-    unittest.main()
-#    unittest.main(TestBuiltinsWithThreads, 'testId')
-#    unittest.main(TestBuiltinsWithThreads, 'testSin')
+
+class TestUnaryConvenienceOperators(TestUnaryBuiltins):
+
+    def testSin(self):
+        self.with_values(builtins.Sin, [0, 1, 100, -1, -100, pi/2],
+                         [0, 0.8414709848078965, -0.50636564110975879,
+                             -0.8414709848078965, 0.50636564110975879, 1])
+
+    def testCos(self):
+        self.with_values(builtins.Cos, [0, 1, 100, -1, -100, pi],
+                         [1, 0.54030230586813977, 0.86231887228768389,
+                             0.54030230586813977, 0.86231887228768389, -1])
+
+    def testSucc(self):
+        self.with_values(builtins.Succ, [-1, 40l, 1e4, 4.2],
+                                        [0, 41l, 1e4+1, 5.2])
+
+    def testPred(self):
+        self.with_values(builtins.Pred, [1, 40l, 1e4, 4.2],
+                                        [0, 39l, 1e4-1, 3.2])
+
+    def testPrefix(self):
+        input_data = [3, -8l, 4.2, (), 'abc']
+        self.with_values(builtins.Prefix, input_data,
+                                        [7] + input_data, prefix_item=7)
+
+    def testMult(self):
+        self.with_values(builtins.Mult, [1, 5, -30, 0, 100],
+                                        [3, 15, -90, 0, 300], scale=3)
+
+    def testSign(self):
+        self.with_values(builtins.Sign, ['a', 4, ()],
+                                        ['_a', '_4', '_()'], prefix='_')
+
+    def testNot(self):
+        self.with_values(builtins.Not, [0, 5, -5], [-1, -6, 4])
+
+    def testLnot(self):
+        self.with_values(builtins.Lnot, [(1, 2, 3), 3, 0, True, False],
+                                        [False, False, True, False, True])
+
+    def testNeg(self):
+        self.with_values(builtins.Neg, [0, 1, -2], [0, -1, 2])
+
+# def FixedDelay(cin, cout, delay):
+
+class TestSources(unittest.TestCase):
+
+    def with_values(self, builtin, expected_output, **func_args):
+        out_channel = MockOutputChannel()
+        process = builtin.wrapped_function(out_channel, **func_args)
+        for ii, value in enumerate(expected_output):
+            process.next()
+            if isinstance(value, float):
+                self.assertAlmostEqual(out_channel.data[ii], value)
+            else:
+                self.assertEqual(out_channel.data[ii], value)
+
+    def testGenerateFloats(self):
+        self.with_values(builtins.GenerateFloats,
+                         [0, 0.1, 0.2, 0.3, 0.4], increment=0.1)
+        self.with_values(builtins.GenerateFloats,
+                         [0, 1, 2, 3, 4], increment=1)
+
+    def testZeroes(self):
+        self.with_values(builtins.Zeroes, [0, 0, 0, 0, 0])
+
+    def testGenerate(self):
+        self.with_values(builtins.Generate, range(1000))
+
+    def testFibonacci(self):
+        self.with_values(builtins.Fibonacci, [1, 1, 2, 3, 5, 8, 13, 21])
+
+#    def testClock(self):
+
+
+class TestSink(unittest.TestCase):
+
+    def testBlackhole(self):
+        in_channel = MockInputChannel(list(range(1000)))
+        process = builtins.Blackhole.wrapped_function(in_channel)
+        for _x in range(1000):
+            process.next()
+        self.assertEqual(in_channel.data, [])
+
+
+class TestBinaryBuiltins(unittest.TestCase):
+
+    def with_values(self, builtin, input1, input2, expected_output):
+        in_channel1 = MockInputChannel(input1)
+        in_channel2 = MockInputChannel(input2)
+        out_channel = MockOutputChannel()
+        process = builtin.wrapped_function(in_channel1, in_channel2,
+                                           out_channel)
+        for _x in process: pass
+        for ii, value in enumerate(expected_output):
+            if isinstance(value, float):
+                self.assertAlmostEqual(out_channel.data[ii], value)
+            else:
+                self.assertEqual(out_channel.data[ii], value)
+
+    def testMux2(self):
+        self.with_values(builtins.Mux2, [1, 2, 3], [4, 5, 6],
+                                        [1, 4, 2, 5, 3, 6])
+
+    def testBinaryOperatorBuilder(self):
+        self.with_values(builtins.binop(lambda x, y: x + 2*y),
+                        [1, 2, 3], [4, 5, 6], [9, 12, 15])
+
+
+class TestBinaryConvenienceOperators(TestBinaryBuiltins):
+
+    def testPlus(self):
+        self.with_values(builtins.Plus, [1, 2, 3], [4, 4, 4],
+                                        [5, 6, 7])
+    def testSub(self):
+        self.with_values(builtins.Sub, [1, 2, 3], [1, 2, 3],
+                                        [0, 0, 0])
+    def testMul(self):
+        self.with_values(builtins.Mul, [1, 2, 3], [3, 2, 1],
+                                        [3, 4, 3])
+    def testDiv(self):
+        self.with_values(builtins.Div, [1, 4, 9], [1, 2, 10],
+                                        [1, 2, 0.9])
+    def testFloorDiv(self):
+        self.with_values(builtins.FloorDiv, [1, 4, 9], [1, 2, 10],
+                                        [1, 2, 0])
+    def testMod(self):
+        self.with_values(builtins.Mod, [0, 3, 4, 5], [4, 4, 4, 4],
+                                        [0, 3, 0, 1])
+    def testPow(self):
+        self.with_values(builtins.Pow, [1, 2, 3], [0, 1, 2],
+                                        [1, 2, 9])
+
+    def testLand(self):
+        self.with_values(builtins.Land, [True, True, False, False],
+                                        [True, False, True, False],
+                                        [True, False, False, False])
+    def testLor(self):
+        self.with_values(builtins.Lor, [True, True, False, False],
+                                       [True, False, True, False],
+                                       [True, True, True, False])
+    def testLnand(self):
+        self.with_values(builtins.Lnand, [True, True, False, False],
+                                         [True, False, True, False],
+                                         [False, True, True, True])
+    def testLnor(self):
+        self.with_values(builtins.Lnor, [True, True, False, False],
+                                        [True, False, True, False],
+                                        [False, False, False, True])
+    def testLxor(self):
+        self.with_values(builtins.Lxor, [True, True, False, False],
+                                        [True, False, True, False],
+                                        [False, True, True, False])
+    def testLShift(self):
+        self.with_values(builtins.LShift, [0, 2, 65], [2, 0, 3],
+                                          [0, 2, 520])
+    def testRShift(self):
+        self.with_values(builtins.RShift, [0, 2, 65], [2, 0, 3],
+                                          [0, 2, 8])
+    def testAnd(self):
+        self.with_values(builtins.And, [0, 1, 1, 2, 2], [127, 3, 2, 3, 2],
+                                        [0, 1, 0, 2, 2])
+    def testOr(self):
+        self.with_values(builtins.Or, [0, 1, 1, 2, 2], [127, 3, 2, 3, 2],
+                                        [127, 3, 3, 3, 2])
+    def testNand(self):
+        self.with_values(builtins.Nand, [0, 1, 1, 2, 2], [127, 3, 2, 3, 2],
+                                        [-1, -2, -1, -3, -3])
+    def testNor(self):
+        self.with_values(builtins.Nor, [0, 1, 1, 2, 2], [127, 3, 2, 3, 2],
+                                        [-128, -4, -4, -4, -3])
+    def testXor(self):
+        self.with_values(builtins.Xor, [0, 1, 1, 2, 2], [127, 3, 2, 3, 2],
+                                        [127, 2, 3, 1, 0])
+    def testEq(self):
+        self.with_values(builtins.Eq, [1, 2, 3], [1, 2.0, 4],
+                                        [True, True, False])
+    def testNe(self):
+        self.with_values(builtins.Ne, [1, 2, 3], [1, 2.0, 4],
+                                        [False, False, True])
+    def testGeq(self):
+        self.with_values(builtins.Geq, [1, 2, 3, 4], [1.1, 2, 2, 5],
+                                        [False, True, True, False])
+    def testLeq(self):
+        self.with_values(builtins.Leq, [1, 2, 3, 4], [1.1, 2, 2, 5],
+                                        [True, True, False, True])
+
+
+from itertools import izip_longest
+class TestDemultiplexing(unittest.TestCase):
+
+    def with_values(self, builtin, input, output1, output2):
+        in_channel = MockInputChannel(input)
+        out_channel1 = MockOutputChannel()
+        out_channel2 = MockOutputChannel()
+        process = builtin.wrapped_function(in_channel,
+                                        out_channel1, out_channel2)
+        for _x in process: pass
+        for ii, (v1, v2) in enumerate(izip_longest(output1, output2)):
+            if v1 is not None:
+                self.assertEqual(out_channel1.data[ii], v1)
+            if v2 is not None:
+                self.assertEqual(out_channel2.data[ii], v2)
+
+    def testSplitter(self):
+        input = range(100)
+        self.with_values(builtins.Splitter, input, input, input)
+
 

@@ -35,7 +35,7 @@ import sys
 
 
 ### Names exported by this module
-__all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
+__all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt', 'ChannelPoison',
            'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
            'process', 'forever', 'Skip', 'CSP_IMPLEMENTATION']
 

@@ -21,7 +21,7 @@ class TestMixinGtOperator(BaseCspTest):
         self.assertEqual(self.output(), '01234')
 
 
-    def does_not_supports_nesting(self):
+    def does_not_support_nesting(self):
         # As the resulting Seq object is immediately started, the syntax
         # does not make sense, when nested
         _ = self.proc

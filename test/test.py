@@ -31,7 +31,7 @@ if len(BACKENDS) < 2:
          'the other one is thus UNTESTED!'.format(csp.csp.CSP_IMPLEMENTATION))
 
 
-runner = unittest.TextTestRunner(verbosity=1)
+runner = unittest.TextTestRunner(verbosity=2)
 def load_and_run(test_module):
     sys.stdout.flush()
     suite = unittest.defaultTestLoader.loadTestsFromName(test_module)

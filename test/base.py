@@ -25,23 +25,6 @@ class BaseCspTest(TestCase):
             event.set()
         return process(tester)(event)
 
-    def source(self, data, channel_out):
-        def tester(cout):
-            for x in data:
-                cout.write(x)
-        return process(tester)(channel_out)
-
-    def sink(self, length, channel_in):
-        event = Event()
-        self.events.append(event)
-        def tester(length, cin, event):
-            for ii in range(length):
-                x = cin.read()
-                self.outpipe.write(str(x))
-            self.outpipe.flush()
-            event.set()
-        return process(tester)(length, channel_in, event)
-
     def output(self):
         for ev in self.events:
             ev.wait()
