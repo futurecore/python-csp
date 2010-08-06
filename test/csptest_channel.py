@@ -40,7 +40,7 @@ class TestChannels(BaseCspTest):
         self.assertEquals(q.get(), 'Monty')
 
     def test_multiple_writers_single_reader(self):
-        pass
+        print('TODO: test_multiple_writers_single_reader')
         # Only the first writes to channel, the others seem to hang
 #        chan = Channel()
 #        writers = [start_parallel(self.writer, chan, "It's"),
@@ -92,7 +92,7 @@ class TestPoison(BaseCspTest):
         self.assertEqual(q.get(), "It's")
 
     def test_poison_spreads_over_processes(self):
-        pass
+        print('TODO: test_poison_spreads_over_processes')
         # ChannelPoison does not get raised and hangs if combinator writes
 #        @process
 #        def combinator(chan1, chan2):
