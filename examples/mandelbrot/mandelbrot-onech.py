@@ -80,7 +80,7 @@ def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
             # Point lies outside the Mandelbrot set.
             colour = get_colour(nu(z, i), cmax=MAXITER)
         imgcolumn[ycoord] = colour
-    logging.debug('sending column for x=%i' % xcoord)
+    logging.debug('sending column for x={0}'.format(xcoord))
     cout.write((xcoord, imgcolumn))
     return
 
@@ -107,7 +107,7 @@ def consume(IMSIZE, filename, chan):
     # Wait on channel events
     for i in range(IMSIZE[0]):
         xcoord, column = chan.read()
-        logging.debug('Consumer got some data for column %i' % xcoord)
+        logging.debug('Consumer got some data for column {0}'.format(xcoord))
         # Update column of blit buffer
         pixmap[xcoord] = column
 	# Update image on screen.
@@ -153,9 +153,8 @@ def main(IMSIZE, filename, level='info'):
     con = consume(IMSIZE, filename, channel)
     con.start()
     time.sleep(1)
-    logging.info('Image size: %ix%i' % IMSIZE)
-    logging.info('%i producer processes, %i consumer processes' %
-                 (len(processes), 1))
+    logging.info('Image size: {0}x{1}'.format(*IMSIZE))
+    logging.info('{0} producer processes, {1} consumer processes'.format(len(processes), 1))
     # Start and join producer processes.
     mandel = Par(*processes)
     mandel.start()

@@ -1,0 +1,512 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pre-built proceses &mdash; python-csp v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python-csp v0.1 documentation" href="index.html" />
+    <link rel="next" title="Prebuilt synchronisation primitives." href="guards.html" />
+    <link rel="prev" title="Core CSP library." href="csp.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="guards.html" title="Prebuilt synchronisation primitives."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="csp.html" title="Core CSP library."
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-csp.builtins">
+<h1>Pre-built proceses<a class="headerlink" href="#module-csp.builtins" title="Permalink to this headline">¶</a></h1>
+<p>Builtin processes for python-csp. For guard types see csp.guards.</p>
+<p>Based on the JCSP PlugNPlay package.</p>
+<p>Copyright (C) Sarah Mount, 2009.</p>
+<p>This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A ParTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+<p>You should have rceeived a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA</p>
+<dl class="function">
+<dt id="csp.builtins.Sin">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Sin</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Sin" title="Permalink to this definition">¶</a></dt>
+<dd>Emit the sine of input events.
+readset = cin
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Cos">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Cos</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Cos" title="Permalink to this definition">¶</a></dt>
+<dd>Emit the cosine of input events.
+readset = cin
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.GenerateFloats">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">GenerateFloats</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.GenerateFloats" title="Permalink to this definition">¶</a></dt>
+<dd>readset =
+writeset =</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Zeroes">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Zeroes</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Zeroes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes out a stream of zeros.</p>
+<p>readset =
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Id">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Id</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Id is the CSP equivalent of lambda x: x.</p>
+<p>readset = cin
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Succ">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Succ</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Succ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Succ is the successor process, which writes out 1 + its input
+event.</p>
+<p>readset = cin
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Pred">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Pred</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Pred" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pred is the predecessor process, which writes out 1 - its input
+event.</p>
+<p>readset = cin
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Prefix">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Prefix</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prefix a write on L{cout} with the value read from L{cin}.</p>
+<p>readset = cin
+writeset = cout</p>
+<p>&#64;type prefix_item: object
+&#64;param prefix_item: prefix value to use before first item read from L{cin}.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Delta2">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Delta2</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Delta2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splitter sends input values down two output channels.</p>
+<p>readset = cin
+writeset = cout1, cout2</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Splitter">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Splitter</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Splitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splitter sends input values down two output channels.</p>
+<p>readset = cin
+writeset = cout1, cout2</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Mux2">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Mux2</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Mux2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mux2 provides a fair multiplex between two input channels.</p>
+<p>readset = cin1, cin2
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Multiply">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Multiply</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Multiply" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the product of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Clock">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Clock</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Clock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send None object down output channel every C{resolution}
+seconds.</p>
+<p>readset =
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Printer">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Printer</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Printer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print all values read from L{cin} to standard out or L{out}.</p>
+<p>readset = cin
+writeset =</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Pairs">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Pairs</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Pairs" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the sum of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Mult">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Mult</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Mult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale values read on L{cin} and write to L{cout}.</p>
+<p>readset = cin
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Generate">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Generate</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate successive (+ve) ints and write to L{cout}.</p>
+<p>readset = 
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.FixedDelay">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">FixedDelay</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.FixedDelay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read values from L{cin} and write to L{cout} after a delay of
+L{delay} seconds.</p>
+<p>readset = cin
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Fibonacci">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Fibonacci</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Fibonacci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write successive Fibonacci numbers to L{cout}.</p>
+<p>readset =
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Blackhole">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Blackhole</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Blackhole" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read values from L{cin} and do nothing with them.</p>
+<p>readset = cin
+writeset =</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Sign">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Sign</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Sign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read values from L{cin} and write to L{cout}, prefixed by L{prefix}.</p>
+<p>readset = cin
+writeset = cout</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Plus">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Plus</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Plus" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the sum of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Sub">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Sub</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Sub" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the difference of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Mul">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Mul</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Mul" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the product of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Div">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Div</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Div" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the division of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.FloorDiv">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">FloorDiv</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.FloorDiv" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the floor div of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Mod">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Mod</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Mod" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the modulo of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Pow">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Pow</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Pow" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the power of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.LShift">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">LShift</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.LShift" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the left shift of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.RShift">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">RShift</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.RShift" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the right shift of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Neg">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Neg</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Neg" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the negation of input events.
+readset = cin
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Not">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Not</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Not" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the inverse of input events.
+readset = cin
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.And">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">And</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.And" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the bitwise and of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Or">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Or</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Or" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the bitwise or of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Nand">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Nand</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Nand" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the bitwise nand of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Nor">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Nor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Nor" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the bitwise nor of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Xor">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Xor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Xor" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the bitwise xor of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Land">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Land</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Land" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the logical and of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Lor">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Lor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Lor" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the logical or of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Lnot">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Lnot</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Lnot" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the logical not of input events.
+readset = cin
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Lnand">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Lnand</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Lnand" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the logical nand of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Lnor">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Lnor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Lnor" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the logical nor of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Lxor">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Lxor</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Lxor" title="Permalink to this definition">¶</a></dt>
+<dd>Emits the logical xor of two input events.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Eq">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Eq</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Eq" title="Permalink to this definition">¶</a></dt>
+<dd>Emits True if two input events are equal (==).
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Ne">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Ne</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Ne" title="Permalink to this definition">¶</a></dt>
+<dd>Emits True if two input events are not equal (not ==).
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Geq">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Geq</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Geq" title="Permalink to this definition">¶</a></dt>
+<dd>Emits True if first input event is &gt;= second.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Leq">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Leq</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Leq" title="Permalink to this definition">¶</a></dt>
+<dd>Emits True if first input event is &lt;= second.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Gt">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Gt</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Gt" title="Permalink to this definition">¶</a></dt>
+<dd>Emits True if first input event is &gt; second.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Lt">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Lt</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Lt" title="Permalink to this definition">¶</a></dt>
+<dd>Emits True if first input event is &lt; second.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Is">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Is</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Is" title="Permalink to this definition">¶</a></dt>
+<dd>Emits True if two input events are identical.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<dl class="function">
+<dt id="csp.builtins.Is_Not">
+<tt class="descclassname">csp.builtins.</tt><tt class="descname">Is_Not</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.builtins.Is_Not" title="Permalink to this definition">¶</a></dt>
+<dd>Emits True if two input events are not identical.
+readset = cin1, cin2
+writeset = cout</dd></dl>
+
+<ul class="simple">
+<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pythoncsp-docs.png" alt="Logo"/>
+            </a></p>
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="csp.html"
+                                  title="previous chapter">Core CSP library.</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="guards.html"
+                                  title="next chapter">Prebuilt synchronisation primitives.</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/builtins.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="guards.html" title="Prebuilt synchronisation primitives."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="csp.html" title="Core CSP library."
+             >previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Sarah Mount.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>

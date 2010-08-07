@@ -12,7 +12,7 @@ class Vector(object): # Use numpy arrays instead.
         self.x, self.y, self.z = x, y, z
         return
     def __repr__(self):
-        return 'Vector(%g, %g, %g)' % (self.x, self.y, self.z)
+        return 'Vector({0}, {1}, {2})'.format(self.x, self.y, self.z)
     def __add__(self, vector):
         return Vector(self.x + vector.x, self.y + vector.y, self.z + vector.z)
     def __sub__(self, vector):
@@ -32,7 +32,7 @@ class Ray(object):
         self.direction = direction
         return
     def __repr__(self):
-        return 'Ray(%s, %s)' % (repr(self.origin), repr(self.direction))
+        return 'Ray({0}, {1})'.format(repr(self.origin), repr(self.direction))
 
 class Hit(object):
     def __init__(self, llambda, normal):
@@ -40,7 +40,7 @@ class Hit(object):
         self.normal = normal
         return
     def __repr__(self):
-        return 'Hit(%g, %s)' % (self.llambda, repr(self.normal))
+        return 'Hit({0}, {1})'.format(self.llambda, repr(self.normal))
 
 class Scene(object):
     def intersect(self, hit, ray):
@@ -56,7 +56,7 @@ class Sphere(Scene):
         self.radius = radius
         return
     def __repr__(self):
-        return 'Sphere(%s, %g)' % (repr(self.centre), self.radius)
+        return 'Sphere({0}, {1})'.format(repr(self.centre), self.radius)
     def ray(self, ray): # Returns a float
         v = self.centre - ray.origin
         b = v.dot(ray.direction)
@@ -140,7 +140,7 @@ def create(level, centre, radius): # Returns a Group
 def create_run(n, level, ss, filename='scene.pgm'): 
     scene = create(level, Vector(0.0, -1.0, 0.0), 1.0)
     fp = file(filename, 'w')
-    fp.write('P5\n%i %i\n255\n' % (n, n))
+    fp.write('P5\n{0} {1}\n255\n'.format(n, n))
     channels, procs = [] , []
     sofar = 0
     for y in range(0, n, +1):
@@ -193,7 +193,7 @@ def run(n, scene, ss, filename='scene.pgm'):
     """Ray trace an given scene and write the results to a .pgm file.
     """
     fp = file(filename, 'w')
-    fp.write('P5\n%i %i\n255\n' % (n, n))
+    fp.write('P5\n{0} {1}\n255\n'.format((n, n)))
     for y in range(n-1, -1, -1):
         for x in range(0, n):
             g = 0.0

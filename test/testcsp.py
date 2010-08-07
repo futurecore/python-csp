@@ -31,11 +31,12 @@ from csp.csp import *
 #from csp.os_process import *
 #from csp.os_thread import *
 from csp.guards import Timer
+#set_debug(True)
 
 @process
 def foo(n):
     time.sleep(random.random()*2)
-    print('foo() got argument %i' % n)
+    print('foo() got argument {0}'.format(n))
     return
 
 
@@ -46,7 +47,7 @@ def send(cout):
     writeset = cout
     """
     for i in range(5):
-        print('send() is sending %i' % i)
+        print('send() is sending {0}'.format(i))
         cout.write(i)
     return
 
@@ -59,7 +60,7 @@ def recv(cin):
     """
     for i in range(5):
         data = cin.read()
-        print('recv() has received %s' % str(data))
+        print('recv() has received {0}'.format(str(data)))
     return
 
 
@@ -70,7 +71,7 @@ def send100(cout):
     writeset = cout
     """
     for i in range(100):
-        print('send100() is sending %i' % i)
+        print('send100() is sending {0}'.format(i))
         cout.write(i)
     return
 
@@ -83,7 +84,7 @@ def recv100(cin):
     """
     for i in range(100):
         data = cin.read()
-        print('recv100() has received %s' % str(data))
+        print('recv100() has received {0}'.format(str(data)))
     return
 
 
@@ -255,7 +256,7 @@ def _printHeader(name):
     random.seed(time.clock()) # Introduce a bit more randomness...    
     print('')
     print('****************************************************')
-    print('* Testing %s...' % name)
+    print('* Testing {0}...'.format(name))
     print('****************************************************')
     print('')
     return

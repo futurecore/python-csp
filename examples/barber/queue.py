@@ -85,7 +85,7 @@ class GuardedAlt(Alt):
             pass
         logging.debug('Poisoned last selected.')
         self.guards.remove(self.last_selected)
-        logging.debug('%i guards' % len(self.guards))
+        logging.debug('{0} guards'.format(len(self.guards)))
         self.last_selected = None
 
     def _preselect(self):
@@ -95,7 +95,7 @@ class GuardedAlt(Alt):
             raise NoGuardInAlt()
         elif len(self.guards) == 1:
             call, guard = self.guards[0]
-            logging.debug('Alt Selecting unique guard: %s' % guard.name)
+            logging.debug('Alt Selecting unique guard: {0}'.format(guard.name))
             self.last_selected = guard
             while not (call() and guard.is_selectable()):
                 guard.enable()
@@ -113,8 +113,7 @@ class GuardedAlt(Alt):
             for (call, guard) in self.guards:
                 if call() and guard.is_selectable():
                     ready.append(guard)
-            logging.debug('Alt got %i items to choose from out of %i' %
-                          (len(ready), len(self.guards)))
+            logging.debug('Alt got {0} items to choose from out of {1}'.format(len(ready), len(self.guards)))
         selected = _RANGEN.choice(ready)
         self.last_selected = selected
         for call, guard in self.guards:

@@ -82,10 +82,10 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
                 print('Saving oscope image in:' + str ( filename ) )
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 scale += 10.0
-                print('Oscilloscope scaling by %f' % scale)
+                print('Oscilloscope scaling by {0}'.format(scale))
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
                 if scale - 10.0 > 0.0: scale -= 10.0
-                print('Oscilloscope scaling by %f' % scale)
+                print('Oscilloscope scaling by {0}'.format(scale))
         yield
     inchan.poison()
     pygame.display.quit()

@@ -165,7 +165,7 @@ class ToradexSensor(HIDSensor):
         __parse(_unpack(_read_data()))
         """
         try:
-            data = struct.unpack('<%gH' % size, bytes)
+            data = struct.unpack('<%gH' % size, bytes) # FIXME: OK for Python3? 
         except struct.error:
             return None
         return data
@@ -209,7 +209,7 @@ class ToradexCurrent(ToradexSensor):
         return 'Python interface to the Toradex current sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs Current: %gA'
+        return 'Frame: {0}s Current: {1}A'
 
 
 class ToradexMagR(ToradexSensor):
@@ -243,7 +243,7 @@ class ToradexMagR(ToradexSensor):
         return 'Python interface to the Toradex magnetic rotation sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs Angle: %grad Magnitude: %g'
+        return 'Frame: {0}s Angle: {1}rad Magnitude: {2}'
 
 
 class ToradexMotion(ToradexSensor):
@@ -267,7 +267,7 @@ class ToradexMotion(ToradexSensor):
         return 'Python interface to the Toradex IR motion sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs Motion: %g # motion events'
+        return 'Frame: {0}s Motion: {1} # motion events'
 
 
 class ToradexDist(ToradexSensor):
@@ -291,7 +291,7 @@ class ToradexDist(ToradexSensor):
         return 'Python interface to the Toradex distance sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs Dist: %gm'
+        return 'Frame: {0}s Dist: {1}m'
 
 
 class ToradexTilt(ToradexSensor):
@@ -325,7 +325,7 @@ class ToradexTilt(ToradexSensor):
         return 'Python interface to the Toradex tilt sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs accel: %gms^-2 zen: %grad ax:%grad'
+        return 'Frame: {0}s accel: {1}ms^-2 zen: {2}rad ax:{3}rad'
 
 
 class ToradexLux(ToradexSensor):
@@ -349,7 +349,7 @@ class ToradexLux(ToradexSensor):
         return 'Python interface to the Toradex lux sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs lux: %gLux'
+        return 'Frame: {0}s lux: {1}Lux'
 
     
 class ToradexG(ToradexSensor):
@@ -383,7 +383,7 @@ class ToradexG(ToradexSensor):
         return 'Python interface to the Toradex G (3-axis accel)  sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs x: %gms^-2 y: %gms^-2 z:%gms^-2'
+        return 'Frame: {0}s x: {1}ms^-2 y: {2}ms^-2 z:{3}ms^-2'
 
 
 class ToradexRH(ToradexSensor):
@@ -412,7 +412,7 @@ class ToradexRH(ToradexSensor):
         return 'Python interface to the Toradex RH sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs Humidity: %g%% Temperature: %gC'
+        return 'Frame: {0}s Humidity: {1}% Temperature: {2}C'
 
 
 class ToradexP(ToradexSensor):
@@ -442,7 +442,7 @@ class ToradexP(ToradexSensor):
         return 'Python interface to the ToradexP sensor'
 
     def _debug_str(self):
-        return 'Frame: %gs Pressure: %gPa Temperature: %gC'
+        return 'Frame: {0}s Pressure: {1}Pa Temperature: {2}C'
 
 
 class Toradex8ChannelA2D(ToradexSensor):
@@ -512,13 +512,13 @@ class Toradex8ChannelA2D(ToradexSensor):
 
     def _debug_str(self):
         if self.mode == Toradex8ChannelA2D.MODE_SINGLE_ENDED:        
-            return ('Frame no: %gs, CH0-GNDi: %gV, CH1-GNDi: %gV, ' +
-                    'CH2-GNDi: %gV, CH3-GNDi: %gV, CH4-GNDi: %gV, ' +
-                    'CH5-GNDi: %gV, CH6-GNDi: %gV, CH7-GNDi: %gV')
+            return ('Frame no: {0}s, CH0-GNDi: {1}V, CH1-GNDi: {2}V, ' +
+                    'CH2-GNDi: {3}V, CH3-GNDi: {4}V, CH4-GNDi: {5}V, ' +
+                    'CH5-GNDi: {6}V, CH6-GNDi: {7}V, CH7-GNDi: {8}V')
         elif self.mode == Toradex8ChannelA2D.MODE_PSEUDO_DIFFERENTIAL:
-            return ('Frame no: %gs, CH0-1: %gV, CH1-0: %gV, CH2-3: %gV, ' +
-                    'CH3-2: %gV, CH4-5: %gV, CH5-4: %gV, CH6-7: %gV, ' +
-                    'CH7-6: %gV,')
+            return ('Frame no: {0}s, CH0-1: {1}V, CH1-0: {2}V, CH2-3: {3}V, ' +
+                    'CH3-2: {4}V, CH4-5: {5}V, CH5-4: {6}V, CH6-7: {7}V, ' +
+                    'CH7-6: {8}V,')
         else: raise HIDError('Toradex8ChannelA2D in undefined input mode!')
 
 
@@ -541,7 +541,7 @@ def __test(sensorclass):
     print(sensor.open())
     while True:
         sensor.blink_led()
-        print(sensor._debug_str() % sensor.get_data())
+        print(sensor._debug_str().format(&sensor.get_data()))
 
 def __test_rh(): __test(ToradexRH)
 def __test_g(): __test(ToradexG)
@@ -585,7 +585,7 @@ if __name__ == '__main__':
     #     print sensor1.open()
     #     print sensor2.open()
     #     while True:
-    #         print sensor1._debug_str() % sensor1.get_data()
-    #         print sensor2._debug_str() % sensor2.get_data()
+    #         print sensor1._debug_str().format(*sensor1.get_data())
+    #         print sensor2._debug_str().format(*sensor2.get_data())
     # __test2()
     

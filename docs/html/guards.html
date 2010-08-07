@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Prebuilt synchronisation primitives. &mdash; python-csp v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python-csp v0.1 documentation" href="index.html" />
+    <link rel="next" title="Design patterns for automatically wiring process graphs" href="patterns.html" />
+    <link rel="prev" title="Pre-built proceses" href="builtins.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="patterns.html" title="Design patterns for automatically wiring process graphs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="builtins.html" title="Pre-built proceses"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-csp.guards">
+<h1>Prebuilt synchronisation primitives.<a class="headerlink" href="#module-csp.guards" title="Permalink to this headline">¶</a></h1>
+<p>Builtin guard types. For builtin processes see csp.builtins.</p>
+<p>Copyright (C) Sarah Mount, 2010.</p>
+<p>This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+<p>You should have rceeived a copy of the GNU General Public License
+along with this program.  If not, see &lt;<a class="reference external" href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</p>
+<dl class="class">
+<dt id="csp.guards.Timer">
+<em class="property">class </em><tt class="descclassname">csp.guards.</tt><tt class="descname">Timer</tt><a class="headerlink" href="#csp.guards.Timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Guard which only commits to synchronisation when a timer has expired.</p>
+<blockquote>
+Timer objects are a type of CSP guard, like Channel types and Skip
+guards. Timer objects allow code to wait for a specific period of
+time before synchronising on a timer event. This can be done in a
+number of ways: either by sleeping for a period of time (similar
+to time.sleep in the standard library), or by setting the timer to
+become selectable (by an Alt object) after a specific period of
+time. For example:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">timer</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="c"># sleep for 5 seconds</span>
+<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alt</span> <span class="o">=</span> <span class="n">Alt</span><span class="p">(</span><span class="n">timer</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">timer</span><span class="o">.</span><span class="n">set_alarm</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="c"># become selectable 3 seconds from now</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alt</span><span class="o">.</span><span class="n">select</span><span class="p">()</span> <span class="c"># will wait 3 seconds</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="csp.guards.Timer.read">
+<tt class="descname">read</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.guards.Timer.read" title="Permalink to this definition">¶</a></dt>
+<dd>Return current time.</dd></dl>
+
+<dl class="method">
+<dt id="csp.guards.Timer.sleep">
+<tt class="descname">sleep</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#csp.guards.Timer.sleep" title="Permalink to this definition">¶</a></dt>
+<dd>Put this process to sleep for a number of seconds.</dd></dl>
+
+</dd></dl>
+
+<ul class="simple">
+<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pythoncsp-docs.png" alt="Logo"/>
+            </a></p>
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="builtins.html"
+                                  title="previous chapter">Pre-built proceses</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="patterns.html"
+                                  title="next chapter">Design patterns for automatically wiring process graphs</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/guards.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="patterns.html" title="Design patterns for automatically wiring process graphs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="builtins.html" title="Pre-built proceses"
+             >previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Sarah Mount.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>

@@ -148,7 +148,7 @@ class Slider(object):
         self.clicked = False
         self.value = value
         self.name = name
-        self.label = self.name + ' %.3g' % self.value
+        self.label = self.name + ' {0}g'.format(self.value)
         return
     def update(self):
         mousebutton = pygame.mouse.get_pressed()
@@ -161,7 +161,7 @@ class Slider(object):
         self.srect.clamp_ip(self.brect)
         if self.srect.left - self.brect.left == 0.0: self.value = 0.0
         else: self.value = (self.srect.left - self.brect.left) / 100.0
-        self.label = self.name + ' %.3f' % self.value
+        self.label = self.name + ' {0}'.format(self.value)
         return
     def render(self, surface):
         surface.blit(self.bar, self.brect)

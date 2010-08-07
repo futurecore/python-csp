@@ -1,7 +1,7 @@
-Mandelbrot example
+Pre-built proceses
 ==================
 
-.. automodule:: mandelbrot
+.. automodule:: csp.builtins
    :members:
 
 ..

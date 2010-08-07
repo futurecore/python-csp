@@ -115,10 +115,10 @@ class ExstaticError(object):
         return
 
     def __str__(self):
-        return '[%s:%i] %s (%s, %s): %s' % (self.filename,
-                                            self.lineno,
-                                            self.get_severity(),
-                                            self.errcode,
-                                            self.scope,
-                                            self.explaination)
+        return '[{0}:{1}] {2} ({3}, {4}): {5}'.format(self.filename,
+                                                      self.lineno,
+                                                      self.get_severity(),
+                                                      self.errcode,
+                                                      self.scope,
+                                                      self.explaination)
 

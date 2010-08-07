@@ -1,7 +1,7 @@
-Mandelbrot example
-==================
+Core CSP library.
+=================
 
-.. automodule:: mandelbrot
+.. automodule:: csp.csp
    :members:
 
 ..

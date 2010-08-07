@@ -35,7 +35,7 @@ def generate_customers(out_chan, printer):
                  'Terry Gilliam', 'Graham Chapman']
     while True:
         python = random.choice(customers)
-        printer.write('%s needs a good shave!' % python)
+        printer.write('{0} needs a good shave!'.format(python))
         out_chan.write(python)
 
 
@@ -46,7 +46,7 @@ def barber(door, printer):
     while True:
         printer.write('Barber is sleeping.')
         customer = door.read()
-        print_c.write('The barber has woken to give %s a shave.' % customer)
+        print_c.write('The barber has woken to give {0} a shave.'.format(customer))
         timer.sleep(random.random() * 5)
     
 

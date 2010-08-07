@@ -1,0 +1,754 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Core CSP library. &mdash; python-csp v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="python-csp v0.1 documentation" href="index.html" />
+    <link rel="next" title="Pre-built proceses" href="builtins.html" />
+    <link rel="prev" title="Welcome to python-csp’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="builtins.html" title="Pre-built proceses"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to python-csp’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-csp.csp">
+<h1>Core CSP library.<a class="headerlink" href="#module-csp.csp" title="Permalink to this headline">¶</a></h1>
+<p>If you want to use the python-csp library then this is the file to
+import. It attempts to match the best possible implementation of CSP
+for your platform.</p>
+<p>If you wish to choose to use the multiprocess (multicore) or threaded
+version of the libraries explicitly then set an environment variable
+in your opertaing system called &#8220;CSP&#8221;. This should be either set to
+&#8220;PROCESSES&#8221; or &#8220;THREADS&#8221; depending on what you want to use.</p>
+<p>Copyright (C) Sarah Mount, 2010.</p>
+<p>This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+<p>You should have rceeived a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA</p>
+<dl class="class">
+<dt id="csp.csp.CSPProcess">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">CSPProcess</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.csp.CSPProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of CSP processes.</p>
+<p>There are two ways to create a new CSP process. Firstly, you can use
+the &#64;process decorator to convert a function definition into a CSP
+Process. Once the function has been defined, calling it will return a
+new CSPProcess object which can be started manually, or used in an
+expression:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;n:&#39;</span><span class="p">,</span> <span class="n">n</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span><span class="p">:</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="n">foo</span><span class="p">(</span><span class="mi">20</span><span class="p">),)</span>
+<span class="go">n: 10</span>
+<span class="go">n: 20</span>
+<span class="go">&lt;Par(Par-5, initial)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<p>Alternatively, you can create a CSPProcess object directly and pass a
+function (and its arguments) to the CSPProcess constructor:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;n:&#39;</span><span class="p">,</span> <span class="n">n</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">CSPProcess</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span><span class="p">:</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="csp.csp.CSPProcess.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.CSPProcess.run" title="Permalink to this definition">¶</a></dt>
+<dd>Called automatically when the L{start} methods is called.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="csp.csp.CSPServer">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">CSPServer</tt><big>(</big><em>func</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.csp.CSPServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of CSP server processes.
+Not intended to be used in client code. Use &#64;forever instead.</p>
+<dl class="method">
+<dt id="csp.csp.CSPServer.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.CSPServer.run" title="Permalink to this definition">¶</a></dt>
+<dd>Called automatically when the L{start} methods is called.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="csp.csp.Alt">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">Alt</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#csp.csp.Alt" title="Permalink to this definition">¶</a></dt>
+<dd><p>CSP select (OCCAM ALT) process.</p>
+<blockquote>
+<p>python-csp process will often have access to several different
+channels, or other guard types such as timer guards, and will have
+to choose one of them to read from. For example, in a
+producer/consumer or worker/farmer model, many producer or worker
+processes will be writing values to channels and one consumer or
+farmer process will be aggregating them in some way. It would be
+inefficient for the consumer or farmer to read from each channel
+in turn, as some channels might take longer than others. Instead,
+python-csp provides support for ALTing (or ALTernating), which
+enables a process to read from the first channel (or timer, or
+other guard) in a list to become ready.</p>
+<p>The simplest way to choose between channels (or other guards) is
+to use choice operator: &#8220;|&#8221;, as in the example below:</p>
+</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">send_msg</span><span class="p">(</span><span class="n">chan</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">chan</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">chan1</span><span class="p">,</span> <span class="n">chan2</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="c"># Choice chooses a channel on which to call read()</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">chan1</span> <span class="o">|</span> <span class="n">chan2</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">chan1</span> <span class="o">|</span> <span class="n">chan2</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">Channel</span><span class="p">(),</span> <span class="n">Channel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">choice</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="n">send_msg</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="s">&#39;yes&#39;</span><span class="p">),</span> <span class="n">send_msg</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="s">&#39;no&#39;</span><span class="p">))</span>
+<span class="go">yes</span>
+<span class="go">no</span>
+<span class="go">&lt;Par(Par-8, initial)&gt;</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<blockquote>
+Secondly, you can create an Alt object explicitly, and call its
+select() method to perform a channel read on the next available
+channel. If more than one channel is available to read from, then
+an available channel is chosen at random (for this reason, ALTing
+is sometimes called &#8220;non-deterministic choice&#8221;:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">send_msg</span><span class="p">(</span><span class="n">chan</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">chan</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">alt_example</span><span class="p">(</span><span class="n">chan1</span><span class="p">,</span> <span class="n">chan2</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">alt</span> <span class="o">=</span> <span class="n">Alt</span><span class="p">(</span><span class="n">chan1</span><span class="p">,</span> <span class="n">chan2</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">alt</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">alt</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">Channel</span><span class="p">(),</span> <span class="n">Channel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Par</span><span class="p">(</span><span class="n">send_msg</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="s">&#39;yes&#39;</span><span class="p">),</span> <span class="n">send_msg</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="s">&#39;no&#39;</span><span class="p">),</span> <span class="n">alt_example</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="go">yes</span>
+<span class="go">no</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<blockquote>
+<p>In addition to the select() method, which chooses an available
+guard at random, Alt provides two similar methods, fair_select()
+and pri_select(). fair_select() will choose not to select the
+previously selected guard, unless it is the only guard
+available. This ensures that no guard will be starved twice in a
+row. pri_select() will select available channels in the order in
+which they were passed to the Alt() constructor, giving a simple
+implementation of guard priority.</p>
+<p>Lastly, Alt() can be used with the repetition operator (*) to
+create a generator:</p>
+</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">send_msg</span><span class="p">(</span><span class="n">chan</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">chan</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">gen_example</span><span class="p">(</span><span class="n">chan1</span><span class="p">,</span> <span class="n">chan2</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">gen</span> <span class="o">=</span> <span class="n">Alt</span><span class="p">(</span><span class="n">chan1</span><span class="p">,</span> <span class="n">chan2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">gen</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">gen</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">Channel</span><span class="p">(),</span> <span class="n">Channel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Par</span><span class="p">(</span><span class="n">send_msg</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="s">&#39;yes&#39;</span><span class="p">),</span> <span class="n">send_msg</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="s">&#39;no&#39;</span><span class="p">),</span> <span class="n">gen_example</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="go">yes</span>
+<span class="go">no</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="csp.csp.Alt.fair_select">
+<tt class="descname">fair_select</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Alt.fair_select" title="Permalink to this definition">¶</a></dt>
+<dd>Select a guard to synchronise with. Do not select the
+previously selected guard (unless it is the only guard
+available).</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Alt.poison">
+<tt class="descname">poison</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Alt.poison" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poison the last selected guard and unlink from the guard list.</p>
+<p>Sets self.last_selected to None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Alt.pri_select">
+<tt class="descname">pri_select</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Alt.pri_select" title="Permalink to this definition">¶</a></dt>
+<dd>Select a guard to synchronise with, in order of
+&#8220;priority&#8221;. The guard with the lowest index in the L{guards}
+list has the highest priority.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Alt.select">
+<tt class="descname">select</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Alt.select" title="Permalink to this definition">¶</a></dt>
+<dd>Randomly select from ready guards.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="csp.csp.Par">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">Par</tt><big>(</big><em>*procs</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#csp.csp.Par" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CSP processes in parallel.</p>
+<blockquote>
+There are two ways to run processes in parallel.  Firstly, given
+two (or more) processes you can parallelize them with the //
+operator, like this:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;n:&#39;</span><span class="p">,</span> <span class="n">n</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="n">foo</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">foo</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">n: 2</span>
+<span class="go">n: 1</span>
+<span class="go">n: 3</span>
+<span class="go">&lt;Par(Par-5, initial)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<blockquote>
+<p>Notice that the // operator takes a CSPProcess on the left hand side
+and a sequence of processes on the right hand side.</p>
+<p>Alternatively, you can create a Par object which is a sort of CSP
+process and start that process manually:</p>
+</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">Par</span><span class="p">(</span><span class="n">foo</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="n">foo</span><span class="p">(</span><span class="mi">200</span><span class="p">),</span> <span class="n">foo</span><span class="p">(</span><span class="mi">300</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="go">n: 100</span>
+<span class="go">n: 300</span>
+<span class="go">n: 200</span>
+<span class="gp">&gt;&gt;&gt; </span>    
+</pre></div>
+</div>
+<dl class="method">
+<dt id="csp.csp.Par.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Par.start" title="Permalink to this definition">¶</a></dt>
+<dd>Start then synchronize with the execution of parallel processes.
+Return when all parallel processes have returned.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Par.terminate">
+<tt class="descname">terminate</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Par.terminate" title="Permalink to this definition">¶</a></dt>
+<dd>Terminate the execution of this process.
+FIXME: Should not be recursive. Is this ever called?!</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="csp.csp.Seq">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">Seq</tt><big>(</big><em>*procs</em><big>)</big><a class="headerlink" href="#csp.csp.Seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CSP processes sequentially.</p>
+<blockquote>
+There are two ways to run processes in sequence.  Firstly, given
+two (or more) processes you can sequence them with the &gt; operator,
+like this:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;n:&#39;</span><span class="p">,</span> <span class="n">n</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">foo</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">foo</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">n: 1</span>
+<span class="go">n: 2</span>
+<span class="go">n: 3</span>
+<span class="go">&lt;Seq(Seq-14, initial)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<blockquote>
+Secondly, you can create a Seq object which is a sort of CSP
+process and start that process manually:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Seq</span><span class="p">(</span><span class="n">foo</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="n">foo</span><span class="p">(</span><span class="mi">200</span><span class="p">),</span> <span class="n">foo</span><span class="p">(</span><span class="mi">300</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="go">n: 100</span>
+<span class="go">n: 200</span>
+<span class="go">n: 300</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="csp.csp.Seq.start">
+<tt class="descname">start</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Seq.start" title="Permalink to this definition">¶</a></dt>
+<dd>Start this process running.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="csp.csp.Guard">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">Guard</tt><a class="headerlink" href="#csp.csp.Guard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract class to represent CSP guards.</p>
+<p>All methods must be overridden in subclasses.</p>
+<dl class="method">
+<dt id="csp.csp.Guard.disable">
+<tt class="descname">disable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Guard.disable" title="Permalink to this definition">¶</a></dt>
+<dd>Roll back from an L{enable} call.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Guard.enable">
+<tt class="descname">enable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Guard.enable" title="Permalink to this definition">¶</a></dt>
+<dd>Prepare for, but do not commit to a synchronisation.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Guard.is_selectable">
+<tt class="descname">is_selectable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Guard.is_selectable" title="Permalink to this definition">¶</a></dt>
+<dd>Should return C{True} if this guard can be selected by an L{Alt}.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Guard.poison">
+<tt class="descname">poison</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Guard.poison" title="Permalink to this definition">¶</a></dt>
+<dd>Terminate all processes attached to this guard.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Guard.select">
+<tt class="descname">select</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Guard.select" title="Permalink to this definition">¶</a></dt>
+<dd>Commit to a synchronisation started by L{enable}.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="csp.csp.Channel">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">Channel</tt><a class="headerlink" href="#csp.csp.Channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>CSP Channel objects.</p>
+<blockquote>
+<p>In python-csp there are two sorts of channel. In JCSP terms these
+are Any2Any, Alting channels. However, each channel creates an
+operating system level pipe. Since this is a file object the
+number of channels a program can create is limited to the maximum
+number of files the operating system allows to be open at any one
+time. To avoid this bottleneck use L{FileChannel} objects, which
+close the file descriptor used for IPC after every read or write
+operations. Read and write operations are, however, over 20 time
+slower when performed on L{FileChannel} objects.</p>
+<p>Subclasses of C{Channel} must call L{_setup()} in their
+constructor and override L{put}, L{get}, L{__del__}.</p>
+<p>A CSP channel can be created with the Channel class:</p>
+</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Channel</span><span class="p">()</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<blockquote>
+Each Channel object should have a unique name in the network:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span>
+<span class="go">1ca98e40-5558-11df-8e5b-002421449824</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<blockquote>
+The Channel can then be passed as an argument to any CSP process
+and then be used either to read (using the .read() method) or to
+write (using the .write() method). For example:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="n">cout</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">cout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">recv</span><span class="p">(</span><span class="n">cin</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;Got:&#39;</span><span class="p">,</span> <span class="n">cin</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">Channel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">send</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="n">recv</span><span class="p">(</span><span class="n">c</span><span class="p">),)</span>
+<span class="go">Got: 100</span>
+<span class="go">&lt;Par(Par-3, initial)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="csp.csp.Channel.disable">
+<tt class="descname">disable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Channel.disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable this channel for Alt selection.</p>
+<p>MUST be called after L{enable} if this channel is not selected.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Channel.enable">
+<tt class="descname">enable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Channel.enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable a read for an Alt select.</p>
+<p>MUST be called before L{select()} or L{is_selectable()}.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Channel.get">
+<tt class="descname">get</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Channel.get" title="Permalink to this definition">¶</a></dt>
+<dd>Get a Python object from a process-safe store.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Channel.is_selectable">
+<tt class="descname">is_selectable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Channel.is_selectable" title="Permalink to this definition">¶</a></dt>
+<dd>Test whether Alt can select this channel.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Channel.poison">
+<tt class="descname">poison</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Channel.poison" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poison a channel causing all processes using it to terminate.</p>
+<blockquote>
+A set of communicating processes can be terminated by
+&#8220;poisoning&#8221; any of the channels used by those processes. This
+can be achieved by calling the poison() method on any
+channel. For example:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">send5</span><span class="p">(</span><span class="n">cout</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<span class="gp">... </span>            <span class="k">print</span> <span class="s">&#39;send5 sending:&#39;</span><span class="p">,</span> <span class="n">i</span>
+<span class="gp">... </span>            <span class="n">cout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">recv</span><span class="p">(</span><span class="n">cin</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<span class="gp">... </span>            <span class="n">data</span> <span class="o">=</span> <span class="n">cin</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">... </span>            <span class="k">print</span> <span class="s">&#39;recv got:&#39;</span><span class="p">,</span> <span class="n">data</span>
+<span class="gp">... </span>            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">interrupt</span><span class="p">(</span><span class="n">chan</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;Poisoning channel:&#39;</span><span class="p">,</span> <span class="n">chan</span><span class="o">.</span><span class="n">name</span>
+<span class="gp">... </span>    <span class="n">chan</span><span class="o">.</span><span class="n">poison</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="k">return</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">doomed</span> <span class="o">=</span> <span class="n">Channel</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">send</span><span class="p">(</span><span class="n">doomed</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="n">recv</span><span class="p">(</span><span class="n">doomed</span><span class="p">),</span> <span class="n">poison</span><span class="p">(</span><span class="n">doomed</span><span class="p">))</span>
+<span class="go">send5 sending: 0</span>
+<span class="go">recv got: 0</span>
+<span class="go">send5 sending: 1</span>
+<span class="go">recv got: 1</span>
+<span class="go">send5 sending: 2</span>
+<span class="go">recv got: 2</span>
+<span class="go">send5 sending: 3</span>
+<span class="go">recv got: 3</span>
+<span class="go">send5 sending: 4</span>
+<span class="go">recv got: 4</span>
+<span class="go">Poisoning channel: 5c906e38-5559-11df-8503-002421449824</span>
+<span class="go">&lt;Par(Par-5, initial)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Channel.put">
+<tt class="descname">put</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#csp.csp.Channel.put" title="Permalink to this definition">¶</a></dt>
+<dd>Put C{item} on a process-safe store.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Channel.read">
+<tt class="descname">read</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Channel.read" title="Permalink to this definition">¶</a></dt>
+<dd>Read (and return) a Python object from this channel.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Channel.select">
+<tt class="descname">select</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Channel.select" title="Permalink to this definition">¶</a></dt>
+<dd>Complete a Channel read for an Alt select.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Channel.write">
+<tt class="descname">write</tt><big>(</big><em>obj</em><big>)</big><a class="headerlink" href="#csp.csp.Channel.write" title="Permalink to this definition">¶</a></dt>
+<dd>Write a Python object to this channel.</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="csp.csp.FileChannel">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">FileChannel</tt><a class="headerlink" href="#csp.csp.FileChannel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Channel objects using files on disk.</p>
+<p>C{FileChannel} objects close their files after each read or write
+operation. The advantage of this is that client code can create as
+many C{FileChannel} objects as it wishes (unconstrained by the
+operating system&#8217;s maximum number of open files). In return there
+is a performance hit &#8211; reads and writes are around 10 x slower on
+C{FileChannel} objects compared to L{Channel} objects.</p>
+<dl class="method">
+<dt id="csp.csp.FileChannel.get">
+<tt class="descname">get</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.FileChannel.get" title="Permalink to this definition">¶</a></dt>
+<dd>Get a Python object from a process-safe store.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.FileChannel.put">
+<tt class="descname">put</tt><big>(</big><em>item</em><big>)</big><a class="headerlink" href="#csp.csp.FileChannel.put" title="Permalink to this definition">¶</a></dt>
+<dd>Put C{item} on a process-safe store.</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.csp.process">
+<tt class="descclassname">csp.csp.</tt><tt class="descname">process</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#csp.csp.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to turn a function into a CSP process.</p>
+<blockquote>
+There are two ways to create a new CSP process. Firstly, you can
+use the &#64;process decorator to convert a function definition into a
+CSP Process. Once the function has been defined, calling it will
+return a new CSPProcess object which can be started manually, or
+used in an expression:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@process</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;n:&#39;</span><span class="p">,</span> <span class="n">n</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span><span class="p">:</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="n">foo</span><span class="p">(</span><span class="mi">20</span><span class="p">),)</span>
+<span class="go">n: 10</span>
+<span class="go">n: 20</span>
+<span class="go">&lt;Par(Par-5, initial)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<blockquote>
+Alternatively, you can create a CSPProcess object directly and pass a
+function (and its arguments) to the CSPProcess constructor:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">&#39;n:&#39;</span><span class="p">,</span> <span class="n">n</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">CSPProcess</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span><span class="p">:</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="csp.csp.forever">
+<tt class="descclassname">csp.csp.</tt><tt class="descname">forever</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#csp.csp.forever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to turn a function into a CSP server process.</p>
+<blockquote>
+<p>It is preferable to use this rather than &#64;process, to enable the
+CSP tracer to terminate correctly and produce a CSP model, or
+other debugging information.</p>
+<p>A server process is one which runs in an infinite loop. You can
+create a &#8220;normal&#8221; process which runs in an infinite loop, but by
+using server processes you allow the python-csp debugger to
+correctly generate information about your programs.</p>
+<p>There are two ways to create a new CSP server process. Firstly,
+you can use the &#64;forever decorator to convert a generator into a
+CSPServer object. Once the function has been defined, calling it
+will return a new CSPServer object which can be started manually,
+or used in an expression:</p>
+</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="nd">@forever</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">integers</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="gp">... </span>    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">print</span> <span class="n">n</span>
+<span class="gp">... </span>            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="gp">... </span>            <span class="k">yield</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">integers</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">0</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+<span class="gp">...</span>
+<span class="nc">KeyboardInterrupt</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+<blockquote>
+Alternatively, you can create a CSPServer object directly and pass a
+function (and its arguments) to the CSPServer constructor:</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">integers</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="gp">... </span>    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">print</span> <span class="n">n</span>
+<span class="gp">... </span>            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="gp">... </span>            <span class="k">yield</span>
+<span class="gp">... </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">CSPServer</span><span class="p">(</span><span class="n">integers</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">i</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">0</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+<span class="gp">...</span>
+<span class="go">KeyboardInterrupt    </span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="csp.csp.Skip">
+<em class="property">class </em><tt class="descclassname">csp.csp.</tt><tt class="descname">Skip</tt><a class="headerlink" href="#csp.csp.Skip" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Guard which will always return C{True}. Useful in L{Alt}s where</dt>
+<dd><p class="first">the programmer wants to ensure that L{Alt.select} will always
+synchronise with at least one guard.</p>
+<p class="last">Skip is a built in guard type that can be used with Alt
+objects. Skip() is a default guard which is always ready and has
+no effect. This is useful where you have a loop which calls
+select(), pri_select() or fair_select() on an Alt object
+repeatedly and you do not wish the select statement to block
+waiting for a channel write, or other synchronisation. The
+following is a trivial example of an Alt which uses Skip():</p>
+</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">alt</span> <span class="o">=</span> <span class="n">Alt</span><span class="p">(</span><span class="n">Skip</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="n">alt</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+<span class="gp">... </span>
+<span class="go">Skip</span>
+<span class="go">Skip</span>
+<span class="go">Skip</span>
+<span class="go">Skip</span>
+<span class="go">Skip</span>
+<span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
+<blockquote>
+Where you have an Alt() object which mixes Skip() with other guard
+types, be sure to complete all necessary channel reads or other
+synchronisations, otherwise your code will hang.</blockquote>
+<dl class="method">
+<dt id="csp.csp.Skip.disable">
+<tt class="descname">disable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Skip.disable" title="Permalink to this definition">¶</a></dt>
+<dd>Has no effect.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Skip.enable">
+<tt class="descname">enable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Skip.enable" title="Permalink to this definition">¶</a></dt>
+<dd>Has no effect.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Skip.is_selectable">
+<tt class="descname">is_selectable</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Skip.is_selectable" title="Permalink to this definition">¶</a></dt>
+<dd>Skip is always selectable.</dd></dl>
+
+<dl class="method">
+<dt id="csp.csp.Skip.select">
+<tt class="descname">select</tt><big>(</big><big>)</big><a class="headerlink" href="#csp.csp.Skip.select" title="Permalink to this definition">¶</a></dt>
+<dd>Has no effect.</dd></dl>
+
+</dd></dl>
+
+<ul class="simple">
+<li><a class="reference external" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference external" href="modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference external" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pythoncsp-docs.png" alt="Logo"/>
+            </a></p>
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">Welcome to python-csp&#8217;s documentation!</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="builtins.html"
+                                  title="next chapter">Pre-built proceses</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/csp.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="builtins.html" title="Pre-built proceses"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to python-csp’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">python-csp v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Sarah Mount.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>
