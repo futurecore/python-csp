@@ -601,7 +601,8 @@ n: 200
 
     def join(self):
         for proc in self.procs:
-            proc.join()
+            if proc._popen:
+                proc.join()
 
     def start(self):
         """Start then synchronize with the execution of parallel processes.
