@@ -8,20 +8,20 @@ del sys
 
 @process
 def out(cout):
-    i =0;
+    i = 0
     while True:
-        print "PYTHON: About to write " , i , "\n"
+        print ( "PYTHON: About to write " + str ( i ) + "\n" )
         cout.write(i)
-        print "PYTHON: Have written " , i, "\n"
+        print ( "PYTHON: Have written " + str ( i ) + "\n" )
         i = i +1
     
 
 @process
 def inn(cin):
     while True:
-        print "PYTHON: About to read \n"
+        print ( "PYTHON: About to read \n" )
         a = cin.read()
-        print "PYTHON: Read ",a,"\n"
+        print ( "PYTHON: Read "+ str ( a ) + "\n" )
 
 
 if __name__ == '__main__':
