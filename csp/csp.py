@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 from __future__ import absolute_import 
 
+from contextlib import contextmanager
+
 import os
 import sys
 
@@ -71,3 +73,93 @@ else:
         from .os_process import *
     except:
         from .os_thread import *
+
+
+
+class CSP(object):
+    """Context manager to execute Python functions sequentially or in
+    parallel, similarly to OCCAM syntax:
+
+    csp = CSP()
+    with csp.seq:
+        csp.process(myfunc1, arg1, arg2)
+        with csp.par:
+            csp.process(myfunc2, arg1, arg2)
+            csp.process(myfunc3, arg1, arg2)
+    csp.start()    
+    # myfunc3 and myfunc4 will be executed in parallel.
+    # myfunc1 and myfunc2 will be executed sequentially,
+    # and myfunc3 and myfunc4 will be executed after
+    # myfunc2 has returned.
+    """
+
+    def __init__(self):
+        self.processes = []
+     
+    @contextmanager
+    def par(self):
+        """Context manager to execute functions in parallel.
+
+        csp = CSP()
+        with csp.seq:
+            csp.process(myfunc1, arg1, arg2)
+            csp.process(myfunc2, arg1, arg2)
+        csp.start()
+        # myfunc1 and myfunc2 will be executed in parallel.
+        """
+        self.processes.append([])
+        yield
+        proc_list = self.processes.pop()
+        par = Par(*proc_list)
+        if len(self.processes) > 0:
+            self.processes[-1].append(par)
+        else:
+            self.processes.append(par)
+        return
+
+    @contextmanager
+    def seq(self):
+        """Context manager to execute functions in sequence.
+
+        csp = CSP()
+        with csp.seq:
+            csp.process(myfunc1, arg1, arg2)
+            csp.process(myfunc2, arg1, arg2)
+        csp.start()
+        # myfunc1 and myfunc2 will be executed sequentially.
+        """
+        self.processes.append([])
+        yield
+        proc_list = self.processes.pop()
+        seq = Seq(*proc_list)
+        if len(self.processes) > 0:
+            self.processes[-1].append(seq)
+        else:
+            self.processes.append(seq)
+        return
+
+    def process(self, func, *args, **kwargs):
+        """Add a process to the current list of proceses.
+
+        Likely, this will be called from inside a context manager, e.g.:
+
+        csp = CSP()
+        with csp.par:
+            csp.process(myfunc1, arg1, arg2)
+            csp.process(myfunc2, arg1, arg2)
+        csp.start()
+        """
+        self.processes[-1].append(CSPProcess(func, *args, **kwargs))
+        return
+
+    def start(self):
+        """Start all processes in self.processes (in parallel) and run
+        to completion.
+        """
+        if len(self.processes) == 0:
+            return
+        elif len(self.processes) == 1:
+            self.processes[0].start()
+        else:
+            Par(*self.processes).start()
+        return
