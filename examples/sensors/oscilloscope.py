@@ -28,9 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from csp.csp import *
 
 import copy
-import Numeric
 import pygame
-
+import numpy
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'November 2009'
@@ -49,7 +48,7 @@ def Oscilloscope(inchan, scale=1.0, _process=None):
     screen = pygame.display.set_mode((WIDTH, HEIGHT), 0)
     pygame.display.set_caption(caption)
     # Create a blank chart with vertical ticks, etc
-    blank = Numeric.zeros((WIDTH, HEIGHT, 3))
+    blank = numpy.zeros((WIDTH, HEIGHT, 3), dtype=numpy.int16)
     # Draw x-axis
     xaxis = HEIGHT/2
     blank[::, xaxis] = GREY

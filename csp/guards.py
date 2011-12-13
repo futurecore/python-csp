@@ -169,6 +169,6 @@ if CSP_IMPLEMENTATION == 'os_thread':
 else:
     Barrier = BarrierProcessing
 
-Barrier.__doc__ = """
-
-"""
+#Barrier.__doc__ = """
+#
+#"""
