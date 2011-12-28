@@ -38,7 +38,7 @@ import sys
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
-           'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
+           'Par', 'Seq', 'Guard', 'Channel',
            'process', 'forever', 'Skip', 'CSP_IMPLEMENTATION']
 
 
@@ -55,7 +55,10 @@ if (major, minor) < (2, 6):
     try:
         from .os_thread import *
     except:
-        from .os_process import *
+        if sys.platform == 'win32':
+            from .os_process import *
+        else:
+            from .os_posix import *
 
 # If multiprocessing is likely to be available then let the user
 # choose which version of the implementation they wish to use.
@@ -63,14 +66,20 @@ elif 'CSP' in os.environ:
     if os.environ['CSP'].upper() == 'THREADS':
         from .os_thread import *
     else:
-        from .os_process import *
+        if sys.platform == 'win32':
+            from .os_process import *
+        else:
+            from .os_posix import *
 
 # If no useful information is available then try to import the
 # multiprocessing version of the code else catch the resulting
 # exception and use the threaded version.
 else: 
     try:
-        from .os_process import *
+        if sys.platform == 'win32':
+            from .os_process import *
+        else:
+            from .os_posix import *
     except:
         from .os_thread import *
 
