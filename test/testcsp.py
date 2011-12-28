@@ -20,7 +20,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
-import os
 import random
 import sys
 import time
@@ -29,9 +28,10 @@ sys.path.insert(0, "..")
 
 from csp.csp import *
 #from csp.os_process import *
+#from csp.os_posix import *
 #from csp.os_thread import *
 from csp.guards import Timer
-#set_debug(True)
+set_debug(True)
 
 @process
 def foo(n):
