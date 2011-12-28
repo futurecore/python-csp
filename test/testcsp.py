@@ -31,7 +31,7 @@ from csp.csp import *
 #from csp.os_posix import *
 #from csp.os_thread import *
 from csp.guards import Timer
-set_debug(True)
+#set_debug(False)
 
 @process
 def foo(n):
@@ -142,9 +142,9 @@ def sendAlt(cout, num):
 def testAlt0():
     alt = Alt(Skip(), Skip(), Skip())
     for i in range(3):
-        print('*** TestAlt0 selecting...')
+#        print('*** TestAlt0 selecting...')
         val = alt.select()
-        print('* Got this from Alt:' + str(val))
+#        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -157,10 +157,10 @@ def testAlt1(cin):
     alt = Alt(cin)
     numeric = 0 
     while numeric < 1:
-        print('*** TestAlt1 selecting...')
+#        print('*** TestAlt1 selecting...')
         val = alt.select()
         if isinstance(val, int): numeric += 1 
-        print('* Got this from Alt:' + str(val))
+#        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -173,10 +173,10 @@ def testAlt2(cin1, cin2, cin3):
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0 
     while numeric < 3:
-        print('*** TestAlt2 selecting...')
+#        print('*** TestAlt2 selecting...')
         val = alt.select()
         if isinstance(val, int): numeric +=1
-        print('* Got this from Alt:' + str(val))
+#        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -190,10 +190,10 @@ def testAlt3(cin1, cin2, cin3):
     alt = Alt(cin1, cin2, cin3, Skip())
     numeric = 0
     while numeric < 3:
-        print('*** TestAlt3 selecting...')        
+#        print('*** TestAlt3 selecting...')        
         val = alt.pri_select()
         if isinstance(val, int): numeric +=1
-        print('* Got this from Alt:' + str(val))
+#        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -206,10 +206,10 @@ def testAlt4(cin1, cin2, cin3):
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0
     while numeric < 3:
-        print('*** TestAlt4 selecting...')        
+#        print('*** TestAlt4 selecting...')        
         val = alt.fair_select()
         if isinstance(val, int): numeric +=1
-        print('* Got this from Alt:' + str(val))
+#        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -375,6 +375,33 @@ def testRep():
     return
 
 
+@process
+def chMobSend(cout):
+    chan = Channel()
+    print('Sending channel about to write channel to cout.')
+    cout.write(chan)
+    chan.write('Yeah, baby, yeah!')
+    return
+
+
+@process
+def chMobRecv(cin):
+    print('Receiving channel about to read channel.')
+    chan = cin.read()
+    print('Receiving channel got channel:', type(chan))
+    print(chan.read())
+    return
+
+
+def testMobility():
+    _printHeader('mobility')
+    print('')
+    print('Testing mobility of channel objects.')
+    ch2 = Channel()
+    par2 = Par(chMobSend(ch2), chMobRecv(ch2))
+    par2.start()
+    return
+
 if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser()
@@ -406,6 +433,9 @@ if __name__ == '__main__':
     parser.add_option('-r', '--rep', dest='rep',
                       action='store_true',
                       help='Test syntactic sugar for repetition.')
+    parser.add_option('-m', '--mobility', dest='mobility',
+                      action='store_true',
+                      help='Test channel and process mobility')
 
     (options, args) = parser.parse_args()
 
@@ -431,6 +461,7 @@ if __name__ == '__main__':
     elif options.alt: testAlt()
     elif options.choice: testChoice()
     elif options.rep: testRep()
+    elif options.mobility: testMobility()
     else: parser.print_help()
     print(_exit)
     sys.exit()
