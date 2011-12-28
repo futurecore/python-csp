@@ -5,6 +5,10 @@
 When using CSP Python as a DSL, this module will normally be imported
 via the statement 'from csp.csp import *' and should not be imported directly.
 
+TODO: Write a Windows version of this file based on Memory Mapped Files:
+TODO: http://msdn.microsoft.com/en-us/library/ms810613.aspx
+TODO: http://docs.python.org/library/mmap.html
+
 Copyright (C) Sarah Mount, 2008-10.
 
 This program is free software; you can redistribute it and/or
@@ -23,7 +27,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
-__date__ = '2010-05-16'
+__date__ = '2011-12-23'
+
+# pylint: disable-msg=W0142
+# pylint: disable-msg=W0102
+# pylint: disable-msg=W0212
+
 
 #DEBUG = True
 DEBUG = False
@@ -36,21 +45,26 @@ import inspect
 import logging
 import os
 import random
+import signal
 import sys
-import tempfile
 import time
 import uuid
+
+# TODO: Add conditional import.
+import posix_ipc # POSIX-specific IPC
+
 try:
     import cPickle as pickle    # Faster, only in Python 2.x
 except ImportError:
     import pickle
-
+    
 try: # Python optimisation compiler
     import psyco
     psyco.full()
 except ImportError:
     print ( 'No available optimisation' )
 
+# TODO: Remove this.
 # Multiprocessing libary -- name changed between versions.
 try:
     # Version 2.6 and above
@@ -61,11 +75,11 @@ except ImportError:
     raise ImportError('No library available for multiprocessing.\n'+
                       'csp.os_process is only compatible with Python 2. 6 and above.')
 
-CSP_IMPLEMENTATION = 'os_process'
+CSP_IMPLEMENTATION = 'os_posix'
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
-           'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
+           'Par', 'Seq', 'Guard', 'Channel',
            'process', 'forever', 'Skip', '_CSPTYPES', 'CSP_IMPLEMENTATION']
 
 ### Seeded random number generator (16 bytes)
@@ -119,36 +133,80 @@ def set_debug(status):
     DEBUG = status
     logging.basicConfig(level=logging.NOTSET,
                         stream=sys.stdout)
-    logging.info("Using multiprocessing version of python-csp.")
+    logging.info("Using POSIX version of python-csp.")
 
 
 ### Fundamental CSP concepts -- Processes, Channels, Guards
+    
+class _Process(object):
+    """Operating system process that can fork().
 
+    This class is a superclass to the CSPProcess, Par and Seq classes.
+    """
+    def __init__(self, target=None, args=(), kwargs={}):
+        self._started = False
+        self._pid = None
+        self._parent_pid = os.getpid()
+        self._target = target
+        self._args = tuple(args)
+        self._kwargs = dict(kwargs)
+        self._returncode = None
+        return
+
+    def getPid(self):
+        return self._pid
+
+    def run(self):
+        self._target(*self._args, **self._kwargs)        
+        return
+    
+    def start(self):
+        self._started = True
+        self._pid = os.fork()
+        if self._pid == 0:
+            try:
+                self.run()
+                os._exit(0)
+            except KeyboardInterrupt:
+                sys.exit()
+        return
+    
+    def wait(self):
+        if self._pid == 0 or not self._started: return
+        try:
+            _, self._returncode = os.wait()
+        except os.error: # Child process not created
+            pass
+        return self._returncode
+
+    def send_signal(self, sig):
+        """Send a signal to the process
+        """
+        if self._returncode is not None:
+            os.kill(self._pid, sig)
+        return
+
+    def terminate(self):
+        """Terminate the process with SIGTERM
+        """
+        if self._started and self._returncode is not None:
+            self.send_signal(signal.SIGTERM)
+        return
+
+    def kill(self):
+        """Kill the process with SIGKILL
+        """
+        if self._started and self._returncode is not None:
+            self.send_signal(signal.SIGKILL)
+        return
+    
+    
 class _CSPOpMixin(object):
     """Mixin class used for operator overloading in CSP process types.
     """
 
     def __init__(self):
         return
-
-    def spawn(self):
-        """Start only if self is not running."""
-        if not self._popen:
-            processing.Process.start(self)
-
-    def start(self):
-        """Start only if self is not running."""
-        if not self._popen:
-            try:
-                processing.Process.start(self)
-                processing.Process.join(self)
-            except KeyboardInterrupt:
-                sys.exit()
-
-    def join(self):
-        """Join only if self is running."""
-        if self._popen:
-            processing.Process.join(self)
 
     def referent_visitor(self, referents):
         for obj in referents:
@@ -164,34 +222,37 @@ class _CSPOpMixin(object):
             elif hasattr(obj, '__dict__'):
                 self.referent_visitor(list(obj.__dict__.values()))
 
-    def terminate(self):
-        """Terminate only if self is running."""
-        if self._popen is not None:
-            processing.Process.terminate(self)
-
     def __gt__(self, other):
         """Implementation of CSP Seq."""
         assert _is_csp_type(other)
-        seq = Seq(self, other)
+        # FIXME: Only works for two processes.
+        seq = Seq(self, Seq(other))
         seq.start()
         return seq
 
     def __mul__(self, n):
         assert n > 0
         procs = [self]
-        for i in range(n-1):
+        for _ in range(n-1):
             procs.append(copy.copy(self))
         Seq(*procs).start()
 
     def __rmul__(self, n):
         assert n > 0
         procs = [self]
-        for i in range(n-1):
+        for _ in range(n-1):
             procs.append(copy.copy(self))
         Seq(*procs).start()
 
+    def __floordiv__(self, proclist):
+        """
+        Run this process in parallel with a list of others.
+        """
+        par = Par(self, *list(proclist))
+        par.start()
 
-class CSPProcess(processing.Process, _CSPOpMixin):
+
+class CSPProcess(_Process, _CSPOpMixin):
     """Implementation of CSP processes.
     
     There are two ways to create a new CSP process. Firstly, you can
@@ -227,11 +288,11 @@ n: 20
     """
 
     def __init__(self, func, *args, **kwargs):
-        processing.Process.__init__(self,
-                                    target=func,
-                                    args=(args),
-                                    kwargs=kwargs)
-        assert inspect.isfunction(func) # Check we aren't using objects
+        _Process.__init__(self,
+                          target=func,
+                          args=(args),
+                          kwargs=kwargs)
+        assert inspect.isfunction(func)   # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
 
         _CSPOpMixin.__init__(self)
@@ -240,23 +301,13 @@ n: 20
                 arg.enclosing = self
         self.enclosing = None
 
-    def getName(self):
-        return self._name
-
     def getPid(self):
         return self._parent_pid
-
-    def __floordiv__(self, proclist):
-        """
-        Run this process in parallel with a list of others.
-        """
-        par = Par(self, *list(proclist))
-        par.start()
 
     def __str__(self):
         return 'CSPProcess running in PID {0}s'.format(self.getPid())
 
-    def run(self): #, event=None):
+    def run(self): 
         """Called automatically when the L{start} methods is called.
         """
         try:
@@ -264,7 +315,7 @@ n: 20
         except ChannelPoison:
             _debug('{0}s got ChannelPoison exception in {1}'.format((str(self), self.getPid())))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
-#            if self._popen is not None: self.terminate()
+#            if self._started is not None: self.terminate()
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
@@ -298,7 +349,7 @@ class CSPServer(CSPProcess):
     def __str__(self):
         return 'CSPServer running in PID {0}s'.format(self.getPid())
 
-    def run(self): #, event=None):
+    def run(self):
         """Called automatically when the L{start} methods is called.
         """
         try:
@@ -314,7 +365,7 @@ class CSPServer(CSPProcess):
         except ChannelPoison:
             _debug('{0}s in {1} got ChannelPoison exception'.format(str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
-#            if self._popen is not None: self.terminate()
+#            if self._started is not None: self.terminate()
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
@@ -516,16 +567,16 @@ no
 
     def __mul__(self, n):
         assert n > 0
-        for i in range(n):
+        for _ in range(n):
             yield self.select()
 
     def __rmul__(self, n):
         assert n > 0
-        for i in range(n):
+        for _ in range(n):
             yield self.select()
 
 
-class Par(processing.Process, _CSPOpMixin):
+class Par(_Process, _CSPOpMixin):
     """Run CSP processes in parallel.
 
     There are two ways to run processes in parallel.  Firstly, given
@@ -596,13 +647,13 @@ n: 200
         """
         for proc in self.procs:
             proc.terminate()
-        if self._popen:
+        if self._started:
             self.terminate()
 
-    def join(self):
+    def wait(self, flag=os.WNOHANG):
         for proc in self.procs:
-            if proc._popen:
-                proc.join()
+            if proc._started:
+                proc.wait()
 
     def start(self):
         """Start then synchronize with the execution of parallel processes.
@@ -610,13 +661,13 @@ n: 200
         """
         try:
             for proc in self.procs:
-                proc.spawn()
+                proc.start()
             for proc in self.procs:
-                proc.join()
+                proc.wait()
         except ChannelPoison:
             _debug('{0}s got ChannelPoison exception in {1}'.format(str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
-#            if self._popen is not None: self.terminate()
+#            if self._started is not None: self.terminate()
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
@@ -640,7 +691,7 @@ n: 200
         return proc in self.procs
 
 
-class Seq(processing.Process, _CSPOpMixin):
+class Seq(_Process, _CSPOpMixin):
     """Run CSP processes sequentially.
 
     There are two ways to run processes in sequence.  Firstly, given
@@ -680,6 +731,8 @@ n: 300
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
+#        print "Seq has :", len(procs), "processes"
+        return
 
     def __str__(self):
         return 'CSP Seq running in process {0}.'.format(self.getPid())
@@ -689,12 +742,12 @@ n: 300
         """
         try:
             for proc in self.procs:
-                _CSPOpMixin.start(proc)
-                proc.join()
+                proc.start()
+                proc.wait()
         except ChannelPoison:
             _debug('{0} got ChannelPoison exception in {1}'.format(str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
-            if self._popen is not None: self.terminate()
+            if self._started: self.terminate()
         except KeyboardInterrupt:
             sys.exit()
         except Exception:
@@ -820,9 +873,9 @@ Got: 100
         # Process-safe synchronisation.
         self._wlock = processing.RLock()    # Write lock.
         self._rlock = processing.RLock()    # Read lock.
-        self._plock = processing.Lock()  # Fix poisoning.
-        self._available = processing.Semaphore(0)
-        self._taken = processing.Semaphore(0)
+        self._plock = processing.Lock()     # Fix poisoning.
+        self._available = posix_ipc.Semaphore(str(self.name) + '_available', flags=posix_ipc.O_CREAT, initial_value=0)
+        self._taken = posix_ipc.Semaphore(str(self.name) + '_taken', flags=posix_ipc.O_CREAT, initial_value=0)
         # Process-safe synchronisation for CSP Select / Occam Alt.
         self._is_alting = processing.Value('h', Channel.FALSE,
                                            lock=processing.Lock())
@@ -892,7 +945,7 @@ Got: 100
             self.put(obj)
             # Announce the object has been released to the reader.
             self._available.release()
-            _debug('++++ Writer on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.get_value(), self._taken.get_value()))
+            _debug('++++ Writer on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.value, self._taken.value))
             # Block until the object has been read.
             self._taken.acquire()
             # Remove the object from the channel.
@@ -907,7 +960,7 @@ Got: 100
         _debug('+++ Read on Channel {0} started.'.format(self.name))
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
-            _debug('++++ Reader on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.get_value(), self._taken.get_value()))
+            _debug('++++ Reader on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.value, self._taken.value))
             self._available.acquire()
             # Get the item.
             obj = self.get()
@@ -931,11 +984,12 @@ Got: 100
         with self._rlock:
             # Attempt to acquire _available.
             time.sleep(0.00001) # Won't work without this -- why?
-            if self._available.acquire(block=False):
+            try:
+                self._available.acquire(0)
                 self._is_selectable.value = Channel.TRUE
-            else:
+            except posix_ipc.BusyError:
                 self._is_selectable.value = Channel.FALSE
-        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable.value), str(self._available.get_value())))
+        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable.value), str(self._available.value)))
 
     def disable(self):
         """Disable this channel for Alt selection.
@@ -956,7 +1010,7 @@ Got: 100
         _debug('channel select starting')
         assert self._is_selectable.value == Channel.TRUE
         with self._rlock:
-            _debug('got read lock on channel {0} _available: {1}'.format(self.name, str(self._available.get_value())))
+            _debug('got read lock on channel {0} _available: {1}'.format(self.name, str(self._available.value)))
             # Obtain object on Channel.
             obj = self.get()
             _debug('got obj')
@@ -1034,64 +1088,6 @@ Poisoning channel: 5c906e38-5559-11df-8503-002421449824
             # Avoid race conditions on any waiting readers / writers.
             self._available.release() 
             self._taken.release()
-
-
-class FileChannel(Channel):
-    """Channel objects using files on disk.
-
-    C{FileChannel} objects close their files after each read or write
-    operation. The advantage of this is that client code can create as
-    many C{FileChannel} objects as it wishes (unconstrained by the
-    operating system's maximum number of open files). In return there
-    is a performance hit -- reads and writes are around 10 x slower on
-    C{FileChannel} objects compared to L{Channel} objects.
-    """
-
-    def __init__(self):
-        self.name = uuid.uuid1()
-        self._wlock = None	# Write lock.
-        self._rlock = None	# Read lock.
-        self._available = None
-        self._taken = None
-        self._is_alting = None
-        self._is_selectable = None
-        self._has_selected = None
-        # Process-safe store.
-        file_d, self._fname = tempfile.mkstemp()
-        os.close(file_d)
-        self._setup()
-
-    def put(self, item):
-        """Put C{item} on a process-safe store.
-        """
-        file_d = file(self._fname, 'w')
-        file_d.write(pickle.dumps(item, protocol=1))
-        file_d.flush()
-        file_d.close()
-
-    def get(self):
-        """Get a Python object from a process-safe store.
-        """
-        stored = ''
-        while stored == '':
-            file_d = file(self._fname, 'r')
-            stored = file_d.read()
-            file_d.close()
-        # Unlinking here ensures that FileChannel objects exhibit the
-        # same semantics as Channel objects.
-        os.unlink(self._fname)
-        obj = pickle.loads(stored)
-        return obj
-
-    def __del__(self):
-        try:
-            # Necessary if the Channel has been deleted by poisoning.
-            os.unlink(self._fname)
-        except:
-            pass
-
-    def __str__(self):
-        return 'Channel using files for IPC.'
 
 
 ### Function decorators
