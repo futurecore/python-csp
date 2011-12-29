@@ -43,6 +43,7 @@ import copy
 import gc
 import inspect
 import logging
+import mmap
 import os
 import random
 import signal
@@ -88,8 +89,6 @@ _RANGEN = random.Random(os.urandom(16))
 
 
 ### CONSTANTS
-
-_BUFFSIZE = 1024
 
 _debug = logging.debug
 
@@ -313,7 +312,7 @@ n: 20
         try:
             self._target(*self._args, **self._kwargs)
         except ChannelPoison:
-            _debug('{0}s got ChannelPoison exception in {1}'.format((str(self), self.getPid())))
+            _debug('{0}s got ChannelPoison exception in {1}'.format(str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._started is not None: self.terminate()
         except KeyboardInterrupt:
@@ -650,7 +649,7 @@ n: 200
         if self._started:
             self.terminate()
 
-    def wait(self, flag=os.WNOHANG):
+    def wait(self):
         for proc in self.procs:
             if proc._started:
                 proc.wait()
@@ -850,16 +849,22 @@ Got: 100
     FALSE = 0
 
     def __init__(self):
+        # posix_ipc.PAGE_SIZE
         self.name = uuid.uuid1()
-        self._wlock = None       # Write lock protects from races between writers.
-        self._rlock = None       # Read lock protects from races between readers.
+        self._wlock = None     # Write lock protects from races between writers.
+        self._rlock = None     # Read lock protects from races between readers.
         self._plock = None
         self._available = None     # Released if writer has made data available.
         self._taken = None         # Released if reader has taken data.
         self._is_alting = None     # True if engaged in an Alt synchronisation.
         self._is_selectable = None # True if can be selected by an Alt.
         self._has_selected = None  # True if already been committed to select.
-        self._itemr, self._itemw = os.pipe()
+
+        memory = posix_ipc.SharedMemory(str(self.name), posix_ipc.O_CREX,
+                                        size=posix_ipc.PAGE_SIZE)
+        self.mapfile = mmap.mmap(memory.fd, memory.size)
+        os.close(memory.fd)
+
         self._poisoned = None
         self._setup()
         super(Channel, self).__init__()
@@ -890,36 +895,39 @@ Got: 100
         self._poisoned = processing.Value('h', Channel.FALSE,
                                           lock=processing.Lock())
 
+    def __getstate__(self):
+        """Called when this channel is pickled, this makes the channel mobile.
+        """
+        newdict = self.__dict__.copy()
+        # TODO: Deal with semaphores, etc.
+        return newdict
+
+    def __setstate__(self, newdict):
+        """Called when this channel is unpickled, this makes the channel mobile.
+        """
+        self.__dict__.update(newdict)
+        # TODO: Deal with semaphores, etc.
+        return
+    
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
         self.checkpoison()
-        os.write(self._itemw, pickle.dumps(item, protocol=1))
+        self.mapfile.seek(0)
+        pickle.dump(item, self.mapfile, protocol=2)
+        return
 
     def get(self):
         """Get a Python object from a process-safe store.
         """
         self.checkpoison()
-        data = []
-        while True:
-            sval = os.read(self._itemr, _BUFFSIZE)
-            _debug('Read from OS pipe')
-            if not sval:
-                break
-            data.append(sval)
-#            _debug('Pipe got data: {0}, {1}'.format(len(sval), sval))
-            if len(sval) < _BUFFSIZE:
-                break
-        _debug('Left read loop')
-        _debug('About to unmarshall this data: {0}'.format(b''.join(data)))
-        obj = None if data == [] else pickle.loads(b''.join(data))
-        _debug('pickle library has unmarshalled data.')
-        return obj
+        self.mapfile.seek(0)
+        return pickle.load(self.mapfile)
 
     def __del__(self):
         try:
-            os.close(self._itemr)
-            os.close(self._itemw)
+            self._taken.available()
+            self._taken.unlink()
         except:
             pass
 
