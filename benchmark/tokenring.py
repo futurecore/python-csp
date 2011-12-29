@@ -35,9 +35,17 @@ along with this program; if not, write to the Free Software
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'November 2009'
 
-from csp.csp import *
+import sys
+sys.path.insert(0, "..")
+
+#from csp.csp import *
+from csp.os_process import *
+#from csp.os_posix import *
+#from csp.os_thread import *
+
 from csp.patterns import TokenRing
 
+import time
 
 TRIALS = 10000
 
@@ -51,7 +59,7 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
     if tokens == 1 and index == 0:
         token = 1
         outchan.write(token)
-    for i in range(TRIALS):
+    for _ in range(TRIALS):
         token = inchan.read()
         token += 1
         outchan.write(token)
@@ -93,7 +101,6 @@ if __name__ == '__main__':
             except:
                 continue
     else:
-        import time
         print 'Token ring with {0} nodes and {1} token(s).'.format(options.nodes, options.tokens)
         starttime = time.time()
         TokenRing(ringproc, options.nodes, numtoks=options.tokens).start()

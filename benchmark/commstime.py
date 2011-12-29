@@ -13,10 +13,20 @@ Bjorndalen, Brian Vinter, Otto Anshus.  CPA 2007, Surrey, UK, July
 Systems Engineering Series (ISSN 1383-7575).
 """
 
-from csp.csp import *
-from csp.builtins import Prefix, Delta2, Succ
+# pylint: disable-msg=W0401
+# pylint: disable-msg=W0614
 
-import os
+import sys
+import time
+
+sys.path.insert(0, "..")
+
+#from csp.csp import *
+from csp.os_process import *
+#from csp.os_posix import *
+#from csp.os_thread import *
+
+from csp.builtins import Prefix, Delta2, Succ
 
 @process
 def Consumer(cin):
@@ -30,7 +40,7 @@ def Consumer(cin):
     t1 = ts()
     cin.read()
     t1 = ts()
-    for i in range(N):
+    for _ in range(N):
         cin.read()
     t2 = ts()
     dt = t2-t1

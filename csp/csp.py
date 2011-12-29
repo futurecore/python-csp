@@ -35,6 +35,9 @@ from contextlib import contextmanager
 import os
 import sys
 
+# pylint: disable-msg=W0401
+# pylint: disable-msg=W0142
+# pylint: disable-msg=W0702
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
@@ -65,6 +68,10 @@ if (major, minor) < (2, 6):
 elif 'CSP' in os.environ:
     if os.environ['CSP'].upper() == 'THREADS':
         from .os_thread import *
+    elif os.environ['CSP'].upper() == 'PROCESSES':
+        from .os_process import *
+    elif os.environ['CSP'].upper() == 'POSIX':
+        from .os_posix import *    
     else:
         if sys.platform == 'win32':
             from .os_process import *
@@ -74,7 +81,7 @@ elif 'CSP' in os.environ:
 # If no useful information is available then try to import the
 # multiprocessing version of the code else catch the resulting
 # exception and use the threaded version.
-else: 
+else:
     try:
         if sys.platform == 'win32':
             from .os_process import *
@@ -82,7 +89,6 @@ else:
             from .os_posix import *
     except:
         from .os_thread import *
-
 
 
 class CSP(object):
