@@ -926,8 +926,11 @@ Got: 100
 
     def __del__(self):
         try:
-            self._taken.available()
             self._taken.unlink()
+            self._taken.unlink()
+            self.mapfile.close()
+            memory = posix_ipc.SharedMemory(str(self.name))
+            memory.unlink()
         except:
             pass
 
