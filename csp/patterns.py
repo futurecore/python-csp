@@ -24,7 +24,6 @@ from __future__ import absolute_import
 
 from .csp import *
 
-
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'May 2010'
 
@@ -35,7 +34,7 @@ __all__ = ['TokenRing']
 class TokenRing(Par):
 
     def __init__(self, func, size, numtoks=1):
-        self.chans = [Channel() for channel in range(size)]
+        self.chans = [Channel() for _ in range(size)]
         self.procs = [func(index=i,
                            tokens=numtoks,
                            numnodes=size,
