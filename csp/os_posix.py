@@ -33,9 +33,10 @@ __date__ = '2011-12-23'
 # pylint: disable-msg=W0102
 # pylint: disable-msg=W0212
 
-
 #DEBUG = True
 DEBUG = False
+
+print('POSIX') # TODO: Remove 
 
 from functools import wraps # Easy decorators
 
@@ -63,7 +64,7 @@ try: # Python optimisation compiler
     import psyco
     psyco.full()
 except ImportError:
-    print ( 'No available optimisation' )
+    pass
 
 # TODO: Remove this.
 # Multiprocessing libary -- name changed between versions.
@@ -799,6 +800,56 @@ class Guard(object):
         return Alt(self, other).select()
 
 
+class Value(object):
+    """Process-safe values, stored in shared memory.
+    """
+    
+    def __init__(self, name, value):
+        self.name = name
+        self.semaphore = posix_ipc.Semaphore(str(name) + 'semaphore', flags=posix_ipc.O_CREAT, initial_value=0)
+        memory = posix_ipc.SharedMemory(str(name), posix_ipc.O_CREX,
+                                        size=sys.getsizeof(value))
+        self.mapfile = mmap.mmap(memory.fd, memory.size)
+        os.close(memory.fd)
+        self.mapfile.seek(0)
+        pickle.dump(value, self.mapfile, protocol=2)
+        return
+
+    def __getstate__(self):
+        """Called when this channel is pickled, this makes the channel mobile.
+        """
+        newdict = self.__dict__.copy()
+        del newdict['semaphore']
+        del newdict['mapfile']
+        return newdict
+
+    def __setstate__(self, newdict):
+        """Called when this channel is unpickled, this makes the channel mobile.
+        """
+        semaphore = posix_ipc.Semaphore(str(self.name) + 'semaphore')
+        memory = posix_ipc.SharedMemory(str(self.name))
+        mapfile = mmap.mmap(memory.fd, memory.size)
+        os.close(memory.fd)
+        newdict['semaphore'] = semaphore
+        newdict['mapfile'] = mapfile
+        self.__dict__.update(newdict)
+        return
+
+    def get(self):
+        self.semaphore.acquire()
+        self.mapfile.seek(0)
+        value = pickle.load(self.mapfile)
+        self.semaphore.release()
+        return value
+
+    def set(self, value):
+        self.semaphore.acquire()
+        self.mapfile.seek(0)
+        pickle.dump(value, self.mapfile, protocol=2)
+        self.semaphore.release()
+        return
+    
+    
 class Channel(Guard):
     """CSP Channel objects.
 
@@ -849,7 +900,6 @@ Got: 100
     FALSE = 0
 
     def __init__(self):
-        # posix_ipc.PAGE_SIZE
         self.name = uuid.uuid1()
         self._wlock = None     # Write lock protects from races between writers.
         self._rlock = None     # Read lock protects from races between readers.
@@ -912,6 +962,7 @@ Got: 100
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
+        # TODO: Deal with the case where len(item) > size(self.mapfile)
         self.checkpoison()
         self.mapfile.seek(0)
         pickle.dump(item, self.mapfile, protocol=2)
@@ -920,6 +971,7 @@ Got: 100
     def get(self):
         """Get a Python object from a process-safe store.
         """
+        # TODO: Deal with the case where len(item) > size(self.mapfile)
         self.checkpoison()
         self.mapfile.seek(0)
         return pickle.load(self.mapfile)
