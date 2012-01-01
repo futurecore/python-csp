@@ -804,8 +804,9 @@ class Value(object):
     """Process-safe values, stored in shared memory.
     """
     
-    def __init__(self, name, value):
+    def __init__(self, name, value, ty=None):
         self.name = name
+        self.ty = ty
         self.semaphore = posix_ipc.Semaphore(str(name) + 'semaphore', flags=posix_ipc.O_CREAT, initial_value=0)
         memory = posix_ipc.SharedMemory(str(name), posix_ipc.O_CREX,
                                         size=sys.getsizeof(value))
@@ -840,7 +841,10 @@ class Value(object):
         self.mapfile.seek(0)
         value = pickle.load(self.mapfile)
         self.semaphore.release()
-        return value
+        if self.ty is None:
+            return value
+        else:
+            return self.ty(value)
 
     def set(self, value):
         self.semaphore.acquire()
