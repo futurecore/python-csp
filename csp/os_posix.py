@@ -910,7 +910,6 @@ Got: 100
         self.name = str(uuid.uuid1())
         self._wlock = None     # Write lock protects from races between writers.
         self._rlock = None     # Read lock protects from races between readers.
-        self._plock = None
         self._available = None     # Released if writer has made data available.
         self._taken = None         # Released if reader has taken data.
         self._is_alting = None     # True if engaged in an Alt synchronisation.
@@ -935,7 +934,6 @@ Got: 100
         # Process-safe synchronisation.
         self._wlock = processing.RLock()    # Write lock.
         self._rlock = processing.RLock()    # Read lock.
-        self._plock = processing.Lock()     # Fix poisoning.
         self._available = posix_ipc.Semaphore(self.name + '_available', flags=posix_ipc.O_CREAT, initial_value=0)
         self._taken = posix_ipc.Semaphore(self.name + '_taken', flags=posix_ipc.O_CREAT, initial_value=0)
         # Process-safe synchronisation for CSP Select / Occam Alt.
@@ -1101,10 +1099,9 @@ Got: 100
         return 'Channel using OS pipe for IPC.'
 
     def checkpoison(self):
-        with self._plock:
-            if self._poisoned.get():
-                _debug('{0} is poisoned. Raising ChannelPoison()'.format(self.name))
-                raise ChannelPoison()
+        if self._poisoned.get():
+            _debug('{0} is poisoned. Raising ChannelPoison()'.format(self.name))
+            raise ChannelPoison()
 
     def poison(self):
         """Poison a channel causing all processes using it to terminate.
@@ -1153,11 +1150,10 @@ Poisoning channel: 5c906e38-5559-11df-8503-002421449824
 <Par(Par-5, initial)>
 >>> 
         """
-        with self._plock:
-            self._poisoned.set(True)
-            # Avoid race conditions on any waiting readers / writers.
-            self._available.release() 
-            self._taken.release()
+        self._poisoned.set(True)
+        # Avoid race conditions on any waiting readers / writers.
+        self._available.release() 
+        self._taken.release()
 
 
 ### Function decorators
