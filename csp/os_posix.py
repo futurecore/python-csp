@@ -1020,8 +1020,8 @@ Got: 100
     def read(self):
         """Read (and return) a Python object from this channel.
         """
-#        assert not self._is_alting.get()
-#        assert not self._is_selectable.get()
+        assert not self._is_alting.get()
+        assert not self._is_selectable.get()
         self.checkpoison()
         _debug('+++ Read on Channel {0} started.'.format(self.name))
         with self._rlock: # Protect from races between multiple readers.
