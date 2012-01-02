@@ -903,9 +903,6 @@ Got: 100
 >>> 
     """
 
-    TRUE = 1
-    FALSE = 0
-
     def __init__(self):
         self.name = str(uuid.uuid1())
         self._wlock = None     # Write lock protects from races between writers.
