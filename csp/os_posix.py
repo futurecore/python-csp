@@ -802,6 +802,8 @@ class Guard(object):
 
 class Value(object):
     """Process-safe values, stored in shared memory.
+
+    This class is similart to the Value class in the multiprocessing library.
     """
     
     def __init__(self, name, value, ty=None):
@@ -814,6 +816,7 @@ class Value(object):
         os.close(memory.fd)
         self.mapfile.seek(0)
         pickle.dump(value, self.mapfile, protocol=2)
+        self.semaphore.release()
         return
 
     def __getstate__(self):
@@ -835,7 +838,7 @@ class Value(object):
         newdict['mapfile'] = mapfile
         self.__dict__.update(newdict)
         return
-
+    
     def get(self):
         self.semaphore.acquire()
         self.mapfile.seek(0)
@@ -904,7 +907,7 @@ Got: 100
     FALSE = 0
 
     def __init__(self):
-        self.name = uuid.uuid1()
+        self.name = str(uuid.uuid1())
         self._wlock = None     # Write lock protects from races between writers.
         self._rlock = None     # Read lock protects from races between readers.
         self._plock = None
@@ -914,7 +917,7 @@ Got: 100
         self._is_selectable = None # True if can be selected by an Alt.
         self._has_selected = None  # True if already been committed to select.
 
-        memory = posix_ipc.SharedMemory(str(self.name), posix_ipc.O_CREX,
+        memory = posix_ipc.SharedMemory(self.name, posix_ipc.O_CREX,
                                         size=posix_ipc.PAGE_SIZE)
         self.mapfile = mmap.mmap(memory.fd, memory.size)
         os.close(memory.fd)
@@ -933,34 +936,35 @@ Got: 100
         self._wlock = processing.RLock()    # Write lock.
         self._rlock = processing.RLock()    # Read lock.
         self._plock = processing.Lock()     # Fix poisoning.
-        self._available = posix_ipc.Semaphore(str(self.name) + '_available', flags=posix_ipc.O_CREAT, initial_value=0)
-        self._taken = posix_ipc.Semaphore(str(self.name) + '_taken', flags=posix_ipc.O_CREAT, initial_value=0)
+        self._available = posix_ipc.Semaphore(self.name + '_available', flags=posix_ipc.O_CREAT, initial_value=0)
+        self._taken = posix_ipc.Semaphore(self.name + '_taken', flags=posix_ipc.O_CREAT, initial_value=0)
         # Process-safe synchronisation for CSP Select / Occam Alt.
-        self._is_alting = processing.Value('h', Channel.FALSE,
-                                           lock=processing.Lock())
-        self._is_selectable = processing.Value('h', Channel.FALSE,
-                                               lock=processing.Lock())
+        self._is_alting = Value(self.name + '_is_alting', False, ty=bool)
+        self._is_selectable = Value(self.name + '_is_selectable', False, ty=bool)
         # Kludge to say a select has finished (to prevent the channel
         # from being re-enabled). If values were really process safe
         # we could just have writers set _is_selectable and read that.
-        self._has_selected = processing.Value('h', Channel.FALSE,
-                                              lock=processing.Lock())
+        self._has_selected = Value(self.name + '_has_selected', False, ty=bool)
         # Is this channel poisoned?
-        self._poisoned = processing.Value('h', Channel.FALSE,
-                                          lock=processing.Lock())
+        self._poisoned = Value(self.name + '_poisoned', False, ty=bool)
+        return
 
     def __getstate__(self):
         """Called when this channel is pickled, this makes the channel mobile.
         """
         newdict = self.__dict__.copy()
-        # TODO: Deal with semaphores, etc.
+        del newdict['_available']
+        del newdict['_taken']
         return newdict
 
     def __setstate__(self, newdict):
         """Called when this channel is unpickled, this makes the channel mobile.
         """
+        _available = posix_ipc.Semaphore(self.name + '_available')
+        newdict['_available'] = _available
+        _taken = posix_ipc.Semaphore(self.name + '_taken')
+        newdict['_taken'] = _taken
         self.__dict__.update(newdict)
-        # TODO: Deal with semaphores, etc.
         return
     
     def put(self, item):
@@ -985,7 +989,7 @@ Got: 100
             self._taken.unlink()
             self._taken.unlink()
             self.mapfile.close()
-            memory = posix_ipc.SharedMemory(str(self.name))
+            memory = posix_ipc.SharedMemory(self.name)
             memory.unlink()
         except:
             pass
@@ -993,9 +997,9 @@ Got: 100
     def is_selectable(self):
         """Test whether Alt can select this channel.
         """
-        _debug('Alt THINKS _is_selectable IS: {0}'.format(str(self._is_selectable.value == Channel.TRUE)))
+        _debug('Alt THINKS _is_selectable IS: {0}'.format(str(self._is_selectable.get())))
         self.checkpoison()
-        return self._is_selectable.value == Channel.TRUE
+        return self._is_selectable.get()
 
     def write(self, obj):
         """Write a Python object to this channel.
@@ -1007,7 +1011,7 @@ Got: 100
             # _has_selected will be True, blocking other readers. If a
             # new write is performed that flag needs to be reset for
             # the new write transaction.
-            self._has_selected.value = Channel.FALSE
+            self._has_selected.set(False)
             # Make the object available to the reader.
             self.put(obj)
             # Announce the object has been released to the reader.
@@ -1021,8 +1025,8 @@ Got: 100
     def read(self):
         """Read (and return) a Python object from this channel.
         """
-#        assert self._is_alting.value == Channel.FALSE
-#        assert self._is_selectable.value == Channel.FALSE
+#        assert not self._is_alting.get()
+#        assert not self._is_selectable.get()
         self.checkpoison()
         _debug('+++ Read on Channel {0} started.'.format(self.name))
         with self._rlock: # Protect from races between multiple readers.
@@ -1043,20 +1047,19 @@ Got: 100
         """
         self.checkpoison()
         # Prevent re-synchronization.
-        if (self._has_selected.value == Channel.TRUE or
-            self._is_selectable.value == Channel.TRUE):
+        if (self._has_selected.get() or self._is_selectable.get()):
             # Be explicit.
             return None
-        self._is_alting.value = Channel.TRUE
+        self._is_alting.set(True)
         with self._rlock:
             # Attempt to acquire _available.
             time.sleep(0.00001) # Won't work without this -- why?
             try:
                 self._available.acquire(0)
-                self._is_selectable.value = Channel.TRUE
+                self._is_selectable.set(True)
             except posix_ipc.BusyError:
-                self._is_selectable.value = Channel.FALSE
-        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable.value), str(self._available.value)))
+                self._is_selectable.set(False)
+        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable.get()), str(self._available.value)))
 
     def disable(self):
         """Disable this channel for Alt selection.
@@ -1064,18 +1067,18 @@ Got: 100
         MUST be called after L{enable} if this channel is not selected.
         """
         self.checkpoison()
-        self._is_alting.value = Channel.FALSE
-        if self._is_selectable.value == Channel.TRUE:
+        self._is_alting.set(False)
+        if self._is_selectable.get():
             with self._rlock:
                 self._available.release()
-            self._is_selectable.value = Channel.FALSE
+            self._is_selectable.set(False)
 
     def select(self):
         """Complete a Channel read for an Alt select.
         """
         self.checkpoison()
         _debug('channel select starting')
-        assert self._is_selectable.value == Channel.TRUE
+        assert self._is_selectable.get()
         with self._rlock:
             _debug('got read lock on channel {0} _available: {1}'.format(self.name, str(self._available.value)))
             # Obtain object on Channel.
@@ -1085,9 +1088,9 @@ Got: 100
             self._taken.release()
             _debug('released _taken')
             # Reset flags to ensure a future read / enable / select.
-            self._is_selectable.value = Channel.FALSE
-            self._is_alting.value = Channel.FALSE
-            self._has_selected.value = Channel.TRUE
+            self._is_selectable.set(False)
+            self._is_alting.set(False)
+            self._has_selected.set(True)
             _debug('reset bools')
         if obj == _POISON:
             self.poison()
@@ -1099,7 +1102,7 @@ Got: 100
 
     def checkpoison(self):
         with self._plock:
-            if self._poisoned.value == Channel.TRUE:
+            if self._poisoned.get():
                 _debug('{0} is poisoned. Raising ChannelPoison()'.format(self.name))
                 raise ChannelPoison()
 
@@ -1151,7 +1154,7 @@ Poisoning channel: 5c906e38-5559-11df-8503-002421449824
 >>> 
         """
         with self._plock:
-            self._poisoned.value = Channel.TRUE
+            self._poisoned.set(True)
             # Avoid race conditions on any waiting readers / writers.
             self._available.release() 
             self._taken.release()
