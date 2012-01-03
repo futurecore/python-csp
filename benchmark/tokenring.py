@@ -70,15 +70,16 @@ def ringproc(index=0, numnodes=64, tokens=1, inchan=None, outchan=None):
 
 if __name__ == '__main__':
     from optparse import OptionParser
+    import gc
 
     parser = OptionParser()
 
     parser.add_option('-t', '--tokens', dest='tokens', 
-                      action='store', type="int",
+                      action='store', type='int',
                       default=1,
                       help='Number of tokens in token ring')
     parser.add_option('-n', '--nodes', dest='nodes', 
-                      action='store', type="int",
+                      action='store', type='int',
                       default=64,
                       help='Number of nodes in token ring')
     parser.add_option('-x', '--experiment', dest='exp',
@@ -90,17 +91,22 @@ if __name__ == '__main__':
 
     if options.exp:
         print('All times measured in seconds.')
-        for size in range(2, 10):
+        for size in range(1, 10):
             print('Token ring with {0} nodes.'.format(2 ** size))
             starttime = time.time()
-            TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
+            ring = TokenRing(ringproc, 2 ** size, numtoks=options.tokens)
+            ring.start()
             elapsed = time.time() - starttime
-            mu = elapsed / float((TRIALS * (2 ** size)))
-            print('{0}s'.format(mu))
+            seconds = elapsed / float((TRIALS * (2 ** size)))
+            print('{0}s'.format(seconds))
+            # If we don't garbage collect old channels here we'll have
+            # a 'Too many open files on disk' error from the OS.
+            ring = None
+            gc.collect()
     else:
-        print 'Token ring with {0} nodes and {1} token(s).'.format(options.nodes, options.tokens)
+        print('Token ring with {0} nodes and {1} token(s).'.format(options.nodes, options.tokens))
         starttime = time.time()
         TokenRing(ringproc, options.nodes, numtoks=options.tokens).start()
         elapsed = time.time() - starttime
-        mu = elapsed / float(TRIALS * options.nodes)
-        print '{0}s'.format(mu)
+        seconds = elapsed / float(TRIALS * options.nodes)
+        print '{0}s'.format(seconds)
