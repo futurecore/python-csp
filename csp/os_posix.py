@@ -294,7 +294,6 @@ n: 20
                           kwargs=kwargs)
         assert inspect.isfunction(func)   # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
-
         _CSPOpMixin.__init__(self)
         for arg in list(self._args) + list(self._kwargs.values()):
             if _is_csp_type(arg):
@@ -819,6 +818,17 @@ class Value(object):
         self.semaphore.release()
         return
 
+    def __del__(self):
+        if not self:
+            return
+        self.mapfile.close()
+        self.semaphore.close()
+        self.semaphore.unlink()
+        memory = posix_ipc.SharedMemory(str(self.name))
+        memory.close_fd()
+        memory.unlink()
+        return
+
     def __getstate__(self):
         """Called when this channel is pickled, this makes the channel mobile.
         """
@@ -854,6 +864,52 @@ class Value(object):
         self.mapfile.seek(0)
         pickle.dump(value, self.mapfile, protocol=2)
         self.semaphore.release()
+        return
+
+
+class Lock(object): # FIXME FINISH
+    """Named locks implemented as bounded, POSIX semaphore.
+    """
+
+    def __init__(self, name):
+        self.name = name
+        self.semaphore = posix_ipc.Semaphore(name + 'semaphore', flags=posix_ipc.O_CREAT, initial_value=1)
+        return
+
+    def __del__(self):
+        self.semaphore.close()
+        self.semaphore.unlink()
+        return
+
+    def lock(self): # FIXME -- self.semaphore is unbounded.
+        self.semaphore.acquire()
+        return
+
+    def unlock(self): # FIXME -- self.semaphore is unbounded.
+        self.semaphore.release()
+        return
+    
+    def __enter__(self):
+        self.lock()
+        return
+
+    def __exit__(self):
+        self.unlock()
+        return
+    
+    def __getstate__(self):
+        """Called when this lock is pickled.
+        """
+        newdict = self.__dict__.copy()
+        del newdict['semaphore']
+        return newdict
+
+    def __setstate__(self, newdict):
+        """Called when this lock is unpickled.
+        """
+        semaphore = posix_ipc.Semaphore(str(self.name) + 'semaphore')
+        newdict['semaphore'] = semaphore
+        self.__dict__.update(newdict)
         return
     
     
