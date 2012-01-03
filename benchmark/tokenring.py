@@ -38,8 +38,8 @@ __date__ = 'November 2009'
 import sys
 sys.path.insert(0, "..")
 
-#from csp.csp import *
-from csp.os_process import *
+from csp.csp import *
+#from csp.os_process import *
 #from csp.os_posix import *
 #from csp.os_thread import *
 
@@ -89,21 +89,18 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.exp:
-        print('All times measured in microseconds.')
+        print('All times measured in seconds.')
         for size in range(2, 10):
-            try:
-                print('Token ring with {0} nodes.'.format(size))
-                starttime = time.time()
-                TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
-                elapsed = time.time() - starttime
-                mu = elapsed * 1000000 / float((TRIALS * (2 ** size)))
-                print('{0}ms'.format(mu))
-            except:
-                continue
+            print('Token ring with {0} nodes.'.format(2 ** size))
+            starttime = time.time()
+            TokenRing(ringproc, 2 ** size, numtoks=options.tokens).start()
+            elapsed = time.time() - starttime
+            mu = elapsed / float((TRIALS * (2 ** size)))
+            print('{0}s'.format(mu))
     else:
         print 'Token ring with {0} nodes and {1} token(s).'.format(options.nodes, options.tokens)
         starttime = time.time()
         TokenRing(ringproc, options.nodes, numtoks=options.tokens).start()
         elapsed = time.time() - starttime
-        mu = elapsed * 1000000 / float((TRIALS * (2 ** options.nodes)))
-        print '{0}ms'.format(mu)
+        mu = elapsed / float(TRIALS * options.nodes)
+        print '{0}s'.format(mu)
