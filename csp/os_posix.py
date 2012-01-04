@@ -37,8 +37,6 @@ __date__ = '2011-12-23'
 #DEBUG = True
 DEBUG = False
 
-print('POSIX LOCAL') # TODO: Remove 
-
 from functools import wraps # Easy decorators
 
 import copy
@@ -67,16 +65,6 @@ try: # Python optimisation compiler
 except ImportError:
     pass
 
-# # TODO: Remove this.
-# # Multiprocessing libary -- name changed between versions.
-# try:
-#     # Version 2.6 and above
-#     import multiprocessing as processing
-#     if sys.platform == 'win32':
-#         import multiprocessing.reduction
-# except ImportError:
-#     raise ImportError('No library available for multiprocessing.\n'+
-#                       'csp.os_process is only compatible with Python 2. 6 and above.')
 
 CSP_IMPLEMENTATION = 'os_posix'
 
@@ -88,7 +76,6 @@ __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
 ### Seeded random number generator (16 bytes)
 
 _RANGEN = random.Random(os.urandom(16))
-
 
 ### CONSTANTS
 
@@ -965,7 +952,6 @@ Got: 100
         self._taken = None         # Released if reader has taken data.
         self._is_alting = None     # True if engaged in an Alt synchronisation.
         self._is_selectable = None # True if can be selected by an Alt.
-#        self._has_selected = None  # True if already been committed to select.
 
         memory = posix_ipc.SharedMemory(self.name, posix_ipc.O_CREX,
                                         size=posix_ipc.PAGE_SIZE)
