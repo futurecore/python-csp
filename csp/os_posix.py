@@ -965,7 +965,7 @@ Got: 100
         self._taken = None         # Released if reader has taken data.
         self._is_alting = None     # True if engaged in an Alt synchronisation.
         self._is_selectable = None # True if can be selected by an Alt.
-        self._has_selected = None  # True if already been committed to select.
+#        self._has_selected = None  # True if already been committed to select.
 
         memory = posix_ipc.SharedMemory(self.name, posix_ipc.O_CREX,
                                         size=posix_ipc.PAGE_SIZE)
@@ -989,10 +989,6 @@ Got: 100
         # Process-safe synchronisation for CSP Select / Occam Alt.
         self._is_alting = Value(self.name + '_is_alting', False, ty=bool)
         self._is_selectable = Value(self.name + '_is_selectable', False, ty=bool)
-        # Kludge to say a select has finished (to prevent the channel
-        # from being re-enabled). If values were really process safe
-        # we could just have writers set _is_selectable and read that.
-        self._has_selected = Value(self.name + '_has_selected', False, ty=bool)
         # Is this channel poisoned?
         self._poisoned = Value(self.name + '_poisoned', False, ty=bool)
         return
@@ -1059,11 +1055,6 @@ Got: 100
         self.checkpoison()
         _debug('+++ Write on Channel {0} started.'.format(self.name))
         with self._wlock: # Protect from races between multiple writers.
-            # If this channel has already been selected by an Alt then
-            # _has_selected will be True, blocking other readers. If a
-            # new write is performed that flag needs to be reset for
-            # the new write transaction.
-            self._has_selected.set(False)
             # Make the object available to the reader.
             self.put(obj)
             # Announce the object has been released to the reader.
@@ -1099,7 +1090,7 @@ Got: 100
         """
         self.checkpoison()
         # Prevent re-synchronization.
-        if (self._has_selected.get() or self._is_selectable.get()):
+        if self._is_selectable.get():
             # Be explicit.
             return None
         self._is_alting.set(True)
@@ -1142,7 +1133,6 @@ Got: 100
             # Reset flags to ensure a future read / enable / select.
             self._is_selectable.set(False)
             self._is_alting.set(False)
-            self._has_selected.set(True)
             _debug('reset bools')
         if obj == _POISON:
             self.poison()
