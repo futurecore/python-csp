@@ -17,9 +17,10 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have rceeived a copy of the GNU General Public License
+You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA
 """
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
@@ -37,19 +38,12 @@ import logging
 import os
 import random
 import sys
-import tempfile
 import time
 import uuid
 try:
     import cPickle as pickle    # Faster, only in Python 2.x
 except ImportError:
     import pickle
-
-try: # Python optimisation compiler
-    import psyco
-    psyco.full()
-except ImportError:
-    print ( 'No available optimisation' )
 
 # Multiprocessing libary -- name changed between versions.
 try:
@@ -1034,64 +1028,6 @@ Poisoning channel: 5c906e38-5559-11df-8503-002421449824
             # Avoid race conditions on any waiting readers / writers.
             self._available.release() 
             self._taken.release()
-
-
-class FileChannel(Channel):
-    """Channel objects using files on disk.
-
-    C{FileChannel} objects close their files after each read or write
-    operation. The advantage of this is that client code can create as
-    many C{FileChannel} objects as it wishes (unconstrained by the
-    operating system's maximum number of open files). In return there
-    is a performance hit -- reads and writes are around 10 x slower on
-    C{FileChannel} objects compared to L{Channel} objects.
-    """
-
-    def __init__(self):
-        self.name = uuid.uuid1()
-        self._wlock = None	# Write lock.
-        self._rlock = None	# Read lock.
-        self._available = None
-        self._taken = None
-        self._is_alting = None
-        self._is_selectable = None
-        self._has_selected = None
-        # Process-safe store.
-        file_d, self._fname = tempfile.mkstemp()
-        os.close(file_d)
-        self._setup()
-
-    def put(self, item):
-        """Put C{item} on a process-safe store.
-        """
-        file_d = file(self._fname, 'w')
-        file_d.write(pickle.dumps(item, protocol=1))
-        file_d.flush()
-        file_d.close()
-
-    def get(self):
-        """Get a Python object from a process-safe store.
-        """
-        stored = ''
-        while stored == '':
-            file_d = file(self._fname, 'r')
-            stored = file_d.read()
-            file_d.close()
-        # Unlinking here ensures that FileChannel objects exhibit the
-        # same semantics as Channel objects.
-        os.unlink(self._fname)
-        obj = pickle.loads(stored)
-        return obj
-
-    def __del__(self):
-        try:
-            # Necessary if the Channel has been deleted by poisoning.
-            os.unlink(self._fname)
-        except:
-            pass
-
-    def __str__(self):
-        return 'Channel using files for IPC.'
 
 
 ### Function decorators

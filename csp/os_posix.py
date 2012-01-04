@@ -643,7 +643,6 @@ n: 300
                 self.procs.append(proc)
         for proc in self.procs:
             proc.enclosing = self
-#        print "Seq has :", len(procs), "processes"
         return
 
     def __str__(self):
