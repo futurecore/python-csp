@@ -20,43 +20,45 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 __date__ = 'July 2010'
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 
+import random
 
 from csp.csp import *
-from csp.builtins import Printer
+#from csp.builtins import Printer # FIXME
 from csp.guards import Timer
 
 from queue import BoundedQueue as Queue
 
 
 @process
-def generate_customers(out_chan, printer):
-    import random
+def generate_customers(out_chan): #, printer):
     customers = ['Michael Palin', 'John Cleese', 'Terry Jones',
                  'Terry Gilliam', 'Graham Chapman']
     while True:
         python = random.choice(customers)
-        printer.write('{0} needs a good shave!'.format(python))
+        print('{0} needs a good shave!'.format(python))
+#        printer.write('{0} needs a good shave!'.format(python)) # FIXME
         out_chan.write(python)
 
 
 @process
-def barber(door, printer):
-    import random
+def barber(door): #, printer):
     timer = Timer()
     while True:
-        printer.write('Barber is sleeping.')
+#        printer.write('Barber is sleeping.') # FIXME
+        print('Barber is sleeping.')
         customer = door.read()
-        print_c.write('The barber has woken to give {0} a shave.'.format(customer))
+#        printer.write('The barber has woken to give {0} a shave.'.format(customer)) # FIXME
+        print('The barber has woken to give {0} a shave.'.format(customer))
         timer.sleep(random.random() * 5)
     
 
 @process
 def main(max_chairs):
     door_in, door_out = Channel(), Channel()
-    printer = Channel()
-    Par(generate_customers(door_in, printer),
+#    printer = Channel() # FIXME
+    Par(generate_customers(door_in),
         Queue(door_in, door_out, max_chairs),
-        barber(door_out, printer)).start()
+        barber(door_out)).start()
 
 
 if __name__ == '__main__':

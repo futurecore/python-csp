@@ -26,12 +26,12 @@ import time
 
 sys.path.insert(0, "..")
 
-from csp.csp import *
+#from csp.csp import *
 #from csp.os_process import *
-#from csp.os_posix import *
+from csp.os_posix import *
 #from csp.os_thread import *
 from csp.guards import Timer
-#set_debug(False)
+#set_debug(True)
 
 @process
 def foo(n):
@@ -142,9 +142,9 @@ def sendAlt(cout, num):
 def testAlt0():
     alt = Alt(Skip(), Skip(), Skip())
     for i in range(3):
-#        print('*** TestAlt0 selecting...')
+        print('*** TestAlt0 selecting...')
         val = alt.select()
-#        print('* Got this from Alt:' + str(val))
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -157,10 +157,10 @@ def testAlt1(cin):
     alt = Alt(cin)
     numeric = 0 
     while numeric < 1:
-#        print('*** TestAlt1 selecting...')
+        print('*** TestAlt1 selecting...')
         val = alt.select()
         if isinstance(val, int): numeric += 1 
-#        print('* Got this from Alt:' + str(val))
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -173,10 +173,10 @@ def testAlt2(cin1, cin2, cin3):
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0 
     while numeric < 3:
-#        print('*** TestAlt2 selecting...')
+        print('*** TestAlt2 selecting...')
         val = alt.select()
         if isinstance(val, int): numeric +=1
-#        print('* Got this from Alt:' + str(val))
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -190,10 +190,10 @@ def testAlt3(cin1, cin2, cin3):
     alt = Alt(cin1, cin2, cin3, Skip())
     numeric = 0
     while numeric < 3:
-#        print('*** TestAlt3 selecting...')        
+        print('*** TestAlt3 selecting...')        
         val = alt.pri_select()
         if isinstance(val, int): numeric +=1
-#        print('* Got this from Alt:' + str(val))
+        print('* Got this from Alt:' + str(val))
     return
 
 
@@ -206,10 +206,10 @@ def testAlt4(cin1, cin2, cin3):
     alt = Alt(Skip(), cin1, cin2, cin3)
     numeric = 0
     while numeric < 3:
-#        print('*** TestAlt4 selecting...')        
+        print('*** TestAlt4 selecting...')        
         val = alt.fair_select()
         if isinstance(val, int): numeric +=1
-#        print('* Got this from Alt:' + str(val))
+        print('* Got this from Alt:' + str(val))
     return
 
 
