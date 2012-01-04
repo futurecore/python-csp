@@ -37,64 +37,72 @@ import os
 import signal
 import sys
 
-class Process(object):
-    """Operating system process that can fork().
+if os.environ['CSP'].upper().startswith('THREAD'):
 
-    This class is a superclass to the CSPProcess, Par and Seq classes.
-    """
-    def __init__(self, target=None, args=(), kwargs={}):
-        self._started = False
-        self._pid = None
-        self._parent_pid = os.getpid()
-        self._target = target
-        self._args = tuple(args)
-        self._kwargs = dict(kwargs)
-        self._returncode = None
-        return
+    # TODO: Implement threaded version.
+    # import threading
+    raise NotImplementedError()
 
-    def getPid(self):
-        return self._pid
+else:
 
-    def run(self):
-        self._target(*self._args, **self._kwargs)        
-        return
-    
-    def start(self):
-        self._started = True
-        self._pid = os.fork()
-        if self._pid == 0:
+    class Process(object):
+        """Operating system process that can fork().
+
+        This class is a superclass to the CSPProcess, Par and Seq classes.
+        """
+        def __init__(self, target=None, args=(), kwargs={}):
+            self._started = False
+            self._pid = None
+            self._parent_pid = os.getpid()
+            self._target = target
+            self._args = tuple(args)
+            self._kwargs = dict(kwargs)
+            self._returncode = None
+            return
+
+        def getPid(self):
+            return self._pid
+
+        def run(self):
+            self._target(*self._args, **self._kwargs)        
+            return
+
+        def start(self):
+            self._started = True
+            self._pid = os.fork()
+            if self._pid == 0:
+                try:
+                    self.run()
+                    os._exit(0)
+                except KeyboardInterrupt:
+                    sys.exit()
+            return
+
+        def wait(self):
+            if self._pid == 0 or not self._started: return
             try:
-                self.run()
-                os._exit(0)
-            except KeyboardInterrupt:
-                sys.exit()
-        return
-    
-    def wait(self):
-        if self._pid == 0 or not self._started: return
-        try:
-            _, self._returncode = os.wait()
-        except os.error: # Child process not created
-            pass
-        return self._returncode
+                _, self._returncode = os.wait()
+            except os.error: # Child process not created
+                pass
+            return self._returncode
 
-    def send_signal(self, sig):
-        """Send a signal to the process
-        """
-        if self._returncode is not None:
-            os.kill(self._pid, sig)
-        return
+        def send_signal(self, sig):
+            """Send a signal to the process
+            """
+            if self._returncode is not None:
+                os.kill(self._pid, sig)
+            return
 
-    def terminate(self):
-        """Terminate the process with SIGTERM
-        """
-        if self._started and self._returncode is not None:
-            self.send_signal(signal.SIGTERM)
-        return
+        def terminate(self):
+            """Terminate the process with SIGTERM
+            """
+            if self._started and self._returncode is not None:
+                self.send_signal(signal.SIGTERM)
+            return
 
-    def kill(self):
-        """Kill the process with SIGKILL
-        """
-        if self._started and self._returncode is not None:
-            self.send_signal(signal.SIGKILL)
-        return
+        def kill(self):
+            """Kill the process with SIGKILL
+            """
+            if self._started and self._returncode is not None:
+                self.send_signal(signal.SIGKILL)
+            return
