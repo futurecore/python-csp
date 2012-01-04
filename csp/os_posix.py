@@ -5,7 +5,8 @@
 When using CSP Python as a DSL, this module will normally be imported
 via the statement 'from csp.csp import *' and should not be imported directly.
 
-TODO: Write a Windows version of this file based on Memory Mapped Files:
+TODO: Write a Windows version of this file
+TODO: http://sourceforge.net/projects/pywin32/
 TODO: http://msdn.microsoft.com/en-us/library/ms810613.aspx
 TODO: http://docs.python.org/library/mmap.html
 
@@ -36,7 +37,7 @@ __date__ = '2011-12-23'
 #DEBUG = True
 DEBUG = False
 
-print('POSIX') # TODO: Remove 
+print('POSIX LOCAL') # TODO: Remove 
 
 from functools import wraps # Easy decorators
 
@@ -802,7 +803,13 @@ class Guard(object):
 class Value(object):
     """Process-safe values, stored in shared memory.
 
-    This class is similart to the Value class in the multiprocessing library.
+    This class is similar to the Value class in the multiprocessing library.
+
+    Note that we are using POSIX semaphores here to provide a simple
+    lock to a portion of shared memory. Calls to
+    self.semaphore.{acquire,release} can be replaced with calls to
+    fcntl.fcntl.(fd,{LOCK_EX,LOCK_UN}). However, fcntl is considerably
+    slower than using semaphores.
     """
     
     def __init__(self, name, value, ty=None):
