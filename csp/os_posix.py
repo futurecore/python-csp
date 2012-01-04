@@ -815,8 +815,10 @@ class Value(object):
     def __init__(self, name, value, ty=None):
         self.name = name
         self.ty = ty
-        self.semaphore = posix_ipc.Semaphore(str(name) + 'semaphore', flags=posix_ipc.O_CREAT, initial_value=0)
-        memory = posix_ipc.SharedMemory(str(name), posix_ipc.O_CREX,
+        self.semaphore = posix_ipc.Semaphore(self.name + 'semaphore',
+                                             flags=posix_ipc.O_CREAT,
+                                             initial_value=0)
+        memory = posix_ipc.SharedMemory(self.name, posix_ipc.O_CREX,
                                         size=sys.getsizeof(value))
         self.mapfile = mmap.mmap(memory.fd, memory.size)
         os.close(memory.fd)
@@ -830,10 +832,8 @@ class Value(object):
             return
         self.mapfile.close()
         self.semaphore.close()
-        self.semaphore.unlink()
-        memory = posix_ipc.SharedMemory(str(self.name))
+        memory = posix_ipc.SharedMemory(self.name)
         memory.close_fd()
-        memory.unlink()
         return
 
     def __getstate__(self):
@@ -847,8 +847,8 @@ class Value(object):
     def __setstate__(self, newdict):
         """Called when this channel is unpickled, this makes the channel mobile.
         """
-        semaphore = posix_ipc.Semaphore(str(self.name) + 'semaphore')
-        memory = posix_ipc.SharedMemory(str(self.name))
+        semaphore = posix_ipc.Semaphore(newdict['name'] + 'semaphore')
+        memory = posix_ipc.SharedMemory(newdict['name'])
         mapfile = mmap.mmap(memory.fd, memory.size)
         os.close(memory.fd)
         newdict['semaphore'] = semaphore
@@ -885,7 +885,6 @@ class Lock(object): # FIXME FINISH
 
     def __del__(self):
         self.semaphore.close()
-        self.semaphore.unlink()
         return
     
     def __enter__(self):
@@ -906,7 +905,7 @@ class Lock(object): # FIXME FINISH
     def __setstate__(self, newdict):
         """Called when this lock is unpickled.
         """
-        semaphore = posix_ipc.Semaphore(str(self.name) + 'semaphore')
+        semaphore = posix_ipc.Semaphore(newdict['name'] + 'semaphore')
         newdict['semaphore'] = semaphore
         self.__dict__.update(newdict)
         return
@@ -1004,15 +1003,19 @@ Got: 100
         newdict = self.__dict__.copy()
         del newdict['_available']
         del newdict['_taken']
+        del newdict['mapfile']
         return newdict
 
     def __setstate__(self, newdict):
         """Called when this channel is unpickled, this makes the channel mobile.
         """
-        _available = posix_ipc.Semaphore(self.name + '_available')
+        _available = posix_ipc.Semaphore(newdict['name'] + '_available')
         newdict['_available'] = _available
-        _taken = posix_ipc.Semaphore(self.name + '_taken')
+        _taken = posix_ipc.Semaphore(newdict['name'] + '_taken')
         newdict['_taken'] = _taken
+        memory = posix_ipc.SharedMemory(newdict['name'], size=posix_ipc.PAGE_SIZE)
+        newdict['mapfile'] = mmap.mmap(memory.fd, memory.size)
+        os.close(memory.fd)
         self.__dict__.update(newdict)
         return
     
