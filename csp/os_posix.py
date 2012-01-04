@@ -67,16 +67,16 @@ try: # Python optimisation compiler
 except ImportError:
     pass
 
-# TODO: Remove this.
-# Multiprocessing libary -- name changed between versions.
-try:
-    # Version 2.6 and above
-    import multiprocessing as processing
-    if sys.platform == 'win32':
-        import multiprocessing.reduction
-except ImportError:
-    raise ImportError('No library available for multiprocessing.\n'+
-                      'csp.os_process is only compatible with Python 2. 6 and above.')
+# # TODO: Remove this.
+# # Multiprocessing libary -- name changed between versions.
+# try:
+#     # Version 2.6 and above
+#     import multiprocessing as processing
+#     if sys.platform == 'win32':
+#         import multiprocessing.reduction
+# except ImportError:
+#     raise ImportError('No library available for multiprocessing.\n'+
+#                       'csp.os_process is only compatible with Python 2. 6 and above.')
 
 CSP_IMPLEMENTATION = 'os_posix'
 
@@ -887,21 +887,13 @@ class Lock(object): # FIXME FINISH
         self.semaphore.close()
         self.semaphore.unlink()
         return
-
-    def lock(self): # FIXME -- self.semaphore is unbounded.
+    
+    def __enter__(self):
         self.semaphore.acquire()
         return
 
-    def unlock(self): # FIXME -- self.semaphore is unbounded.
+    def __exit__(self, exc_type, exc_value, traceback):
         self.semaphore.release()
-        return
-    
-    def __enter__(self):
-        self.lock()
-        return
-
-    def __exit__(self):
-        self.unlock()
         return
     
     def __getstate__(self):
@@ -980,7 +972,6 @@ Got: 100
                                         size=posix_ipc.PAGE_SIZE)
         self.mapfile = mmap.mmap(memory.fd, memory.size)
         os.close(memory.fd)
-
         self._poisoned = None
         self._setup()
         super(Channel, self).__init__()
@@ -992,8 +983,8 @@ Got: 100
         MUST be called in __init__ of this class and all subclasses.
         """
         # Process-safe synchronisation.
-        self._wlock = processing.RLock()    # Write lock.
-        self._rlock = processing.RLock()    # Read lock.
+        self._wlock = Lock(self.name + '_wlock')    # Write lock.
+        self._rlock = Lock(self.name + '_rlock')    # Read lock.
         self._available = posix_ipc.Semaphore(self.name + '_available', flags=posix_ipc.O_CREAT, initial_value=0)
         self._taken = posix_ipc.Semaphore(self.name + '_taken', flags=posix_ipc.O_CREAT, initial_value=0)
         # Process-safe synchronisation for CSP Select / Occam Alt.
