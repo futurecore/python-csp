@@ -108,7 +108,7 @@ def set_debug(status):
     global DEBUG
     DEBUG = status
     logging.basicConfig(level=logging.NOTSET,
-                        stream=sys.stdout)
+                        stream=sys.stderr)
     logging.info("Using POSIX version of python-csp.")
 
 
