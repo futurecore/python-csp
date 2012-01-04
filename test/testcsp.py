@@ -31,7 +31,7 @@ sys.path.insert(0, "..")
 from csp.os_posix import *
 #from csp.os_thread import *
 from csp.guards import Timer
-#set_debug(True)
+set_debug(True)
 
 @process
 def foo(n):

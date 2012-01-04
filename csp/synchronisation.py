@@ -4,10 +4,10 @@
 
 Should not be used outside of this package.
 
-TODO: Write a Windows version of this file
-TODO: http://sourceforge.net/projects/pywin32/
-TODO: http://msdn.microsoft.com/en-us/library/ms810613.aspx
-TODO: http://docs.python.org/library/mmap.html
+TODO: Write a Windows version of the core classes here.
+http://sourceforge.net/projects/pywin32/
+http://msdn.microsoft.com/en-us/library/ms810613.aspx
+http://docs.python.org/library/mmap.html
 
 Copyright (C) Sarah Mount, 2008-12.
 
@@ -42,22 +42,29 @@ try:
 except ImportError:
     import pickle
 
-if sys.platform != 'win32':
+
+if os.environ['CSP'].upper().startswith('THREAD'):
+    import threading
+elif sys.platform != 'win32':
     import posix_ipc # POSIX-specific IPC
 else:
+    # TODO replace with: import win32api
+    import multiprocessing as processing
+    import multiprocessing.synchronize as synchronize
+    import multiprocessing.sharedctypes as sharedctypes
+
+
+if os.environ['CSP'].upper().startswith('THREAD'):
+
+    # TODO: Implement threaded version.
     raise NotImplementedError()
-#    import win32api        # TODO
-#    import multiprocessing # TODO stop-gap
-
-
-if sys.platform != 'win32':
-
+    
+elif sys.platform != 'win32':
+    
     SemNotAvailable = posix_ipc.BusyError
     
     class Semaphore(object):
         """This class provides an interface to OS-provided semaphores.
-
-        The API to 
         """
 
         def __init__(self, name, initial_value=0, create=True):
@@ -279,6 +286,162 @@ if sys.platform != 'win32':
             return
 
 else:
-    # TODO: Write win32 version of these classes.
-    raise NotImplementedError()
+
+    print('win32')
+    
+    # TODO: Write win32 version of classes, remove multiprocessing dependency.
+
+    class SemNotAvailable(Exception):
+        """Raised when a semaphore cannot be acquired for some reason.
+        """
+
+        def __str__(self):
+            return 'Semaphore not available.'
+
+
+    _type_to_typecode = {
+        str: 'c',
+        bool: 'h',
+        int: 'h',
+        float: 'f'
+        }
+        
+    
+    class Value(object):
+
+        def __init__(self, name, value=0, ty=None, create=True):
+            self.name = name
+            self.ty = ty
+            code = _type_to_typecode[ty]
+            self.lock = synchronize.Lock()
+            self.sharedval = processing.Value(code, value, lock=self.lock)
+            return
+
+        def __getstate__(self):
+            newdict = self.__dict__.copy()
+            del newdict['sharedval']
+            del newdict['lock']
+            return newdict
+        
+        def get(self):
+            return self.ty(self.sharedval.value)
+
+        def set(self, value):
+            if self.ty is bool:
+                self.sharedval.value = int(value)
+            else:
+                self.sharedval.value = value
+            return
+            
+    
+    class Lock(object):
+
+        def __init__(self, name):
+            self.name = name
+            self.lock = processing.Lock()
+            return
+
+        def __enter__(self):
+            self.lock.acquire()
+            return
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.lock.release()
+            return
+
+        def __getstate__(self):
+            """Called when this lock is pickled.
+            """
+            newdict = self.__dict__.copy()
+            del newdict['lock']
+            return newdict
+
+        def __setstate__(self, newdict):
+            """Called when this lock is unpickled.
+            """
+            newdict['lock'] = processing.Lock()
+            self.__dict__.update(newdict)
+            return
+
+        
+    class Semaphore(object):
+
+        def __init__(self, name):
+            self.name = name
+            self.sem = processing.Semaphore()
+            self.value = self.sem.get_value
+            return
+        
+        def acquire(self, timeout=None):
+            if timeout is None:
+                self.sem.acquire()
+            else:
+                ret = self.sem.acquire(block=False)
+                if ret:
+                    return
+                else:
+                    raise SemNotAvailable()
+            return
+
+        def release(self):
+            self.sem.release()
+            return
+                
+    
+    class SharedMemory(object):
+        
+        def __init__(self, name, size=4096, create=True):
+            """ The create argument is ignored in this implementation,
+            as Python named pipes (via os.mkfifio) are only
+            available on UNIX systems.
+            """
+            self.name = name
+            self.size = size
+            self.pipe_r, self.pipe_w = os.pipe()
+            return
+
+        def __getstate__(self):
+            """Called when this channel is pickled, this makes the channel mobile.
+            """
+            newdict = self.__dict__.copy()
+            del newdict['pipe_r']
+            del newdict['pipe_w']
+            return newdict
+
+        def __setstate__(self, newdict):
+            """Called when this channel is unpickled, this makes the channel mobile.
+            """
+            pipe_r, pipe_w = os.pipe()
+            newdict['pipe_r'] = pipe_r
+            newdict['pipe_w'] = pipe_w
+            self.__dict__.update(newdict)
+            return
+    
+        def put(self, item):
+            """Put C{item} on a process-safe store.
+            """
+            os.write(self.pipe_w, pickle.dumps(item, protocol=1))
+            return
+
+        def get(self):
+            """Get a Python object from a process-safe store.
+            """
+            data = []
+            while True:
+                sval = os.read(self.pipe_r, self.size)
+                if not sval:
+                    break
+                data.append(sval)
+                if len(sval) < self.size:
+                    break
+            obj = None if data == [] else pickle.loads(b''.join(data))
+            return obj
+            
+        def __del__(self):
+            try:
+                os.close(self.pipe_r)
+                os.close(self.pipe_w)
+            except:
+                pass
+            return
 
