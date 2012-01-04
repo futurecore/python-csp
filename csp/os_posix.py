@@ -10,7 +10,7 @@ TODO: http://sourceforge.net/projects/pywin32/
 TODO: http://msdn.microsoft.com/en-us/library/ms810613.aspx
 TODO: http://docs.python.org/library/mmap.html
 
-Copyright (C) Sarah Mount, 2008-10.
+Copyright (C) Sarah Mount, 2008-12.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,17 +22,16 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have rceeived a copy of the GNU General Public License
+You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA
 """
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = '2011-12-23'
 
 # pylint: disable-msg=W0142
-# pylint: disable-msg=W0102
-# pylint: disable-msg=W0212
 
 #DEBUG = True
 DEBUG = False
@@ -43,30 +42,19 @@ import copy
 import gc
 import inspect
 import logging
-import mmap
 import os
 import random
-import signal
 import sys
 import time
 import uuid
 
-# TODO: Add conditional import.
-import posix_ipc # POSIX-specific IPC
-
-try:
-    import cPickle as pickle    # Faster, only in Python 2.x
-except ImportError:
-    import pickle
-    
-try: # Python optimisation compiler
-    import psyco
-    psyco.full()
-except ImportError:
-    pass
+from forking import Process
+from synchronisation import Semaphore, SemNotAvailable, SharedMemory, Value, Lock
 
 
 CSP_IMPLEMENTATION = 'os_posix'
+
+print(CSP_IMPLEMENTATION)
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
@@ -124,70 +112,7 @@ def set_debug(status):
     logging.info("Using POSIX version of python-csp.")
 
 
-### Fundamental CSP concepts -- Processes, Channels, Guards
-    
-class _Process(object):
-    """Operating system process that can fork().
-
-    This class is a superclass to the CSPProcess, Par and Seq classes.
-    """
-    def __init__(self, target=None, args=(), kwargs={}):
-        self._started = False
-        self._pid = None
-        self._parent_pid = os.getpid()
-        self._target = target
-        self._args = tuple(args)
-        self._kwargs = dict(kwargs)
-        self._returncode = None
-        return
-
-    def getPid(self):
-        return self._pid
-
-    def run(self):
-        self._target(*self._args, **self._kwargs)        
-        return
-    
-    def start(self):
-        self._started = True
-        self._pid = os.fork()
-        if self._pid == 0:
-            try:
-                self.run()
-                os._exit(0)
-            except KeyboardInterrupt:
-                sys.exit()
-        return
-    
-    def wait(self):
-        if self._pid == 0 or not self._started: return
-        try:
-            _, self._returncode = os.wait()
-        except os.error: # Child process not created
-            pass
-        return self._returncode
-
-    def send_signal(self, sig):
-        """Send a signal to the process
-        """
-        if self._returncode is not None:
-            os.kill(self._pid, sig)
-        return
-
-    def terminate(self):
-        """Terminate the process with SIGTERM
-        """
-        if self._started and self._returncode is not None:
-            self.send_signal(signal.SIGTERM)
-        return
-
-    def kill(self):
-        """Kill the process with SIGKILL
-        """
-        if self._started and self._returncode is not None:
-            self.send_signal(signal.SIGKILL)
-        return
-    
+### Fundamental CSP concepts -- Processes, Channels, Guards    
     
 class _CSPOpMixin(object):
     """Mixin class used for operator overloading in CSP process types.
@@ -240,7 +165,7 @@ class _CSPOpMixin(object):
         par.start()
 
 
-class CSPProcess(_Process, _CSPOpMixin):
+class CSPProcess(Process, _CSPOpMixin):
     """Implementation of CSP processes.
     
     There are two ways to create a new CSP process. Firstly, you can
@@ -276,10 +201,10 @@ n: 20
     """
 
     def __init__(self, func, *args, **kwargs):
-        _Process.__init__(self,
-                          target=func,
-                          args=(args),
-                          kwargs=kwargs)
+        Process.__init__(self,
+                         target=func,
+                         args=(args),
+                         kwargs=kwargs)
         assert inspect.isfunction(func)   # Check we aren't using objects
         assert not inspect.ismethod(func) # Check we aren't using objects
         _CSPOpMixin.__init__(self)
@@ -563,7 +488,7 @@ no
             yield self.select()
 
 
-class Par(_Process, _CSPOpMixin):
+class Par(Process, _CSPOpMixin):
     """Run CSP processes in parallel.
 
     There are two ways to run processes in parallel.  Firstly, given
@@ -678,7 +603,7 @@ n: 200
         return proc in self.procs
 
 
-class Seq(_Process, _CSPOpMixin):
+class Seq(Process, _CSPOpMixin):
     """Run CSP processes sequentially.
 
     There are two ways to run processes in sequence.  Firstly, given
@@ -785,117 +710,6 @@ class Guard(object):
     def __ror__(self, other):
         assert isinstance(other, Guard)
         return Alt(self, other).select()
-
-
-class Value(object):
-    """Process-safe values, stored in shared memory.
-
-    This class is similar to the Value class in the multiprocessing library.
-
-    Note that we are using POSIX semaphores here to provide a simple
-    lock to a portion of shared memory. Calls to
-    self.semaphore.{acquire,release} can be replaced with calls to
-    fcntl.fcntl.(fd,{LOCK_EX,LOCK_UN}). However, fcntl is considerably
-    slower than using semaphores.
-    """
-    
-    def __init__(self, name, value, ty=None):
-        self.name = name
-        self.ty = ty
-        self.semaphore = posix_ipc.Semaphore(self.name + 'semaphore',
-                                             flags=posix_ipc.O_CREAT,
-                                             initial_value=0)
-        memory = posix_ipc.SharedMemory(self.name, posix_ipc.O_CREX,
-                                        size=sys.getsizeof(value))
-        self.mapfile = mmap.mmap(memory.fd, memory.size)
-        os.close(memory.fd)
-        self.mapfile.seek(0)
-        pickle.dump(value, self.mapfile, protocol=2)
-        self.semaphore.release()
-        return
-
-    def __del__(self):
-        if not self:
-            return
-        self.mapfile.close()
-        self.semaphore.close()
-        memory = posix_ipc.SharedMemory(self.name)
-        memory.close_fd()
-        return
-
-    def __getstate__(self):
-        """Called when this channel is pickled, this makes the channel mobile.
-        """
-        newdict = self.__dict__.copy()
-        del newdict['semaphore']
-        del newdict['mapfile']
-        return newdict
-
-    def __setstate__(self, newdict):
-        """Called when this channel is unpickled, this makes the channel mobile.
-        """
-        semaphore = posix_ipc.Semaphore(newdict['name'] + 'semaphore')
-        memory = posix_ipc.SharedMemory(newdict['name'])
-        mapfile = mmap.mmap(memory.fd, memory.size)
-        os.close(memory.fd)
-        newdict['semaphore'] = semaphore
-        newdict['mapfile'] = mapfile
-        self.__dict__.update(newdict)
-        return
-    
-    def get(self):
-        self.semaphore.acquire()
-        self.mapfile.seek(0)
-        value = pickle.load(self.mapfile)
-        self.semaphore.release()
-        if self.ty is None:
-            return value
-        else:
-            return self.ty(value)
-
-    def set(self, value):
-        self.semaphore.acquire()
-        self.mapfile.seek(0)
-        pickle.dump(value, self.mapfile, protocol=2)
-        self.semaphore.release()
-        return
-
-
-class Lock(object): # FIXME FINISH
-    """Named locks implemented as bounded, POSIX semaphore.
-    """
-
-    def __init__(self, name):
-        self.name = name
-        self.semaphore = posix_ipc.Semaphore(name + 'semaphore', flags=posix_ipc.O_CREAT, initial_value=1)
-        return
-
-    def __del__(self):
-        self.semaphore.close()
-        return
-    
-    def __enter__(self):
-        self.semaphore.acquire()
-        return
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.semaphore.release()
-        return
-    
-    def __getstate__(self):
-        """Called when this lock is pickled.
-        """
-        newdict = self.__dict__.copy()
-        del newdict['semaphore']
-        return newdict
-
-    def __setstate__(self, newdict):
-        """Called when this lock is unpickled.
-        """
-        semaphore = posix_ipc.Semaphore(newdict['name'] + 'semaphore')
-        newdict['semaphore'] = semaphore
-        self.__dict__.update(newdict)
-        return
     
     
 class Channel(Guard):
@@ -952,11 +766,7 @@ Got: 100
         self._taken = None         # Released if reader has taken data.
         self._is_alting = None     # True if engaged in an Alt synchronisation.
         self._is_selectable = None # True if can be selected by an Alt.
-
-        memory = posix_ipc.SharedMemory(self.name, posix_ipc.O_CREX,
-                                        size=posix_ipc.PAGE_SIZE)
-        self.mapfile = mmap.mmap(memory.fd, memory.size)
-        os.close(memory.fd)
+        self._memstore = SharedMemory(self.name)
         self._poisoned = None
         self._setup()
         super(Channel, self).__init__()
@@ -967,11 +777,12 @@ Got: 100
 
         MUST be called in __init__ of this class and all subclasses.
         """
+        # TODO: Move into __init__
         # Process-safe synchronisation.
         self._wlock = Lock(self.name + '_wlock')    # Write lock.
         self._rlock = Lock(self.name + '_rlock')    # Read lock.
-        self._available = posix_ipc.Semaphore(self.name + '_available', flags=posix_ipc.O_CREAT, initial_value=0)
-        self._taken = posix_ipc.Semaphore(self.name + '_taken', flags=posix_ipc.O_CREAT, initial_value=0)
+        self._available = Semaphore(self.name + '_available')
+        self._taken     = Semaphore(self.name + '_taken')
         # Process-safe synchronisation for CSP Select / Occam Alt.
         self._is_alting = Value(self.name + '_is_alting', False, ty=bool)
         self._is_selectable = Value(self.name + '_is_selectable', False, ty=bool)
@@ -983,50 +794,42 @@ Got: 100
         """Called when this channel is pickled, this makes the channel mobile.
         """
         newdict = self.__dict__.copy()
+        del newdict['_memstore']
         del newdict['_available']
         del newdict['_taken']
-        del newdict['mapfile']
+        del newdict['_wlock']
+        del newdict['_rlock']
+        del newdict['_is_alting']  
+        del newdict['_is_selectable']
+        del newdict['_poisoned']
         return newdict
 
     def __setstate__(self, newdict):
         """Called when this channel is unpickled, this makes the channel mobile.
         """
-        _available = posix_ipc.Semaphore(newdict['name'] + '_available')
-        newdict['_available'] = _available
-        _taken = posix_ipc.Semaphore(newdict['name'] + '_taken')
-        newdict['_taken'] = _taken
-        memory = posix_ipc.SharedMemory(newdict['name'], size=posix_ipc.PAGE_SIZE)
-        newdict['mapfile'] = mmap.mmap(memory.fd, memory.size)
-        os.close(memory.fd)
+        newdict['_memstore'] = SharedMemory(newdict['name'], create=False)
+        newdict['_wlock'] = Lock(newdict['name'] + '_wlock', create=False)
+        newdict['_rlock'] = Lock(newdict['name'] + '_rlock', create=False)
+        newdict['_available'] = Semaphore(newdict['name'] + '_available', create=False)
+        newdict['_taken']     = Semaphore(newdict['name'] + '_taken', create=False)
+        newdict['_is_alting'] = Value(newdict['name'] + '_is_alting', create=False)
+        newdict['_is_selectable'] = Value(newdict['name'] + '_is_selectable', False, create=False)
+        newdict['_poisoned'] = Value(newdict['name'] + '_poisoned', create=False)
         self.__dict__.update(newdict)
         return
     
     def put(self, item):
         """Put C{item} on a process-safe store.
         """
-        # TODO: Deal with the case where len(item) > size(self.mapfile)
         self.checkpoison()
-        self.mapfile.seek(0)
-        pickle.dump(item, self.mapfile, protocol=2)
+        self._memstore.put(item)
         return
 
     def get(self):
         """Get a Python object from a process-safe store.
         """
-        # TODO: Deal with the case where len(item) > size(self.mapfile)
         self.checkpoison()
-        self.mapfile.seek(0)
-        return pickle.load(self.mapfile)
-
-    def __del__(self):
-        try:
-            self._taken.unlink()
-            self._taken.unlink()
-            self.mapfile.close()
-            memory = posix_ipc.SharedMemory(self.name)
-            memory.unlink()
-        except:
-            pass
+        return self._memstore.get()
 
     def is_selectable(self):
         """Test whether Alt can select this channel.
@@ -1045,7 +848,7 @@ Got: 100
             self.put(obj)
             # Announce the object has been released to the reader.
             self._available.release()
-            _debug('++++ Writer on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.value, self._taken.value))
+            _debug('++++ Writer on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.value(), self._taken.value()))
             # Block until the object has been read.
             self._taken.acquire()
             # Remove the object from the channel.
@@ -1060,7 +863,7 @@ Got: 100
         _debug('+++ Read on Channel {0} started.'.format(self.name))
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
-            _debug('++++ Reader on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.value, self._taken.value))
+            _debug('++++ Reader on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.value(), self._taken.value()))
             self._available.acquire()
             # Get the item.
             obj = self.get()
@@ -1086,9 +889,9 @@ Got: 100
             try:
                 self._available.acquire(0)
                 self._is_selectable.set(True)
-            except posix_ipc.BusyError:
+            except SemNotAvailable:
                 self._is_selectable.set(False)
-        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable.get()), str(self._available.value)))
+        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable.get()), str(self._available.value())))
 
     def disable(self):
         """Disable this channel for Alt selection.
@@ -1109,7 +912,7 @@ Got: 100
         _debug('channel select starting')
         assert self._is_selectable.get()
         with self._rlock:
-            _debug('got read lock on channel {0} _available: {1}'.format(self.name, str(self._available.value)))
+            _debug('got read lock on channel {0} _available: {1}'.format(self.name, str(self._available.value())))
             # Obtain object on Channel.
             obj = self.get()
             _debug('got obj')
