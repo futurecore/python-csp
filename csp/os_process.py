@@ -59,7 +59,7 @@ CSP_IMPLEMENTATION = 'os_process'
 
 ### Names exported by this module
 __all__ = ['set_debug', 'CSPProcess', 'CSPServer', 'Alt',
-           'Par', 'Seq', 'Guard', 'Channel', 'FileChannel',
+           'Par', 'Seq', 'Guard', 'Channel', 
            'process', 'forever', 'Skip', '_CSPTYPES', 'CSP_IMPLEMENTATION']
 
 ### Seeded random number generator (16 bytes)
