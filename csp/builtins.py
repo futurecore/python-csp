@@ -59,7 +59,7 @@ def GenerateFloats(outchan, increment=0.1):
     """
     counter = 0
     while True:
-        outchan.write(counter * epsilon)
+        outchan.write(counter * increment)
         counter += 1
         yield
 
