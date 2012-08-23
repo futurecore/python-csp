@@ -4,3 +4,4 @@ build
 dist
 syntax: glob
 *.pyc
+examples/mandelbrot/mandelbrot.png
