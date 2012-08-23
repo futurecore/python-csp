@@ -2,13 +2,35 @@
 
 """Mandelbrot set computed in parallel using python-csp.
 Multiple-producer, single consumer architecture.
+
+Copyright (C) Sarah Mount, 2009.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have rceeived a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
 from csp.csp import *
-import logging, math, Numeric, pygame, time
+import logging
+import math
+import numpy
+import pygame
+import time
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
+
+# Amended 2012-08-23 by Russel Winder <russel@winder.org.uk> to switch from Numeric to NumPy.
 
 MAXITER = 100
 """@var: Number of iterations used to determine each pixel of the fractal image.
@@ -47,7 +69,7 @@ def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
 
     readset =
     writeset = cout
-    
+
     @type xcoord: C{int}
     @param xcoord: x-coordinate of this image column.
     @type width: C{int}
@@ -91,7 +113,7 @@ def consume(IMSIZE, filename, chan):
 
     readset = chan
     writeset =
-    
+
     @type IMSIZE: C{tuple}
     @param IMSIZE: Width and height of generated fractal image.
     @type filename: C{str}
@@ -103,7 +125,7 @@ def consume(IMSIZE, filename, chan):
     screen = pygame.display.set_mode((IMSIZE[0], IMSIZE[1]), 0)
     pygame.display.set_caption('python-csp Mandelbrot fractal example.')
     # Create initial pixel data
-    pixmap = Numeric.zeros((IMSIZE[0], IMSIZE[1], 3))
+    pixmap = numpy.zeros((IMSIZE[0], IMSIZE[1], 3), dtype=int)
     # Wait on channel events
     for i in range(IMSIZE[0]):
         xcoord, column = chan.read()
@@ -125,7 +147,7 @@ def consume(IMSIZE, filename, chan):
                 pygame.image.save(screen, filename)
                 print('Saving fractal image in: ' + str(filename))
 
-    
+
 def main(IMSIZE, filename, level='info'):
     """Manage all processes and channels required to generate fractal.
 
@@ -143,7 +165,7 @@ def main(IMSIZE, filename, level='info'):
               'error': logging.ERROR,
               'critical': logging.CRITICAL}
     assert(level in list(LEVELS.keys()))
-    logging.basicConfig(level=LEVELS[level]) 
+    logging.basicConfig(level=LEVELS[level])
     processes = []
     channel = Channel()
     # Add producer processes to process list.
@@ -163,8 +185,8 @@ def main(IMSIZE, filename, level='info'):
 
 
 if __name__ == '__main__':
-#    IMSIZE = (1024, 768) 
-    IMSIZE = (800, 600)   
+#    IMSIZE = (1024, 768)
+    IMSIZE = (800, 600)
 #    IMSIZE = (640, 480)
 #    IMSIZE = (480, 320)
 #    IMSIZE = (320, 240)

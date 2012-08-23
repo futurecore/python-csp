@@ -21,12 +21,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 """
 
 from csp.csp import *
-import logging, math, pygame, time
-import Numeric
+import logging
+import math
+import numpy
+import pygame
+import time
 
 __author__ = 'Sam Wilson'
 __credits__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
+
+# Amended 2012-08-23 by Russel Winder <russel@winder.org.uk> to switch from Numeric to NumPy.
 
 MAXITER = 100
 """@var: Number of iterations used to determine each pixel of the fractal image.
@@ -71,7 +76,7 @@ def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
 
     readset = cout
     writeset = cout
-    
+
     @type xcoord: C{int}
     @param xcoord: x-coordinate of this image column.
     @type width: C{int}
@@ -89,7 +94,7 @@ def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
     # nu implements the normalized iteration count algorithm
     nu = lambda zz, n: n + 1 - math.log(math.log(abs(zz)))/math.log(2)
     imgcolumn = [0. for i in range(height)]
-    
+
     while 1:
         for ycoord in range(height):
             z = complex(0., 0.)
@@ -109,7 +114,7 @@ def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
         cout.write((xcoord, imgcolumn))
         #print '\nhere {0}'.format(xcoord)
         xcoord = cout.read()
-        if xcoord == -1:       
+        if xcoord == -1:
             return
 
 
@@ -118,8 +123,8 @@ def consume(IMSIZE, filename, cins):
     """Consumer process to aggregate image data for Mandelbrot fractal.
 
     readset = cins
-    writeset = 
-    
+    writeset =
+
     @type IMSIZE: C{tuple}
     @param IMSIZE: Width and height of generated fractal image.
     @type filename: C{str}
@@ -128,7 +133,7 @@ def consume(IMSIZE, filename, cins):
     @param cins: Input channels from which image columns will be read.
     """
     # Create initial pixel data
-    pixmap = Numeric.zeros((IMSIZE[0], IMSIZE[1], 3))
+    pixmap = numpy.zeros((IMSIZE[0], IMSIZE[1], 3), dtype=int)
     pygame.init()
     screen = pygame.display.set_mode((IMSIZE[0], IMSIZE[1]), 0)
     pygame.display.set_caption('python-csp Mandelbrot fractal example.')
@@ -145,12 +150,12 @@ def consume(IMSIZE, filename, cins):
         # Update image on screen.
         pygame.surfarray.blit_array(screen, pixmap)
         pygame.display.update(xcoord, 0, 1, IMSIZE[1])
-        
+
         if j < IMSIZE[0]:
             alt.last_selected.write(j)
             j += 1
         else:
-            alt.last_selected.write(-1)               
+            alt.last_selected.write(-1)
     print('TIME TAKEN: ' + str(time.time() - t0) +'seconds.')
     logging.debug('Consumer drawing image on screen')
     pygame.image.save(screen, filename)
@@ -159,13 +164,13 @@ def consume(IMSIZE, filename, cins):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                print('Goodbye')                
+                print('Goodbye')
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 pygame.image.save(screen, filename)
                 print('Saving fractal image in: ' + str(filename))
 
-                
+
 def main(IMSIZE, filename, granularity=10, level='info'):
     """Manage all processes and channels required to generate fractal.
 
@@ -183,18 +188,18 @@ def main(IMSIZE, filename, granularity=10, level='info'):
               'error': logging.ERROR,
               'critical': logging.CRITICAL}
     assert(level in list(LEVELS.keys()))
-    
-    logging.basicConfig(level=LEVELS[level]) 
+
+    logging.basicConfig(level=LEVELS[level])
     # Channel and process lists.
     channels, processes = [], []
     # Create channels and add producer processes to process list.
-    
+
     SOFAR = granularity - 1
     for x in range(granularity):
         channels.append(Channel())
         processes.append(mandelbrot(x, IMSIZE, channels[x]))
     processes.insert(0, consume(IMSIZE, filename, channels))
-    
+
     # Start and join producer processes.
     mandel = Par(*processes)
     mandel.start()

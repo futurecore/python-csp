@@ -23,12 +23,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 from csp.csp import *
 import logging
 import math
-import Numeric
+import numpy
 import pygame
 import time
 
 __author__ = 'Sarah Mount <s.mount@wlv.ac.uk>'
 __date__ = 'December 2008'
+
+# Amended 2012-08-23 by Russel Winder <russel@winder.org.uk> to switch from Numeric to NumPy.
 
 MAXITER = 100
 """@var: Number of iterations used to determine each pixel of the
@@ -69,7 +71,7 @@ def mandelbrot(xcoord, dimension, cout, acorn=-2.0, bcorn=-1.250):
 
     readset =
     writeset = cout
-    
+
     @type xcoord: C{int}
     @param xcoord: x-coordinate of this image column.
     @type width: C{int}
@@ -114,7 +116,7 @@ def consume(IMSIZE, filename, cins):
 
     readset = cins
     writeset =
-    
+
     @type IMSIZE: C{tuple}
     @param IMSIZE: Width and height of generated fractal image.
     @type filename: C{str}
@@ -123,7 +125,7 @@ def consume(IMSIZE, filename, cins):
     @param cins: Input channels from which image columns will be read.
     """
     # Create initial pixel data
-    pixmap = Numeric.zeros((IMSIZE[0], IMSIZE[1], 3))
+    pixmap = numpy.zeros((IMSIZE[0], IMSIZE[1], 3), dtype=int)
     pygame.init()
     screen = pygame.display.set_mode((IMSIZE[0], IMSIZE[1]), 0)
     pygame.display.set_caption('python-csp Mandelbrot fractal example.')
@@ -186,7 +188,7 @@ def main(IMSIZE, filename, level='info'):
               'error': logging.ERROR,
               'critical': logging.CRITICAL}
     assert(level in list(LEVELS.keys()))
-    logging.basicConfig(level=LEVELS[level]) 
+    logging.basicConfig(level=LEVELS[level])
     # Channel and process lists.
     channels, processes = [], []
     # Create channels and add producer processes to process list.
