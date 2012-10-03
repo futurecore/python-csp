@@ -1,0 +1,86 @@
+#summary python-csp tutorial (front page).
+#labels Featured,Phase-Support,Tutorial
+
+<wiki:toc max_depth="3" />
+
+This page should give you an birds-eye view of CSP and the python-csp
+library. The tutorial pages that follow take you through installing
+the library and using it in some detail, with several medium sized
+example programs (and exercises!).
+
+= What is CSP? =
+
+Concurrent and parallel programming are generally seen as "difficult"
+tasks. This is partly because most people have a mental model of how
+computers work which is fundamentally sequential, and partly because
+concurrent programs are susceptible to errors such as race hazards,
+deadlocks, and so on. 
+
+CSP stands for Communicating Sequential Processes, which is a
+framework for writing concurrent or program via _message
+passinge_. The advantage of message passing is that it makes race
+hazards impossible and provides a model of concurrency that is much
+easier to think about and more fun to program with.
+
+
+= Why CSP for Python? =
+
+Python currently has some support for threaded concurrency via the
+`thread` and `threading` module, support for parallel programming and
+the `processing` module. Threads are very low level, difficult to work
+with and cannot take advantage of multicore architectures that are now
+becoming commonplace. The `processing` module provides good support
+for process and thread-safe data structures but neither provide
+support for the message passing paradigm of programming and the sorts
+of constructs common to CSP style languages (such as OCCAM, OCCAM-pi,
+JCSP, C++CSP and so on). python-csp is design to plug this gap and
+also to provide an idiomatically _pythonic_ implementation of the
+ideas in CSP.
+
+
+== CSP resources ==
+
+ * [http://www.usingcsp.com/ CSP book] Hoare's original CSP book
+ * [http://wotug.org/ WoTUG] The place for Communicating Processes
+ * [http://books.google.co.uk/books?id=4ygZed-24LsC&printsec=frontcover&dq=communicating+sequential+processes&source=bl&ots=VfQoVDyIXn&sig=xDJ3FwyC82NSJ5J1bCMnkWPsS8M&hl=en&ei=c8K_S-K8HZX20gT618GWCQ&sa=X&oi=book_result&ct=result&resnum=12&ved=0CEYQ6AEwCw#v=onepage&q&f=false 25 years of CSP]
+
+
+== Other concurrency packages for Python == 
+
+ * [http://code.google.com/p/pycsp/ PyCSP] is another CSP library for Python, and somewhat similar to python-csp. In the medium term it is intended that PyCSP and python-csp will merge.
+ * [http://peak.telecommunity.com/DevCenter/Trellis Trellis] reactive programming for Python
+ * [http://peak.telecommunity.com/DevCenter/TrellisSTM STM] software transactional memory for Python
+ * [http://www.kamaelia.org/Home.html Kamaelia] message passing concurrency using asynchronous channels
+ * [http://twistedmatrix.com/trac/ Twisted] event-driven Python programming
+ * [http://docs.python.org/library/multiprocessing.html Multiprocessing] this is the best support in the current standard library for running forked processes. 
+
+
+
+= Moving on: a python-csp tutorial =
+
+The rest of this tutorial assumes that you can already write Python code. If not, read
+[http://docs.python.org/tutorial/ The Python Tutorial] before you continue.
+
+  * Beginner:
+    * TutorialPage0 -- Installing python-csp, tool support 
+    * TutorialPage1 -- Creating and running processes 
+        * [http://code.google.com/p/python-csp/wiki/TutorialPage1#Larger_example:_a_basic_web_server Extended example:] web server
+    * TutorialPage2 -- Composing processes with Par and Seq
+        * [http://code.google.com/p/python-csp/wiki/TutorialPage2#A_larger_example:_Word_counts_on_a_whole_directory Extended example:] Parallel word count
+    * TutorialPage3 -- Communicating between processes with channels
+        * [http://code.google.com/p/python-csp/wiki/TutorialPage3#A_larger_example:_? Extended example:] Mandelbrot generator
+    * TutorialPage4 -- Stopping python-csp programs by poisoning channels
+        * [http://code.google.com/p/python-csp/wiki/TutorialPage4#A_larger_example:_? Extended example:] TODO
+    * TutorialPage5 -- Choosing between channel reads with Alt
+        * [http://code.google.com/p/python-csp/wiki/TutorialPage5#A_larger_example:_? Extended example:] TODO
+
+  * Intermediate:
+    * TutorialPage6 -- Using different channel types
+    * TutorialPage7 -- Using built-in processes 
+        * [http://code.google.com/p/python-csp/wiki/TutorialPage7#A_larger_example:_? Extended example:] software oscilloscope 
+    * TutorialPage8 -- Design patterns for python-csp programs
+        * [http://code.google.com/p/python-csp/wiki/TutorialPage8#A_larger_example:_? Extended example:] TODO
+
+  * Advanced:
+    * TutorialPage9 -- Debugging python-csp programs with extra tool support
+    * TutorialPage10 -- Reactive (or dataflow) programming with python-csp

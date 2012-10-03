@@ -1,0 +1,19 @@
+#summary python-csp Tutorial Part 8
+#labels Phase-Support,Tutorial
+
+<wiki:toc max_depth="3" />
+
+= Design patterns in python-csp =
+
+== Client-server pattern ==
+
+=== Client-server example ===
+
+
+== Token ring pattern ==
+
+=== Token ring example ===
+
+== Reactive programming pattern ==
+
+=== Reactive programming example ===
