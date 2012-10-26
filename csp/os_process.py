@@ -262,7 +262,7 @@ n: 20
         try:
             self._target(*self._args, **self._kwargs)
         except ChannelPoison:
-            _debug('{0}s got ChannelPoison exception in {1}'.format((str(self), self.getPid())))
+            _debug('{0}s got ChannelPoison exception in {1}'.format(str(self), self.getPid()))
             self.referent_visitor(self._args + tuple(self._kwargs.values()))
 #            if self._popen is not None: self.terminate()
         except KeyboardInterrupt:
@@ -892,7 +892,7 @@ Got: 100
             self.put(obj)
             # Announce the object has been released to the reader.
             self._available.release()
-            _debug('++++ Writer on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.get_value(), self._taken.get_value()))
+            _debug('++++ Writer on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, repr(self._available), repr(self._taken)))
             # Block until the object has been read.
             self._taken.acquire()
             # Remove the object from the channel.
@@ -907,7 +907,7 @@ Got: 100
         _debug('+++ Read on Channel {0} started.'.format(self.name))
         with self._rlock: # Protect from races between multiple readers.
             # Block until an item is in the Channel.
-            _debug('++++ Reader on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, self._available.get_value(), self._taken.get_value()))
+            _debug('++++ Reader on Channel {0}: _available: {1} _taken: {2}. '.format(self.name, repr(self._available), repr(self._taken)))
             self._available.acquire()
             # Get the item.
             obj = self.get()
@@ -935,7 +935,7 @@ Got: 100
                 self._is_selectable.value = Channel.TRUE
             else:
                 self._is_selectable.value = Channel.FALSE
-        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable.value), str(self._available.get_value())))
+        _debug('Enable on guard {0} _is_selectable: {1} _available: {2}'.format(self.name, str(self._is_selectable.value), repr(self._available)))
 
     def disable(self):
         """Disable this channel for Alt selection.
@@ -956,7 +956,7 @@ Got: 100
         _debug('channel select starting')
         assert self._is_selectable.value == Channel.TRUE
         with self._rlock:
-            _debug('got read lock on channel {0} _available: {1}'.format(self.name, str(self._available.get_value())))
+            _debug('got read lock on channel {0} _available: {1}'.format(self.name, repr(self._available)))
             # Obtain object on Channel.
             obj = self.get()
             _debug('got obj')
